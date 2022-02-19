@@ -71,16 +71,10 @@
     owner: root
     group: root
     backup: yes
-- name: Check if certificates already exist
-  stat:
-    path: "{{ item }}"
-  register: cert_files
-  loop:
-    - "/etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem"
-    - "/etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem"
 - name: Request Let's Encrypt certificates
   command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ mailserver_hostname }}"
-  when: not cert_files.results.0.stat.exists and not cert_files.results.1.stat.exists
+  args:
+    creates: "/etc/letsencrypt/live/{{ mailserver_hostname }}"
 - name: Enable submission serice in Postfix
   blockinfile:
     block: "submission     inet     n    -    y    -    -    smtpd
@@ -229,5 +223,16 @@
     group: root
     state: present
     backup: yes
+- name: Create OS users
+  user:
+    name: "{{ item.name }}"
+#    password: "{{ item.password | password_hash('sha512', lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,punctuation')| default(lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,punctuation')) }}"
+    state: present
+  loop: "{{ users }}"
 - name: Apply mail aliases
   command: newaliases
+- name: Auto-renew certificates
+  cron:
+    name: certbot
+    special_time: daily
+    job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
