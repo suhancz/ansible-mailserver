@@ -226,7 +226,7 @@
 - name: Create OS users
   user:
     name: "{{ item.name }}"
-#    password: "{{ item.password | password_hash('sha512', lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,punctuation')| default(lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,punctuation')) }}"
+    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,punctuation')) }}"
     state: present
   loop: "{{ users }}"
 - name: Apply mail aliases
