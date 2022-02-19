@@ -1,2 +1,233 @@
 ---
 # tasks file for ansible-mailserver
+- name: Set hostname
+  command: "hostnamectl set-hostname {{ mailserver_hostname }}"
+- name: Install packages
+  package:
+    name:
+      - postfix
+      - mailx
+      - epel-release
+      - certbot
+      - httpd
+      - python3-certbot-apache
+      - dovecot
+    state: present
+- name: Configure postfix
+  command: 'postconf -e "{{ item }}"'
+  loop:
+    - "inet_interfaces = all"
+    - "myhostname = {{ mailserver_hostname }}"
+    - "mydomain = {{ mailserver_domain }}"
+    - "myorigin = {{ mailserver_domain }}"
+    - "mydestination = {{ mailserver_domain }}, $myhostname, localhost.$mydomain, localhost"
+    - "message_size_limit = 52428800"
+    - "mailbox_size_limit = 0"
+    - "smtpd_tls_cert_file = /etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem"
+    - "smtpd_tls_key_file = /etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem"
+    - "smtpd_tls_loglevel = 1"
+    - "smtp_tls_loglevel = 1"
+- name: Open firewall
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - smtp
+    - http
+    - https
+    - smtp-submission
+    - smtps
+    - imap
+    - imaps
+    - pop3
+    - pop3s
+- name: Create restart directories
+  file:
+    state: directory
+    path: "/etc/systemd/system/{{ item }}.service.d"
+    mode: u=rwX,og=rX
+    owner: root
+    group: root
+  loop:
+    - postfix
+    - dovecot
+- name: Deploy restart files
+  copy:
+    src: restart.conf
+    dest: "/etc/systemd/system/{{ item }}.service.d/restart.conf"
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  loop:
+    - postfix
+    - dovecot
+- name: Deploy Apache config
+  template:
+    src: httpd.domain.conf.j2
+    dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+- name: Check if certificates already exist
+  stat:
+    path: "{{ item }}"
+  register: cert_files
+  loop:
+    - "/etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem"
+    - "/etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem"
+- name: Request Let's Encrypt certificates
+  command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ mailserver_hostname }}"
+  when: not cert_files.results.0.stat.exists and not cert_files.results.1.stat.exists
+- name: Enable submission serice in Postfix
+  blockinfile:
+    block: "submission     inet     n    -    y    -    -    smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=encrypt
+  -o smtpd_tls_wrappermode=no
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_sasl_type=dovecot
+  -o smtpd_sasl_path=private/auth"
+    path: /etc/postfix/master.cf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+- name: Enable submission serice over port 465 in Postfix
+  blockinfile:
+    block: "smtps     inet  n       -       y       -       -       smtpd
+  -o syslog_name=postfix/smtps
+  -o smtpd_tls_wrappermode=yes
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_sasl_type=dovecot
+  -o smtpd_sasl_path=private/auth"
+    path: /etc/postfix/master.cf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+- name: Configure main.cf
+  lineinfile:
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    path: /etc/postfix/main.cf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "smtpd_tls_mandatory_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "smtpd_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "smtp_tls_mandatory_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "smtp_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
+    - { key: "smtputf8_enable", value: "no" }
+- name: Configure Dovecot protocols
+  lineinfile:
+    path: /etc/dovecot/dovecot.conf
+    regexp: '^protocols ='
+    line: 'protocols = imap pop3 lmtp'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+- name: Configure Dovecot Maildir
+  lineinfile:
+    path: /etc/dovecot/conf.d/10-mail.conf
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - {key: "mail_location", value: "maildir:~/Maildir"}
+    - {key: "mail_privileged_group", value: "mail"}
+- name: Configure Dovecot Authentication Mechanism
+  lineinfile:
+    path: /etc/dovecot/conf.d/10-auth.conf
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "disable_plaintext_auth", value: "yes" }
+    - { key: "auth_username_format", value: "%n" }
+    - { key: "auth_mechanisms", value: "plain login" }
+- name: Configure Dovecot SSL
+  lineinfile:
+    path: /etc/dovecot/conf.d/10-ssl.conf
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "ssl", value: "reuired" }
+    - { key: "ssl_cert", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem" }
+    - { key: "ssl_key", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem" }
+    - { key: "ssl_dh", value: "/etc/dovecot/dh.pem" }
+    - { key: "ssl_min_protocol", value: "TLSv1.2" }
+    - { key: "ssl_prefer_server_ciphers", value: "yes" }
+- name: Generate OpenSSL DHParam
+  openssl_dhparam:
+    path: /etc/dovecot/dh.pem
+    size: 4096
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+- name: Add Dovecot user to the mail group
+  user:
+    name: dovecot
+    groups: mail
+    append: yes
+- name: Upload complex Dovecot configs
+  copy:
+    dest: "/etc/dovecot/conf.d/{{ item }}"
+    src: "dovecot.{{ item }}"
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  loop:
+    - 10-master.conf
+    - 15-mailboxes.conf
+- name: Enable systemd services
+  systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  loop:
+    - postfix
+    - httpd
+    - dovecot
+- name: Set up mail aliases
+  lineinfile:
+    path: /etc/aliases
+    regexp: '^root: *{{ mailserver_admin_user }}'
+    line: 'root: {{ mailserver_admin_user }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+- name: Apply mail aliases
+  command: newaliases
