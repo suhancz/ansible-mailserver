@@ -231,37 +231,76 @@
     name: certbot
     special_time: daily
     job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
-- name: Sets the MariaDB root password
-  mysql_user: user=root password="{{ mysql_root_password }}" host=localhost
-  no_log: yes
+- name: Set MariaDB root password
+  block:
+    - name: Sets the MariaDB root password
+      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost
+      no_log: yes
+  rescue:
+    - name: Ensures the MariaDB root password
+      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost login_user=root login_password="{{ mysql_root_password }}"
+      no_log: yes
 - name: Deletes anonymous MySQL server user for ansible_fqdn
-  mysql_user: user="" host="{{ ansible_fqdn }}" state="absent"
+  mysql_user:
+    user: ""
+    host: "{{ ansible_fqdn }}"
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
 - name: Deletes anonymous MySQL server user for localhost
-  mysql_user: user="" state="absent"
+  mysql_user:
+    user: ""
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
 - name: Secures the MySQL root user for IPV6 localhost (::1)
-  mysql_user: user="root" password="{{ mysql_root_password }}" host="::1"
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: "::1"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secures the MySQL root user for IPV4 localhost (127.0.0.1)
-  mysql_user: user="root" password="{{ mysql_root_password }}" host="127.0.0.1"
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: 127.0.0.1
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secures the MySQL root user for localhost domain (localhost)
-  mysql_user: user="root" password="{{ mysql_root_password }}" host="localhost"
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secures the MySQL root user for server_hostname domain
-  mysql_user: user="root" password="{{ mysql_root_password }}" host="{{ ansible_fqdn }}"
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: "{{ ansible_fqdn }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Removes the MySQL test database
-  mysql_db: db=test state=absent
-- name: Get postfixadmin
-  get_url:
-    url: https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-3.3.10.tar.gz
-    dest: /tmp/postfixadmin-3.3.10.tar.gz
+  mysql_db:
+    db: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
 - name: Unpack postfixadmin
   unarchive:
-    src: /tmp/postfixadmin-3.3.10.tar.gz
+    src: https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-3.3.10.tar.gz
     dest: /var/www/
+    remote_src: yes
 - name: Rename postfixadmin directory
-  command: mv /var/www/postfixadmin-3.3.10 /var/www/postfixadmin
+  command: mv /var/www/postfixadmin-postfixadmin-3.3.10 /var/www/postfixadmin
 - name: Set up postfixadmin permissions
   file:
     path: /var/www/postfixadmin/templates_c
@@ -280,21 +319,31 @@
     - { path: "/var/www/postfixadmin/templates_c", entity: "apache", etype: "user", permissions: "rwx"}
     - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
     - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
+- name: To check SELinux status
+  shell: getenforce
+  register: getenforce
 - name: Allow HTTPD to connect to the network
   seboolean:
     name: httpd_can_network_connect
     state: yes
     persistent: yes
+  when: "{{ getenforce.stdout != 'Disabled' }}"
 - name: Create postfixadmin DB
   mysql_db:
     name: postfixadmin
     state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
 - name: Set up postfixadmin DB privileges
   mysql_user:
     name: postfixadmin
     password: '{{ postfixadmin_password }}'
     priv: 'postfixadmin.*:ALL,GRANT'
     host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"
