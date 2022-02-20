@@ -2,6 +2,14 @@
 # tasks file for ansible-mailserver
 - name: Set hostname
   command: "hostnamectl set-hostname {{ mailserver_hostname }}"
+- name: "Set up Remi repository"
+  dnf:
+    name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+    disable_gpg_check: yes
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+- name: Enable the Remi PHP DNF module
+  command: dnf module enable php:remi-7.4 -y
 - name: Install packages
   package:
     name:
@@ -17,6 +25,24 @@
       - python3-mysqlclient
       - wget
       - tar
+      - php-fpm
+      - php-imap
+      - php-mbstring
+      - php-mysqlnd
+      - php-gd
+      - php-opcache
+      - php-json
+      - php-curl
+      - php-zip
+      - php-xml
+      - php-bz2
+      - php-intl
+      - php-gmp
+      - binutils
+      - rpm-build
+      - setools-console
+      - policycoreutils-python3
+      - policycoreutils-devel
     state: present
 - name: Configure postfix
   command: 'postconf -e "{{ item }}"'
@@ -68,18 +94,13 @@
   loop:
     - postfix
     - dovecot
-- name: Deploy Apache config
-  template:
-    src: httpd.domain.conf.j2
-    dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf"
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    backup: yes
 - name: Request Let's Encrypt certificates
-  command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ mailserver_hostname }}"
+  command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ item }}"
   args:
-    creates: "/etc/letsencrypt/live/{{ mailserver_hostname }}"
+    creates: "/etc/letsencrypt/live/{{ item }}"
+  loop:
+    - "{{ mailserver_hostname }}"
+    - "postfixadmin.{{ mailserver_domain }}"
 - name: Enable submission serice in Postfix
   blockinfile:
     block: "submission     inet     n    -    y    -    -    smtpd
@@ -195,7 +216,7 @@
 - name: Add Dovecot user to the mail group
   user:
     name: dovecot
-    groups: mail
+    groups: mail,apache
     append: yes
 - name: Upload complex Dovecot configs
   copy:
@@ -322,12 +343,23 @@
 - name: To check SELinux status
   shell: getenforce
   register: getenforce
-- name: Allow HTTPD to connect to the network
-  seboolean:
-    name: httpd_can_network_connect
-    state: yes
-    persistent: yes
+- name: Set up SELinux rules
   when: "{{ getenforce.stdout != 'Disabled' }}"
+  block:
+    - name: Set SELinux booleans
+      seboolean:
+        name: "{{ item }}"
+        state: yes
+        persistent: yes
+      loop:
+        - httpd_can_network_connect
+        - httpd_execmem
+    - name: Generate SELinux policy
+      shell: |
+        sepolicy generate --init /usr/sbin/httpd
+        echo 'dovecot_read_config(httpd_t)' >> httpd.te
+        ./httpd.sh
+        ausearch -m AVC -ts recent | audit2allow -R
 - name: Create postfixadmin DB
   mysql_db:
     name: postfixadmin
@@ -344,6 +376,18 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
+- name: Render config templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf" }
+    - { src: "postfixadmin.config.local.php.j2", dest: "/var/www/postfixadmin/config.local.php" }
+    - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/postfixadmin.{{ mailserver_domain }}.conf" }
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"
@@ -355,3 +399,4 @@
     - httpd
     - dovecot
     - mariadb
+    - php-fpm
