@@ -395,6 +395,7 @@
     enabled: yes
     state: restarted
   loop:
+    - firewalld
     - postfix
     - httpd
     - dovecot
