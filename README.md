@@ -14,7 +14,6 @@ Role Variables
     users:
       - name
         password
-    mysql_root_password
     postfixadmin_password
 Example Playbook
 ----------------

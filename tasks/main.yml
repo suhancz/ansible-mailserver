@@ -112,6 +112,10 @@
     backup: yes
     owner: root
     group: root
+- name: Fill authorized submit user list
+  set_fact:
+    authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
+  loop: "{{ users }}"
 - name: Configure main.cf
   lineinfile:
     regexp: '^{{ item.key }} = '
@@ -129,6 +133,7 @@
     - { key: "smtp_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
     - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
     - { key: "smtputf8_enable", value: "no" }
+    - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
 - name: Configure Dovecot protocols
   lineinfile:
     path: /etc/dovecot/dovecot.conf
@@ -220,9 +225,10 @@
 - name: Create OS users
   user:
     name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,punctuation')) }}"
+    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
     state: present
   loop: "{{ users }}"
+  no_log: yes
 - name: Apply mail aliases
   command: newaliases
 - name: Auto-renew certificates
@@ -230,6 +236,10 @@
     name: certbot
     special_time: daily
     job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
+- name: Generate passwords if they don't exist yet
+  set_fact:
+    postfixadmin_password: "{{ postfixadmin_password | default(lookup('password', '/tmp/postfixadmin_password chars=ascii_letters,digits,punctuation')) }}"
+    mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/mysql_root_password chars=ascii_letters,digits,punctuation')) }}"
 - name: Set MariaDB root password
   block:
     - name: Sets the MariaDB root password
