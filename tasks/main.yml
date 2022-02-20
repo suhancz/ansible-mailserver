@@ -12,6 +12,11 @@
       - httpd
       - python3-certbot-apache
       - dovecot
+      - mariadb-server
+      - mariadb
+      - python3-mysqlclient
+      - wget
+      - tar
     state: present
 - name: Configure postfix
   command: 'postconf -e "{{ item }}"'
@@ -203,16 +208,6 @@
   loop:
     - 10-master.conf
     - 15-mailboxes.conf
-- name: Enable systemd services
-  systemd:
-    name: "{{ item }}"
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
-  loop:
-    - postfix
-    - httpd
-    - dovecot
 - name: Set up mail aliases
   lineinfile:
     path: /etc/aliases
@@ -236,3 +231,78 @@
     name: certbot
     special_time: daily
     job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
+- name: Sets the MariaDB root password
+  mysql_user: user=root password="{{ mysql_root_password }}" host=localhost
+  no_log: yes
+- name: Deletes anonymous MySQL server user for ansible_fqdn
+  mysql_user: user="" host="{{ ansible_fqdn }}" state="absent"
+- name: Deletes anonymous MySQL server user for localhost
+  mysql_user: user="" state="absent"
+- name: Secures the MySQL root user for IPV6 localhost (::1)
+  mysql_user: user="root" password="{{ mysql_root_password }}" host="::1"
+  no_log: yes
+- name: Secures the MySQL root user for IPV4 localhost (127.0.0.1)
+  mysql_user: user="root" password="{{ mysql_root_password }}" host="127.0.0.1"
+  no_log: yes
+- name: Secures the MySQL root user for localhost domain (localhost)
+  mysql_user: user="root" password="{{ mysql_root_password }}" host="localhost"
+  no_log: yes
+- name: Secures the MySQL root user for server_hostname domain
+  mysql_user: user="root" password="{{ mysql_root_password }}" host="{{ ansible_fqdn }}"
+  no_log: yes
+- name: Removes the MySQL test database
+  mysql_db: db=test state=absent
+- name: Get postfixadmin
+  get_url:
+    url: https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-3.3.10.tar.gz
+    dest: /tmp/postfixadmin-3.3.10.tar.gz
+- name: Unpack postfixadmin
+  unarchive:
+    src: /tmp/postfixadmin-3.3.10.tar.gz
+    dest: /var/www/
+- name: Rename postfixadmin directory
+  command: mv /var/www/postfixadmin-3.3.10 /var/www/postfixadmin
+- name: Set up postfixadmin permissions
+  file:
+    path: /var/www/postfixadmin/templates_c
+    state: directory
+    setype: httpd_sys_rw_content_t
+    recurse: yes
+- name: Set postfixadmin ACLs
+  acl:
+    path: "{{ item.path }}"
+    entity: "{{ item.entity }}"
+    etype: "{{ item.etype }}"
+    permissions: "{{ item.permissions }}"
+    state: present
+    recursive: yes
+  loop:
+    - { path: "/var/www/postfixadmin/templates_c", entity: "apache", etype: "user", permissions: "rwx"}
+    - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
+    - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
+- name: Allow HTTPD to connect to the network
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+- name: Create postfixadmin DB
+  mysql_db:
+    name: postfixadmin
+    state: present
+- name: Set up postfixadmin DB privileges
+  mysql_user:
+    name: postfixadmin
+    password: '{{ postfixadmin_password }}'
+    priv: 'postfixadmin.*:ALL,GRANT'
+    host: localhost
+- name: Enable systemd services
+  systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  loop:
+    - postfix
+    - httpd
+    - dovecot
+    - mariadb
