@@ -101,39 +101,14 @@
   loop:
     - "{{ mailserver_hostname }}"
     - "postfixadmin.{{ mailserver_domain }}"
-- name: Enable submission serice in Postfix
-  blockinfile:
-    block: "submission     inet     n    -    y    -    -    smtpd
-  -o syslog_name=postfix/submission
-  -o smtpd_tls_security_level=encrypt
-  -o smtpd_tls_wrappermode=no
-  -o smtpd_sasl_auth_enable=yes
-  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-  -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
-  -o smtpd_sasl_type=dovecot
-  -o smtpd_sasl_path=private/auth"
-    path: /etc/postfix/master.cf
+- name: Deploy complex Postfix configs
+  copy:
+    src: postfix.master.cf
+    dest: /etc/postfix/master.cf
     mode: u=rw,og=r
+    backup: yes
     owner: root
     group: root
-    state: present
-    backup: yes
-- name: Enable submission serice over port 465 in Postfix
-  blockinfile:
-    block: "smtps     inet  n       -       y       -       -       smtpd
-  -o syslog_name=postfix/smtps
-  -o smtpd_tls_wrappermode=yes
-  -o smtpd_sasl_auth_enable=yes
-  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-  -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
-  -o smtpd_sasl_type=dovecot
-  -o smtpd_sasl_path=private/auth"
-    path: /etc/postfix/master.cf
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    state: present
-    backup: yes
 - name: Configure main.cf
   lineinfile:
     regexp: '^{{ item.key }} = '
