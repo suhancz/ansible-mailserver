@@ -43,6 +43,7 @@
       - setools-console
       - policycoreutils-python3
       - policycoreutils-devel
+      - php-cli
     state: present
 - name: Configure postfix
   command: 'postconf -e "{{ item }}"'
@@ -297,6 +298,8 @@
     remote_src: yes
 - name: Rename postfixadmin directory
   command: mv /var/www/postfixadmin-postfixadmin-3.3.10 /var/www/postfixadmin
+  args:
+    creates: /var/www/postfixadmin
 - name: Set up postfixadmin permissions
   file:
     path: /var/www/postfixadmin/templates_c
@@ -351,6 +354,9 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
+- name: Generate PostfixAdmin PHP password
+  command: php -r 'echo password_hash("{{ postfixadmin_password }}", PASSWORD_DEFAULT);'
+  register: postfixadmin_setup_password
 - name: Render config templates
   template:
     src: "{{ item.src }}"
