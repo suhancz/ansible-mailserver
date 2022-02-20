@@ -45,6 +45,7 @@
       - policycoreutils-devel
       - php-cli
       - postfix-mysql
+      - dovecot-mysql
     state: present
 - name: Configure postfix
   command: 'postconf -e "{{ item }}"'
@@ -377,6 +378,7 @@
     - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf" }
     - { src: "postfixadmin.config.local.php.j2", dest: "/var/www/postfixadmin/config.local.php" }
     - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/postfixadmin.{{ mailserver_domain }}.conf" }
+    - { src: "dovecot.dovecot-sql.conf.ext.j2", dest: "/etc/dovecot/dovecot-sql.conf.ext" }
 - name: Render Postfix SQL config templates
   template:
     src: "{{ item.src }}"
@@ -441,6 +443,36 @@
     group: vmail
     setype: mail_spool_t
     recurse: yes
+- name: Configure Dovecot to Use MySQL/MariaDB Database
+  lineinfile:
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    path: '{{ item.file }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_location", value: "maildir:~/Maildir" }
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_home", value: "/var/vmail/%d/%n" }
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_privileged_group", value: "mail" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_username_format", value: "%u" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_debug", value: "yes" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_debug_passwords", value: "yes" }
+- name: Configure Dovecot auth extensions
+  lineinfile:
+    regexp: '{{ item.line }}'
+    line: "{{ '#' if item.comment }}{{ item.line }}"
+    path: /etc/dovecot/conf.d/10-auth.conf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { comment: false, line: "!include auth-sql.conf.ext"}
+    - { comment: true, line: "!include auth-system.conf.ext"}
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"
