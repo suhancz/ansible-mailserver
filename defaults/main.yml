@@ -1,2 +1,3 @@
----
-# defaults file for ansible-mailserver
+authorized_submit_users:
+  - root
+  - www-data

@@ -2,6 +2,14 @@
 # tasks file for ansible-mailserver
 - name: Set hostname
   command: "hostnamectl set-hostname {{ mailserver_hostname }}"
+- name: "Set up Remi repository"
+  dnf:
+    name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+    disable_gpg_check: yes
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+- name: Enable the Remi PHP DNF module
+  command: dnf module enable php:remi-7.4 -y
 - name: Install packages
   package:
     name:
@@ -12,6 +20,32 @@
       - httpd
       - python3-certbot-apache
       - dovecot
+      - mariadb-server
+      - mariadb
+      - python3-mysqlclient
+      - wget
+      - tar
+      - php-fpm
+      - php-imap
+      - php-mbstring
+      - php-mysqlnd
+      - php-gd
+      - php-opcache
+      - php-json
+      - php-curl
+      - php-zip
+      - php-xml
+      - php-bz2
+      - php-intl
+      - php-gmp
+      - binutils
+      - rpm-build
+      - setools-console
+      - policycoreutils-python3
+      - policycoreutils-devel
+      - php-cli
+      - postfix-mysql
+      - dovecot-mysql
     state: present
 - name: Configure postfix
   command: 'postconf -e "{{ item }}"'
@@ -63,51 +97,25 @@
   loop:
     - postfix
     - dovecot
-- name: Deploy Apache config
-  template:
-    src: httpd.domain.conf.j2
-    dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf"
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    backup: yes
 - name: Request Let's Encrypt certificates
-  command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ mailserver_hostname }}"
+  command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ item }}"
   args:
-    creates: "/etc/letsencrypt/live/{{ mailserver_hostname }}"
-- name: Enable submission serice in Postfix
-  blockinfile:
-    block: "submission     inet     n    -    y    -    -    smtpd
-  -o syslog_name=postfix/submission
-  -o smtpd_tls_security_level=encrypt
-  -o smtpd_tls_wrappermode=no
-  -o smtpd_sasl_auth_enable=yes
-  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-  -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
-  -o smtpd_sasl_type=dovecot
-  -o smtpd_sasl_path=private/auth"
-    path: /etc/postfix/master.cf
+    creates: "/etc/letsencrypt/live/{{ item }}"
+  loop:
+    - "{{ mailserver_hostname }}"
+    - "postfixadmin.{{ mailserver_domain }}"
+- name: Deploy complex Postfix configs
+  copy:
+    src: postfix.master.cf
+    dest: /etc/postfix/master.cf
     mode: u=rw,og=r
+    backup: yes
     owner: root
     group: root
-    state: present
-    backup: yes
-- name: Enable submission serice over port 465 in Postfix
-  blockinfile:
-    block: "smtps     inet  n       -       y       -       -       smtpd
-  -o syslog_name=postfix/smtps
-  -o smtpd_tls_wrappermode=yes
-  -o smtpd_sasl_auth_enable=yes
-  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-  -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
-  -o smtpd_sasl_type=dovecot
-  -o smtpd_sasl_path=private/auth"
-    path: /etc/postfix/master.cf
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    state: present
-    backup: yes
+- name: Fill authorized submit user list
+  set_fact:
+    authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
+  loop: "{{ users }}"
 - name: Configure main.cf
   lineinfile:
     regexp: '^{{ item.key }} = '
@@ -125,6 +133,7 @@
     - { key: "smtp_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
     - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
     - { key: "smtputf8_enable", value: "no" }
+    - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
 - name: Configure Dovecot protocols
   lineinfile:
     path: /etc/dovecot/dovecot.conf
@@ -176,7 +185,7 @@
     - { key: "ssl", value: "required" }
     - { key: "ssl_cert", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem" }
     - { key: "ssl_key", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem" }
-    - { key: "ssl_dh", value: "/etc/dovecot/dh.pem" }
+    - { key: "ssl_dh", value: "</etc/dovecot/dh.pem" }
     - { key: "ssl_min_protocol", value: "TLSv1.2" }
     - { key: "ssl_prefer_server_ciphers", value: "yes" }
 - name: Generate OpenSSL DHParam
@@ -190,7 +199,7 @@
 - name: Add Dovecot user to the mail group
   user:
     name: dovecot
-    groups: mail
+    groups: mail,apache
     append: yes
 - name: Upload complex Dovecot configs
   copy:
@@ -203,16 +212,6 @@
   loop:
     - 10-master.conf
     - 15-mailboxes.conf
-- name: Enable systemd services
-  systemd:
-    name: "{{ item }}"
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
-  loop:
-    - postfix
-    - httpd
-    - dovecot
 - name: Set up mail aliases
   lineinfile:
     path: /etc/aliases
@@ -226,9 +225,10 @@
 - name: Create OS users
   user:
     name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,punctuation')) }}"
+    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
     state: present
   loop: "{{ users }}"
+  no_log: yes
 - name: Apply mail aliases
   command: newaliases
 - name: Auto-renew certificates
@@ -236,3 +236,263 @@
     name: certbot
     special_time: daily
     job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
+- name: Generate passwords if they don't exist yet
+  set_fact:
+    postfixadmin_password: "{{ postfixadmin_password | default(lookup('password', '/tmp/postfixadmin_password chars=ascii_letters,digits,punctuation')) }}"
+    mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/mysql_root_password chars=ascii_letters,digits,punctuation')) }}"
+- name: Set MariaDB root password
+  block:
+    - name: Sets the MariaDB root password
+      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost
+      no_log: yes
+  rescue:
+    - name: Ensures the MariaDB root password
+      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost login_user=root login_password="{{ mysql_root_password }}"
+      no_log: yes
+- name: Deletes anonymous MySQL server user for ansible_fqdn
+  mysql_user:
+    user: ""
+    host: "{{ ansible_fqdn }}"
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Deletes anonymous MySQL server user for localhost
+  mysql_user:
+    user: ""
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secures the MySQL root user for IPV6 localhost (::1)
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: "::1"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secures the MySQL root user for IPV4 localhost (127.0.0.1)
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: 127.0.0.1
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secures the MySQL root user for localhost domain (localhost)
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secures the MySQL root user for server_hostname domain
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: "{{ ansible_fqdn }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Removes the MySQL test database
+  mysql_db:
+    db: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Unpack postfixadmin
+  unarchive:
+    src: https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-3.3.10.tar.gz
+    dest: /var/www/
+    remote_src: yes
+- name: Rename postfixadmin directory
+  command: mv /var/www/postfixadmin-postfixadmin-3.3.10 /var/www/postfixadmin
+  args:
+    creates: /var/www/postfixadmin
+- name: Set up postfixadmin permissions
+  file:
+    path: /var/www/postfixadmin/templates_c
+    state: directory
+    setype: httpd_sys_rw_content_t
+    recurse: yes
+- name: Set postfixadmin ACLs
+  acl:
+    path: "{{ item.path }}"
+    entity: "{{ item.entity }}"
+    etype: "{{ item.etype }}"
+    permissions: "{{ item.permissions }}"
+    state: present
+    recursive: yes
+  loop:
+    - { path: "/var/www/postfixadmin/templates_c", entity: "apache", etype: "user", permissions: "rwx"}
+    - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
+    - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
+- name: To check SELinux status
+  shell: getenforce
+  register: getenforce
+- name: Set up SELinux rules
+  when: "{{ getenforce.stdout != 'Disabled' }}"
+  block:
+    - name: Set SELinux booleans
+      seboolean:
+        name: "{{ item }}"
+        state: yes
+        persistent: yes
+      loop:
+        - httpd_can_network_connect
+        - httpd_execmem
+    - name: Generate SELinux policy
+      shell: |
+        sepolicy generate --init /usr/sbin/httpd
+        echo 'dovecot_read_config(httpd_t)' >> httpd.te
+        ./httpd.sh
+        ausearch -m AVC -ts recent | audit2allow -R
+- name: Create postfixadmin DB
+  mysql_db:
+    name: postfixadmin
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Set up postfixadmin DB privileges
+  mysql_user:
+    name: postfixadmin
+    password: '{{ postfixadmin_password }}'
+    priv: 'postfixadmin.*:ALL,GRANT'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Generate PostfixAdmin PHP password
+  command: php -r 'echo password_hash("{{ postfixadmin_password }}", PASSWORD_DEFAULT);'
+  register: postfixadmin_setup_password
+- name: Create Postfix SQL directory
+  file:
+    path: /etc/postfix/sql/
+    state: directory
+    mode: u=rwX,og=rX
+    owner: root
+    group: root
+- name: Render web config templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf" }
+    - { src: "postfixadmin.config.local.php.j2", dest: "/var/www/postfixadmin/config.local.php" }
+    - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/postfixadmin.{{ mailserver_domain }}.conf" }
+    - { src: "dovecot.dovecot-sql.conf.ext.j2", dest: "/etc/dovecot/dovecot-sql.conf.ext" }
+- name: Render Postfix SQL config templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,g=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "postfix.sql.mysql_virtual_domains_maps.cf.j2", dest: "/etc/postfix/sql/mysql_virtual_domains_maps.cf"}
+    - { src: "postfix.sql.mysql_virtual_mailbox_maps.cf.j2", dest: "/etc/postfix/sql/mysql_virtual_mailbox_maps.cf"}
+    - { src: "postfix.sql.mysql_virtual_alias_domain_mailbox_maps.cf.j2", dest: "/etc/postfix/sql/mysql_virtual_alias_domain_mailbox_maps.cf"}
+    - { src: "postfix.sql.mysql_virtual_alias_maps.cf.j2", dest: "/etc/postfix/sql/mysql_virtual_alias_maps.cf"}
+    - { src: "postfix.sql.mysql_virtual_alias_domain_maps.cf.j2", dest: "/etc/postfix/sql/mysql_virtual_alias_domain_maps.cf"}
+    - { src: "postfix.sql.mysql_virtual_alias_domain_catchall_maps.cf.j2", dest: "/etc/postfix/sql/mysql_virtual_alias_domain_catchall_maps.cf"}
+- name: Set Postfix SQL ACLs
+  acl:
+    path: "/etc/postfix/sql/"
+    entity: "postfix"
+    etype: "user"
+    permissions: "rx"
+    state: present
+    recursive: yes
+- name: Enable MariaDB backend for Postfix
+  blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      virtual_mailbox_domains = proxy:mysql:/etc/postfix/sql/mysql_virtual_domains_maps.cf
+      virtual_mailbox_maps =
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_mailbox_maps.cf,
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_mailbox_maps.cf
+      virtual_alias_maps =
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_maps.cf,
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_maps.cf,
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_catchall_maps.cf
+      virtual_transport = lmtp:unix:private/dovecot-lmtp
+      virtual_mailbox_base = /var/vmail
+      virtual_minimum_uid = 2000
+      virtual_uid_maps = static:2000
+      virtual_gid_maps = static:2000
+    backup: yes
+- name: Clean postfix destination
+  command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
+- name: Add vmail group
+  group:
+    name: vmail
+    system: yes
+    gid: 2000
+- name: Add vmail user
+  user:
+    name: vmail
+    group: vmail
+    create_home: no
+    system: yes
+    uid: 2000
+- name: Create Postfix SQL directory
+  file:
+    path: /var/vmail/
+    state: directory
+    mode: u=rwX,og=rX
+    owner: vmail
+    group: vmail
+    setype: mail_spool_t
+    recurse: yes
+- name: Configure Dovecot to Use MySQL/MariaDB Database
+  lineinfile:
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    path: '{{ item.file }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_location", value: "maildir:~/Maildir" }
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_home", value: "/var/vmail/%d/%n" }
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_privileged_group", value: "mail" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_username_format", value: "%u" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_debug", value: "yes" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_debug_passwords", value: "yes" }
+- name: Configure Dovecot auth extensions
+  lineinfile:
+    regexp: '{{ item.line }}'
+    line: "{{ '#' if item.comment }}{{ item.line }}"
+    path: /etc/dovecot/conf.d/10-auth.conf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { comment: false, line: "!include auth-sql.conf.ext"}
+    - { comment: true, line: "!include auth-system.conf.ext"}
+- name: Enable systemd services
+  systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  loop:
+    - firewalld
+    - postfix
+    - httpd
+    - dovecot
+    - mariadb
+    - php-fpm

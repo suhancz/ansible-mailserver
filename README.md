@@ -14,7 +14,7 @@ Role Variables
     users:
       - name
         password
-
+    postfixadmin_password
 Example Playbook
 ----------------
 
