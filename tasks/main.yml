@@ -240,6 +240,12 @@
   set_fact:
     postfixadmin_password: "{{ postfixadmin_password | default(lookup('password', '/tmp/postfixadmin_password chars=ascii_letters,digits,punctuation')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/mysql_root_password chars=ascii_letters,digits,punctuation')) }}"
+- name: Make sure MariaDB is running
+  systemd:
+    name: mariadb
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Set MariaDB root password
   block:
     - name: Sets the MariaDB root password
