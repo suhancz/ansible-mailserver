@@ -1,8 +1,7 @@
 ansible-mailserver
 ==================
 
-Postifx and Dovecot on RPM-based distros
-
+Postifx and Dovecot on RPM-based distros - inspired by https://www.linuxbabe.com/redhat/run-your-own-email-server-centos-postfix-smtp-server
 
 Role Variables
 --------------
