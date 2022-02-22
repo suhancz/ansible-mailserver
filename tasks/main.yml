@@ -558,8 +558,8 @@
     state: present
     backup: yes
   loop:
-    - mailserver_domain
-    - custom_domains
+    - "{{ mailserver_domain }}"
+    - "{{ custom_domains }}"
 - name: Configure OpenDKIM trusted hosts
   lineinfile:
     regexp: '{{ item }}'
@@ -571,8 +571,8 @@
     state: present
     backup: yes
   loop:
-    - mailserver_domain
-    - custom_domains
+    - "{{ mailserver_domain }}"
+    - "{{ custom_domains }}"
 - name: Create OpenDKIM key directories
   file:
     state: directory
@@ -583,15 +583,15 @@
     recurse: yes
   loop:
     - ''
-    - mailserver_domain
-    - custom_domains
+    - "{{ mailserver_domain }}"
+    - "{{ custom_domains }}"
 - name: Create OpenDKIM key directories
   command: "opendkim-genkey -b 2048 -d {{ item }} -D /etc/opendkim/keys/{{ item }} -s 20220222 -v"
   args:
     creates: "/etc/opendkim/keys/{{ item }}/20220222.private"
   loop:
-    - mailserver_domain
-    - custom_domains
+    - "{{ mailserver_domain }}"
+    - "{{ custom_domains }}"
 - name: Ensure OpenDKIM key directory permissions
   file:
     state: directory
@@ -601,8 +601,8 @@
     recurse: yes
   loop:
     - ''
-    - mailserver_domain
-    - custom_domains
+    - "{{ mailserver_domain }}"
+    - "{{ custom_domains }}"
 - name: Add Postfix user to the OpenDKIM group
   user:
     name: postfix
@@ -626,5 +626,5 @@
   debug:
     msg: "{{lookup('file', '/etc/opendkim/' + item + '/20220222.txt') }}"
   loop:
-    - mailserver_domain
-    - custom_domains
+    - "{{ mailserver_domain }}"
+    - "{{ custom_domains }}"
