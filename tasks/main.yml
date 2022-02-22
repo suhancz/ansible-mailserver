@@ -46,6 +46,9 @@
       - php-cli
       - postfix-mysql
       - dovecot-mysql
+      - pypolicyd-spf
+      - opendkim
+      - perl-Getopt-Long
     state: present
 - name: Configure postfix
   command: 'postconf -e "{{ item }}"'
@@ -444,6 +447,29 @@
       virtual_minimum_uid = 2000
       virtual_uid_maps = static:2000
       virtual_gid_maps = static:2000
+      policyd-spf_time_limit = 3600
+      smtpd_recipient_restrictions =
+         permit_mynetworks,
+         permit_sasl_authenticated,
+         reject_unauth_destination,
+         check_policy_service unix:private/policyd-spf
+    backup: yes
+- name: Create policyd-spf group
+  group:
+    name: policyd-spf
+    state: present
+- name: Create policyd-spf user
+  user:
+    name: policyd-spf
+    group: policyd-spf
+    create_home: no
+    shell: /bin/false
+- name: Start SPF policy daemon with Postfix
+  blockinfile:
+    path: /etc/postfix/master.cf
+    block: |
+      policyd-spf  unix  -       n       n       -       0       spawn
+        user=policyd-spf argv=/usr/libexec/postfix/policyd-spf
     backup: yes
 - name: Clean postfix destination
   command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
