@@ -453,17 +453,12 @@
          permit_sasl_authenticated,
          reject_unauth_destination,
          check_policy_service unix:private/policyd-spf
+      # Milter configuration
+      milter_default_action = accept
+      milter_protocol = 6
+      smtpd_milters = inet:127.0.0.1:8891
+      non_smtpd_milters = $smtpd_milters
     backup: yes
-- name: Create policyd-spf group
-  group:
-    name: policyd-spf
-    state: present
-- name: Create policyd-spf user
-  user:
-    name: policyd-spf
-    group: policyd-spf
-    create_home: no
-    shell: /bin/false
 - name: Start SPF policy daemon with Postfix
   blockinfile:
     path: /etc/postfix/master.cf
@@ -485,6 +480,16 @@
     create_home: no
     system: yes
     uid: 2000
+- name: Create policyd-spf group
+  group:
+    name: policyd-spf
+    state: present
+- name: Create policyd-spf user
+  user:
+    name: policyd-spf
+    group: policyd-spf
+    create_home: no
+    shell: /bin/false
 - name: Create Postfix SQL directory
   file:
     path: /var/vmail/
@@ -524,6 +529,85 @@
   loop:
     - { comment: false, line: "!include auth-sql.conf.ext"}
     - { comment: true, line: "!include auth-system.conf.ext"}
+- name: Configure OpenDKIM
+  lineinfile:
+    regexp: '{{ item.key }}'
+    line: "{{ '#' if item.comment }}{{ item.key }}\t{{ item.value }}"
+    path: /etc/opendkim.conf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "Mode", value: "sv", comment: false }
+    - { key: 'ReportAddress', value: '"{{ mailserver_domain }} Postmaster" <postmaster@{{ mailserver_domain }}>', comment: false }
+    - { key: "KeyFile", value: "/etc/opendkim/keys/default.private", comment: true }
+    - { key: "KeyTable", value: "/etc/opendkim/KeyTable", comment: false }
+    - { key: "SigningTable", value: "refile:/etc/opendkim/SigningTable", comment: false }
+    - { key: "ExternalIgnoreList", value: "refile:/etc/opendkim/TrustedHosts", comment: false }
+    - { key: "InternalHosts", value: "refile:/etc/opendkim/TrustedHosts", comment: false }
+- name: Configure OpenDKIM key table
+  lineinfile:
+    regexp: '{{ item }}'
+    line: "20220222._domainkey.{{ item }}     {{ item }}:20220222:/etc/opendkim/keys/{{ item }}/20220222.private"
+    path: /etc/opendkim/KeyTable
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - mailserver_domain
+    - custom_domains
+- name: Configure OpenDKIM trusted hosts
+  lineinfile:
+    regexp: '{{ item }}'
+    line: "*.{{ item }}"
+    path: /etc/opendkim/TrustedHosts
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - mailserver_domain
+    - custom_domains
+- name: Create OpenDKIM key directories
+  file:
+    state: directory
+    path: "/etc/opendkim/keys/{{ item }}"
+    mode: u=rwX,og=rX
+    owner: opendkim
+    group: opendkim
+    recurse: yes
+  loop:
+    - ''
+    - mailserver_domain
+    - custom_domains
+- name: Create OpenDKIM key directories
+  command: "opendkim-genkey -b 2048 -d {{ item }} -D /etc/opendkim/keys/{{ item }} -s 20220222 -v"
+  args:
+    creates: "/etc/opendkim/keys/{{ item }}/20220222.private"
+  loop:
+    - mailserver_domain
+    - custom_domains
+- name: Ensure OpenDKIM key directory permissions
+state: directory
+  file:
+    path: "/etc/opendkim/keys/{{ item }}"
+    owner: opendkim
+    group: opendkim
+    recurse: yes
+  loop:
+    - ''
+    - mailserver_domain
+    - custom_domains
+- name: Add Postfix user to the OpenDKIM group
+  user:
+    name: postfix
+    groups: opendkim
+    append: yes
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"
@@ -537,3 +621,4 @@
     - dovecot
     - mariadb
     - php-fpm
+    - opendkim
