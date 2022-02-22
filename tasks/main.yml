@@ -622,4 +622,9 @@ state: directory
     - mariadb
     - php-fpm
     - opendkim
-# TODO: cat /etc/opendkim/keys/your-domain.com/20200308.txt
+- name: Display DKIM keys
+  debug:
+    msg: "{{lookup('file', '/etc/opendkim/' + item + '/20220222.txt') }}"
+  loop:
+    - mailserver_domain
+    - custom_domains
