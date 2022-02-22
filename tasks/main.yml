@@ -622,3 +622,4 @@ state: directory
     - mariadb
     - php-fpm
     - opendkim
+# TODO: cat /etc/opendkim/keys/your-domain.com/20200308.txt
