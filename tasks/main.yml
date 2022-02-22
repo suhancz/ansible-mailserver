@@ -593,8 +593,8 @@
     - mailserver_domain
     - custom_domains
 - name: Ensure OpenDKIM key directory permissions
-state: directory
   file:
+    state: directory
     path: "/etc/opendkim/keys/{{ item }}"
     owner: opendkim
     group: opendkim
