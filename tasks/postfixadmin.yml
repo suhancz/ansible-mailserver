@@ -1,0 +1,70 @@
+- name: Get latest postfixadmin version
+  block:
+    - name: Get URL from latest
+      uri:
+        url: https://github.com/postfixadmin/postfixadmin/releases/latest
+      register: postfixadmin_download_site
+    - name: Parse version
+      set_fact:
+        postfixadmin_version: "{{ postfixadmin_download_site.url | replace('https://github.com/postfixadmin/postfixadmin/releases/tag/postfixadmin-','') }}"
+- name: Unpack postfixadmin
+  unarchive:
+    src: "https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-{{ postfixadmin_version }}.tar.gz"
+    dest: /var/www/
+    remote_src: yes
+- name: Rename postfixadmin directory
+  command: "mv /var/www/postfixadmin-postfixadmin-{{ postfixadmin_version }} /var/www/postfixadmin"
+  args:
+    creates: /var/www/postfixadmin
+- name: Set up postfixadmin permissions
+  file:
+    path: /var/www/postfixadmin/templates_c
+    state: directory
+    setype: httpd_sys_rw_content_t
+    recurse: yes
+- name: Set postfixadmin ACLs
+  acl:
+    path: "{{ item.path }}"
+    entity: "{{ item.entity }}"
+    etype: "{{ item.etype }}"
+    permissions: "{{ item.permissions }}"
+    state: present
+    recursive: yes
+  loop:
+    - { path: "/var/www/postfixadmin/templates_c", entity: "apache", etype: "user", permissions: "rwx"}
+    - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
+    - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
+- name: Create postfixadmin DB
+  mysql_db:
+    name: postfixadmin
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Set up postfixadmin DB privileges
+  mysql_user:
+    name: postfixadmin
+    password: '{{ postfixadmin_password }}'
+    priv: 'postfixadmin.*:ALL,GRANT'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Generate PostfixAdmin PHP password
+  command: php -r 'echo password_hash("{{ postfixadmin_password }}", PASSWORD_DEFAULT);'
+  register: postfixadmin_setup_password
+- name: Create Postfix SQL directory
+  file:
+    path: /etc/postfix/sql/
+    state: directory
+    mode: u=rwX,og=rX
+    owner: root
+    group: root
+- name: Render config template
+  template:
+    src: postfixadmin.config.local.php.j2
+    dest: /var/www/postfixadmin/config.local.php
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes

@@ -1,0 +1,69 @@
+- name: Make sure MariaDB is running
+  systemd:
+    name: mariadb
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Set MariaDB root password
+  block:
+    - name: Set the MariaDB root password
+      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost
+      no_log: yes
+  rescue:
+    - name: Ensure the MariaDB root password
+      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost login_user=root login_password="{{ mysql_root_password }}"
+      no_log: yes
+- name: Delete anonymous MySQL server user for ansible_fqdn
+  mysql_user:
+    user: ""
+    host: "{{ ansible_fqdn }}"
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Delete anonymous MySQL server user for localhost
+  mysql_user:
+    user: ""
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secure the MySQL root user for IPV6 localhost (::1)
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: "::1"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secure the MySQL root user for IPV4 localhost (127.0.0.1)
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: 127.0.0.1
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secure the MySQL root user for localhost domain (localhost)
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secure the MySQL root user for server_hostname domain
+  mysql_user:
+    user: root
+    password: "{{ mysql_root_password }}"
+    host: "{{ ansible_fqdn }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Remove the MySQL test database
+  mysql_db:
+    db: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes

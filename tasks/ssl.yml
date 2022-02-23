@@ -1,0 +1,20 @@
+- name: Request Let's Encrypt certificates
+  command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ item }}"
+  args:
+    creates: "/etc/letsencrypt/live/{{ item }}"
+  loop:
+    - "{{ mailserver_hostname }}"
+    - "postfixadmin.{{ mailserver_domain }}"
+- name: Generate OpenSSL DHParam
+  openssl_dhparam:
+    path: /etc/dovecot/dh.pem
+    size: 4096
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+- name: Auto-renew certificates
+  cron:
+    name: certbot
+    special_time: daily
+    job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
