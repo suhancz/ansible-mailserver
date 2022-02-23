@@ -1,0 +1,121 @@
+- name: Open firewall
+  include: firewall.yml
+  vars:
+    port: "{{ item }}"
+  loop:
+    - imap
+    - imaps
+    - pop3
+    - pop3s
+- name: Automatically restart services
+  include: autorestart.yml
+  vars:
+    service: dovecot
+- name: Configure Dovecot protocols
+  lineinfile:
+    path: /etc/dovecot/dovecot.conf
+    regexp: '^protocols ='
+    line: 'protocols = imap pop3 lmtp'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+- name: Configure Dovecot Maildir
+  lineinfile:
+    path: /etc/dovecot/conf.d/10-mail.conf
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - {key: "mail_location", value: "maildir:~/Maildir"}
+    - {key: "mail_privileged_group", value: "mail"}
+- name: Configure Dovecot Authentication Mechanism
+  lineinfile:
+    path: /etc/dovecot/conf.d/10-auth.conf
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "disable_plaintext_auth", value: "yes" }
+    - { key: "auth_username_format", value: "%n" }
+    - { key: "auth_mechanisms", value: "plain login" }
+- name: Configure Dovecot SSL
+  lineinfile:
+    path: /etc/dovecot/conf.d/10-ssl.conf
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "ssl", value: "required" }
+    - { key: "ssl_cert", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem" }
+    - { key: "ssl_key", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem" }
+    - { key: "ssl_dh", value: "</etc/dovecot/dh.pem" }
+    - { key: "ssl_min_protocol", value: "TLSv1.2" }
+    - { key: "ssl_prefer_server_ciphers", value: "yes" }
+- name: Add Dovecot user to the mail group
+  user:
+    name: dovecot
+    groups: mail,apache
+    append: yes
+- name: Upload complex Dovecot configs
+  copy:
+    dest: "/etc/dovecot/conf.d/{{ item }}"
+    src: "dovecot.{{ item }}"
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  loop:
+    - 10-master.conf
+    - 15-mailboxes.conf
+- name: Render DB connection config template
+  template:
+    src: dovecot.dovecot-sql.conf.ext.j2
+    dest: /etc/dovecot/dovecot-sql.conf.ext
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+- name: Configure Dovecot to Use MySQL/MariaDB Database
+  lineinfile:
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    path: '{{ item.file }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_location", value: "maildir:~/Maildir" }
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_home", value: "/var/vmail/%d/%n" }
+    - { file: "/etc/dovecot/conf.d/10-mail.conf", key: "mail_privileged_group", value: "mail" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_username_format", value: "%u" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_debug", value: "yes" }
+    - { file: "/etc/dovecot/conf.d/10-auth.conf", key: "auth_debug_passwords", value: "yes" }
+- name: Configure Dovecot auth extensions
+  lineinfile:
+    regexp: '{{ item.line }}'
+    line: "{{ '#' if item.comment }}{{ item.line }}"
+    path: /etc/dovecot/conf.d/10-auth.conf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { comment: false, line: "!include auth-sql.conf.ext"}
+    - { comment: true, line: "!include auth-system.conf.ext"}

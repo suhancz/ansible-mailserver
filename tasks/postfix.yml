@@ -1,0 +1,107 @@
+- name: Open firewall
+  include: firewall.yml
+  vars:
+    port: "{{ item }}"
+  loop:
+    - smtp
+    - smtp-submission
+    - smtps
+- name: Set up automatic restart of services
+  include: autorestart.yml
+  vars:
+    service: postfix
+- name: Deploy complex Postfix configs
+  copy:
+    src: postfix.master.cf
+    dest: /etc/postfix/master.cf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+- name: Configure postfix
+  command: 'postconf -e "{{ item }}"'
+  loop:
+    - "inet_interfaces = all"
+    - "myhostname = {{ mailserver_hostname }}"
+    - "mydomain = {{ mailserver_domain }}"
+    - "myorigin = {{ mailserver_domain }}"
+    - "mydestination = {{ mailserver_domain }}, $myhostname, localhost.$mydomain, localhost"
+    - "message_size_limit = 52428800"
+    - "mailbox_size_limit = 0"
+    - "smtpd_tls_cert_file = /etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem"
+    - "smtpd_tls_key_file = /etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem"
+    - "smtpd_tls_loglevel = 1"
+    - "smtp_tls_loglevel = 1"
+- name: Configure main.cf
+  lineinfile:
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }} = {{ item.value }}'
+    path: /etc/postfix/main.cf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "smtpd_tls_mandatory_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "smtpd_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "smtp_tls_mandatory_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "smtp_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
+    - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
+    - { key: "smtputf8_enable", value: "no" }
+    - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
+- name: Configure virtual domains
+  blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      virtual_mailbox_domains = proxy:mysql:/etc/postfix/sql/mysql_virtual_domains_maps.cf
+      virtual_mailbox_maps =
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_mailbox_maps.cf,
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_mailbox_maps.cf
+      virtual_alias_maps =
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_maps.cf,
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_maps.cf,
+         proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_catchall_maps.cf
+      virtual_transport = lmtp:unix:private/dovecot-lmtp
+      virtual_mailbox_base = /var/vmail
+      virtual_minimum_uid = 2000
+      virtual_uid_maps = static:2000
+      virtual_gid_maps = static:2000
+- name: Configure SPF
+  blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      policyd-spf_time_limit = 3600
+      smtpd_recipient_restrictions =
+         permit_mynetworks,
+         permit_sasl_authenticated,
+         # reject_unauth_destination,
+         check_policy_service unix:private/policyd-spf
+- name: Configure Milter
+  blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      # Milter configuration
+      milter_default_action = accept
+      milter_protocol = 6
+      smtpd_milters = inet:127.0.0.1:8891
+      non_smtpd_milters = $smtpd_milters
+    backup: yes
+- name: Start SPF policy daemon with Postfix
+  blockinfile:
+    path: /etc/postfix/master.cf
+    block: |
+      policyd-spf  unix  -       n       n       -       0       spawn
+        user=policyd-spf argv=/usr/libexec/postfix/policyd-spf
+    backup: yes
+- name: Clean postfix destination
+  command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
+- name: Create directory for virtuals
+  file:
+    path: /var/vmail/
+    state: directory
+    mode: u=rwX,og=rX
+    owner: vmail
+    group: vmail
+    setype: mail_spool_t
+    recurse: yes

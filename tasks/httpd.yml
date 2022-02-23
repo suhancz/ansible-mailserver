@@ -1,0 +1,36 @@
+- name: Open firewall
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - http
+    - https
+- name: Set up SELinux rules
+  when: "{{ getenforce.stdout != 'Disabled' }}"
+  block:
+    - name: Set SELinux booleans
+      seboolean:
+        name: "{{ item }}"
+        state: yes
+        persistent: yes
+      loop:
+        - httpd_can_network_connect
+        - httpd_execmem
+    - name: Generate SELinux policy
+      shell: |
+        sepolicy generate --init /usr/sbin/httpd
+        echo 'dovecot_read_config(httpd_t)' >> httpd.te
+        ./httpd.sh
+        ausearch -m AVC -ts recent | audit2allow -R
+- name: Render web config templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf" }
+    - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/postfixadmin.{{ mailserver_domain }}.conf" }

@@ -1,0 +1,48 @@
+- name: Check SELinux status
+  shell: getenforce
+  register: getenforce
+- name: Set hostname
+  command: "hostnamectl set-hostname {{ mailserver_hostname }}"
+- name: Install packages
+  include: packages.yml
+- name: Set up mail aliases
+  lineinfile:
+    path: /etc/aliases
+    regexp: '^root: *{{ mailserver_admin_user }}'
+    line: 'root: {{ mailserver_admin_user }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+- name: Create OS users
+  user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
+    state: present
+  loop: "{{ users }}"
+  no_log: yes
+- name: Add vmail group
+  group:
+    name: vmail
+    system: yes
+    gid: 2000
+- name: Add vmail user
+  user:
+    name: vmail
+    group: vmail
+    create_home: no
+    system: yes
+    uid: 2000
+- name: Create policyd-spf group
+  group:
+    name: policyd-spf
+    state: present
+- name: Create policyd-spf user
+  user:
+    name: policyd-spf
+    group: policyd-spf
+    create_home: no
+    shell: /bin/false
+- name: Apply mail aliases
+  command: newaliases
