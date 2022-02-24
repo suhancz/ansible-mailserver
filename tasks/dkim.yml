@@ -1,3 +1,7 @@
+- name: Open firewall
+  include: firewall.yml
+  vars:
+    port: 8891/tcp
 - name: Configure OpenDKIM
   lineinfile:
     regexp: '{{ item.key }}'
