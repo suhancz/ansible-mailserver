@@ -1,4 +1,4 @@
-- name: Open firewall
+- name: "Open firewall for {{ port }}"
   firewalld:
     service: "{{ port }}"
     permanent: yes
