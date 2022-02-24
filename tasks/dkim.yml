@@ -42,7 +42,7 @@
   file:
     state: directory
     path: "/etc/opendkim/keys/{{ item }}"
-    mode: u=rwX,og=rX
+    mode: u=rwX,og-rwX
     owner: opendkim
     group: opendkim
     recurse: yes
