@@ -38,11 +38,22 @@
     state: present
     backup: yes
   loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Configure OpenDKIM signing table
+  lineinfile:
+    regexp: '{{ item }}'
+    line: "*.{{ item }}    20220222._domainkey.{{ item }}"
+    path: /etc/opendkim/SigningTable
+    mode: u=rw,o=r
+    owner: opendkim
+    group: opendkim
+    state: present
+    backup: yes
+  loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Create OpenDKIM key directories
   file:
     state: directory
     path: "/etc/opendkim/keys/{{ item }}"
-    mode: u=rwX,og=rX
+    mode: u=rwX,og-rwX
     owner: opendkim
     group: opendkim
     recurse: yes
