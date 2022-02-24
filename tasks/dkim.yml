@@ -45,7 +45,7 @@
 - name: Configure OpenDKIM signing table
   lineinfile:
     regexp: '{{ item }}'
-    line: "*.{{ item }}    20220222._domainkey.{{ item }}"
+    line: "*@{{ item }}    20220222._domainkey.{{ item }}"
     path: /etc/opendkim/SigningTable
     mode: u=rw,o=r
     owner: opendkim
