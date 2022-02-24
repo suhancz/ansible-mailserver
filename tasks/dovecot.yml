@@ -46,7 +46,6 @@
     backup: yes
   loop:
     - { key: "disable_plaintext_auth", value: "yes" }
-    - { key: "auth_username_format", value: "%n" }
     - { key: "auth_mechanisms", value: "plain login" }
 - name: Configure Dovecot SSL
   lineinfile:
