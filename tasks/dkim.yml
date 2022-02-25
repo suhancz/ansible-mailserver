@@ -1,3 +1,7 @@
+# - name: Open firewall
+#   include: firewall.yml
+#   vars:
+#     port: 8891/tcp
 - name: Configure OpenDKIM
   lineinfile:
     regexp: '{{ item.key }}'
@@ -16,10 +20,12 @@
     - { key: "SigningTable", value: "refile:/etc/opendkim/SigningTable", comment: false }
     - { key: "ExternalIgnoreList", value: "refile:/etc/opendkim/TrustedHosts", comment: false }
     - { key: "InternalHosts", value: "refile:/etc/opendkim/TrustedHosts", comment: false }
+    - { key: "Selector", value: "{{ dkim_selector }}", comment: false }
+    - { key: "RequireSafeKeys", value: "false", comment: false}
 - name: Configure OpenDKIM key table
   lineinfile:
     regexp: '{{ item }}'
-    line: "20220222._domainkey.{{ item }}     {{ item }}:20220222:/etc/opendkim/keys/{{ item }}/20220222.private"
+    line: "{{ dkim_selector }}._domainkey.{{ item }} {{ item }}:{{ dkim_selector }}:/etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.private"
     path: /etc/opendkim/KeyTable
     mode: u=rw,og=r
     owner: root
@@ -38,28 +44,38 @@
     state: present
     backup: yes
   loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Configure OpenDKIM signing table
+  lineinfile:
+    regexp: '{{ item }}'
+    line: "*@{{ item }} {{ dkim_selector }}._domainkey.{{ item }}"
+    path: /etc/opendkim/SigningTable
+    mode: u=rw,o=r
+    owner: opendkim
+    group: opendkim
+    state: present
+    backup: yes
+  loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Create OpenDKIM key directories
   file:
     state: directory
     path: "/etc/opendkim/keys/{{ item }}"
-    mode: u=rwX,og=rX
+    mode: u=rwX,og-rwX
     owner: opendkim
     group: opendkim
     recurse: yes
   loop: "{{ [''] + [mailserver_domain] + custom_domains }}"
 - name: Create OpenDKIM keys
-  command: "opendkim-genkey -b 2048 -d {{ item }} -D /etc/opendkim/keys/{{ item }} -s 20220222 -v"
+  command: "opendkim-genkey -b 2048 -d {{ item }} -D /etc/opendkim/keys/{{ item }} -s {{ dkim_selector }} -v"
   args:
-    creates: "/etc/opendkim/keys/{{ item }}/20220222.private"
+    creates: "/etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.private"
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Ensure OpenDKIM key directory permissions
   file:
     state: directory
-    path: "/etc/opendkim/keys/{{ item }}"
+    path: /etc/opendkim
     owner: opendkim
     group: opendkim
     recurse: yes
-  loop: "{{ [''] + [mailserver_domain] + custom_domains }}"
 - name: Add Postfix user to the OpenDKIM group
   user:
     name: postfix

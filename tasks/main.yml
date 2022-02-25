@@ -39,7 +39,7 @@
     - php-fpm
     - opendkim
 - name: Read DKIM keys
-  command: "cat /etc/opendkim/keys/{{ item }}/20220222.txt"
+  command: "cat /etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.txt"
   loop: "{{ [mailserver_domain] + custom_domains }}"
   register: dkim_keys
 - name: Display DKIM keys

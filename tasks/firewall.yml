@@ -1,5 +1,12 @@
-- name: Open firewall
+- name: "Open firewall for numeric port {{ port }}"
+  firewalld:
+    port : "{{ port }}"
+    permanent: yes
+    state: enabled
+  when: port.split('/')[0] is regex("^[0-9]+$")
+- name: "Open firewall for service {{ port }}"
   firewalld:
     service: "{{ port }}"
     permanent: yes
     state: enabled
+  when: port.split('/')[0] is not regex("^[0-9]+$")
