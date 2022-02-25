@@ -5,3 +5,4 @@ undeliverable_exceptions:
   - mailserver_domain
 custom_domains:
   - mailserver_domain
+dkim_selector: 20220222
