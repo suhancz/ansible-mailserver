@@ -1,7 +1,7 @@
-- name: Open firewall
-  include: firewall.yml
-  vars:
-    port: 8891/tcp
+# - name: Open firewall
+#   include: firewall.yml
+#   vars:
+#     port: 8891/tcp
 - name: Configure OpenDKIM
   lineinfile:
     regexp: '{{ item.key }}'
@@ -70,11 +70,10 @@
 - name: Ensure OpenDKIM key directory permissions
   file:
     state: directory
-    path: "/etc/opendkim/keys/{{ item }}"
+    path: /etc/opendkim
     owner: opendkim
     group: opendkim
     recurse: yes
-  loop: "{{ [''] + [mailserver_domain] + custom_domains }}"
 - name: Add Postfix user to the OpenDKIM group
   user:
     name: postfix
