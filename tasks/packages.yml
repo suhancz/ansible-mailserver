@@ -45,4 +45,5 @@
       - pypolicyd-spf
       - opendkim
       - perl-Getopt-Long
+      - opendmarc
     state: present
