@@ -46,4 +46,6 @@
       - opendkim
       - perl-Getopt-Long
       - opendmarc
+      - bind-utils
+      - postgrey
     state: present

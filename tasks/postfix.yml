@@ -67,7 +67,7 @@
       virtual_minimum_uid = 2000
       virtual_uid_maps = static:2000
       virtual_gid_maps = static:2000
-- name: Configure SPF
+- name: Configure SMTP recipient restrictions
   blockinfile:
     path: /etc/postfix/main.cf
     block: |
@@ -77,6 +77,7 @@
          permit_sasl_authenticated,
          # reject_unauth_destination,
          check_policy_service unix:private/policyd-spf
+         check_policy_service unix:postgrey/socket
 - name: Configure Milter
   blockinfile:
     path: /etc/postfix/main.cf
@@ -93,6 +94,61 @@
     block: |
       policyd-spf  unix  -       n       n       -       0       spawn
         user=policyd-spf argv=/usr/libexec/postfix/policyd-spf
+    backup: yes
+- name: Configure sender restrictions
+  blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      smtpd_sender_restrictions =
+         permit_mynetworks
+         permit_sasl_authenticated
+         reject_unknown_sender_domain
+         reject_unknown_reverse_client_hostname
+         reject_unknown_client_hostname
+- name: Configure HELO/EHLO restrictions
+  blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      smtpd_helo_required = yes
+      smtpd_helo_restrictions =
+         permit_mynetworks
+         permit_sasl_authenticated
+         check_helo_access hash:/etc/postfix/helo_access
+         reject_invalid_helo_hostname
+         reject_non_fqdn_helo_hostname
+         reject_unknown_helo_hostname
+- name: Create HELO access whitelist
+  lineinfile:
+    regexp: '^{{ item.key }} = '
+    line: '{{ item.key }}\t{{ item.value }}'
+    path: /etc/postfix/helo_access
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop: "{{ helo_access }}"
+- name: Generate HELO access database
+  command: postmap /etc/postfix/helo_access
+- name: Set Postgrey whitelist
+  lineinfile:
+    line: '{{ item }}'
+    path: /etc/postfix/postgrey_whitelist_clients
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop: "{{ postgrey_whitelist_clients }}"
+- name: Set POSTGREY_DELAY to 1
+  lineinfile:
+    regex: '^POSTGREY_DELAY='
+    line: 'POSTGREY_DELAY="--delay=1"'
+    path: /etc/sysconfig/postgrey
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
     backup: yes
 - name: Clean postfix destination
   command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'

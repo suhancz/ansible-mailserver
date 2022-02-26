@@ -6,3 +6,11 @@ undeliverable_exceptions:
 custom_domains:
   - mailserver_domain
 dkim_selector: 20220222
+helo_access:
+  - { key: "optimus-webapi-prod-2.localdomain", value: "OK"}
+  - { key: "va-massmail-02.rakutenmarketing.com", value: "OK"}
+postgrey_whitelist_clients:
+  - facebook.com
+  - bounce.twitter.com
+  - blogger.com
+  - email.medium.com
