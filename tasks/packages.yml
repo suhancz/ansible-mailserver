@@ -48,4 +48,7 @@
       - opendmarc
       - bind-utils
       - postgrey
+      - postfix-perl-scripts
+      - mutt
+      - bind
     state: present

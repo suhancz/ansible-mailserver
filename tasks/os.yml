@@ -46,3 +46,9 @@
     shell: /bin/false
 - name: Apply mail aliases
   command: newaliases
+- name: Set up cron mailto
+  cron:
+    backup: yes
+    env: yes
+    name: MAILTO
+    job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"

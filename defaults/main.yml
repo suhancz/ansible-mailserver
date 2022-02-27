@@ -14,3 +14,5 @@ postgrey_whitelist_clients:
   - bounce.twitter.com
   - blogger.com
   - email.medium.com
+rbl_override:
+  - { key: "verifier.port25.com", value: "OK" }

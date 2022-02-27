@@ -78,6 +78,13 @@
          # reject_unauth_destination,
          check_policy_service unix:private/policyd-spf
          check_policy_service unix:postgrey/socket
+         check_client_access hash:/etc/postfix/rbl_override
+         reject_rhsbl_helo dbl.spamhaus.org
+         reject_rhsbl_reverse_client dbl.spamhaus.org
+         reject_rhsbl_sender dbl.spamhaus.org
+         permit_dnswl_client list.dnswl.org=127.0.[0..255].[1..3]
+         permit_dnswl_client swl.spamhaus.org
+         reject_rbl_client zen.spamhaus.org
 - name: Configure Milter
   blockinfile:
     path: /etc/postfix/main.cf
@@ -117,19 +124,38 @@
          reject_invalid_helo_hostname
          reject_non_fqdn_helo_hostname
          reject_unknown_helo_hostname
-- name: Create HELO access whitelist
-  lineinfile:
-    regexp: '^{{ item.key }} = '
-    line: '{{ item.key }}\t{{ item.value }}'
-    path: /etc/postfix/helo_access
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    state: present
-    backup: yes
-  loop: "{{ helo_access }}"
-- name: Generate HELO access database
-  command: postmap /etc/postfix/helo_access
+- name: Set up HELO access whitelist
+  block:
+    - name: Create HELO access whitelist
+      lineinfile:
+        regexp: '^{{ item.key }} = '
+        line: '{{ item.key }}\t{{ item.value }}'
+        path: /etc/postfix/helo_access
+        mode: u=rw,og=r
+        owner: root
+        group: root
+        state: present
+        backup: yes
+      loop: "{{ helo_access }}"
+    - name: Generate HELO access database
+      command: postmap /etc/postfix/helo_access
+  when: helo_access is defined
+- name: Set up RBL whitelist
+  block:
+    - name: Create RBL whitelist
+      lineinfile:
+        regexp: '^{{ item.key }} = '
+        line: '{{ item.key }}\t{{ item.value }}'
+        path: /etc/postfix/rbl_override
+        mode: u=rw,og=r
+        owner: root
+        group: root
+        state: present
+        backup: yes
+      loop: "{{ rbl_override }}"
+    - name: Generate RBL database
+      command: postmap /etc/postfix/rbl_override
+  when: rbl_override is defined
 - name: Set Postgrey whitelist
   lineinfile:
     line: '{{ item }}'
@@ -161,3 +187,11 @@
     group: vmail
     setype: mail_spool_t
     recurse: yes
+- name: Generate daily Postfix log report
+  cron:
+    name: "Generate daily Postfix log report"
+    backup: yes
+    hour: 4
+    job: "/usr/sbin/pflogsumm -d yesterday /var/log/maillog --problems-first --rej-add-from --verbose-msg-detail -q"
+    minute: 0
+    insertafter: MAILTO
