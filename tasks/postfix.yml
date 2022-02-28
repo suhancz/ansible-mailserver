@@ -53,6 +53,7 @@
 - name: Configure virtual domains
   blockinfile:
     path: /etc/postfix/main.cf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK virtual domains"
     block: |
       virtual_mailbox_domains = proxy:mysql:/etc/postfix/sql/mysql_virtual_domains_maps.cf
       virtual_mailbox_maps =
@@ -70,12 +71,13 @@
 - name: Configure SMTP recipient restrictions
   blockinfile:
     path: /etc/postfix/main.cf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK SMTP recipient restrictions"
     block: |
       policyd-spf_time_limit = 3600
       smtpd_recipient_restrictions =
          permit_mynetworks,
          permit_sasl_authenticated,
-         # reject_unauth_destination,
+         reject_unauth_destination,
          check_policy_service unix:private/policyd-spf
          check_policy_service unix:postgrey/socket
          check_client_access hash:/etc/postfix/rbl_override
@@ -88,6 +90,7 @@
 - name: Configure Milter
   blockinfile:
     path: /etc/postfix/main.cf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Milter"
     block: |
       # Milter configuration
       milter_default_action = accept
@@ -98,6 +101,7 @@
 - name: Start SPF policy daemon with Postfix
   blockinfile:
     path: /etc/postfix/master.cf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK SPF policy"
     block: |
       policyd-spf  unix  -       n       n       -       0       spawn
         user=policyd-spf argv=/usr/libexec/postfix/policyd-spf
@@ -105,6 +109,7 @@
 - name: Configure sender restrictions
   blockinfile:
     path: /etc/postfix/main.cf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK sender restrictions"
     block: |
       smtpd_sender_restrictions =
          permit_mynetworks
@@ -114,8 +119,10 @@
          reject_unknown_client_hostname
 - name: Configure HELO/EHLO restrictions
   blockinfile:
+    marker: "# {mark} ANSIBLE MANAGED BLOCK HELO/EHLO restrictions"
     path: /etc/postfix/main.cf
     block: |
+      smtpd_discard_ehlo_keywords = ''
       smtpd_helo_required = yes
       smtpd_helo_restrictions =
          permit_mynetworks
@@ -136,6 +143,7 @@
         group: root
         state: present
         backup: yes
+        create: yes
       loop: "{{ helo_access }}"
     - name: Generate HELO access database
       command: postmap /etc/postfix/helo_access
@@ -152,6 +160,7 @@
         group: root
         state: present
         backup: yes
+        create: yes
       loop: "{{ rbl_override }}"
     - name: Generate RBL database
       command: postmap /etc/postfix/rbl_override
@@ -194,4 +203,3 @@
     hour: 4
     job: "/usr/sbin/pflogsumm -d yesterday /var/log/maillog --problems-first --rej-add-from --verbose-msg-detail -q"
     minute: 0
-    insertafter: MAILTO
