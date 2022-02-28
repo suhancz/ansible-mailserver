@@ -51,4 +51,6 @@
       - postfix-perl-scripts
       - mutt
       - bind
+      - NetworkManager-libnm
+      - nm-connection-editor
     state: present

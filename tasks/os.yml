@@ -52,3 +52,12 @@
     env: yes
     name: MAILTO
     job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
+- name: Configure local DNS cache
+  nmcli:
+    conn_name: ens192
+    dns4:
+      - 127.0.0.1
+      - 8.8.8.8
+      - 1.1.1.1
+    state: present
+    type: ethernet
