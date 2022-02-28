@@ -18,3 +18,4 @@
     name: certbot
     special_time: daily
     job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
+    backup: yes
