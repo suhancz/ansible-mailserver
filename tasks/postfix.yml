@@ -10,7 +10,7 @@
   include: autorestart.yml
   vars:
     service: postfix
-- name: Deploy complex Postfix configs
+- name: Deploy Postfix master config
   copy:
     src: postfix.master.cf
     dest: /etc/postfix/master.cf
@@ -95,7 +95,7 @@
       # Milter configuration
       milter_default_action = accept
       milter_protocol = 6
-      smtpd_milters = inet:127.0.0.1:8891
+      smtpd_milters = inet:127.0.0.1:8891,inet:127.0.0.1:8893,unix:/run/spamass-milter/spamass-milter.sock
       non_smtpd_milters = $smtpd_milters
     backup: yes
 - name: Start SPF policy daemon with Postfix
@@ -135,8 +135,8 @@
   block:
     - name: Create HELO access whitelist
       lineinfile:
-        regexp: '^{{ item.key }} = '
-        line: '{{ item.key }}\t{{ item.value }}'
+        regexp: "\b{{ item.key }}\b"
+        line: '{{ item.key }}    {{ item.value }}'
         path: /etc/postfix/helo_access
         mode: u=rw,og=r
         owner: root
@@ -152,8 +152,8 @@
   block:
     - name: Create RBL whitelist
       lineinfile:
-        regexp: '^{{ item.key }} = '
-        line: '{{ item.key }}\t{{ item.value }}'
+        regexp: "\b{{ item.key }}\b"
+        line: '{{ item.key }}    {{ item.value }}'
         path: /etc/postfix/rbl_override
         mode: u=rw,og=r
         owner: root

@@ -16,3 +16,89 @@ postgrey_whitelist_clients:
   - email.medium.com
 rbl_override:
   - { key: "verifier.port25.com", value: "OK" }
+spamassassin_rules:
+  - { type: "score", key: "MISSING_FROM", value: "5.0"}
+  - { type: "score", key: "MISSING_DATE", value: "5.0"}
+  - { type: "score", key: "MISSING_HEADERS", value: "3.0"}
+  - { type: "score", key: "PDS_FROM_2_EMAILS", value: "3.0"}
+  - { type: "score", key: "EMPTY_MESSAGE", value: "5.0"}
+  - { type: "score", key: "FREEMAIL_DISPTO", value: "2.0"}
+  - { type: "score", key: "FREEMAIL_FORGED_REPLYTO", value: "3.5"}
+  - { type: "score", key: "DKIM_ADSP_NXDOMAIN", value: "5.0"}
+  - { type: "score", key: "FORGED_GMAIL_RCVD", value: "2.5"}
+  - { type: "header", key: "FROM_SAME_AS_TO", value: 'ALL=~/\nFrom: ([^\n]+)\nTo: \1/sm'}
+  - { type: "describe", key: "FROM_SAME_AS_TO", value: "From address is the same as To address."}
+  - { type: "score", key: "FROM_SAME_AS_TO", value: "2.0"}
+  - { type: "header", key: "EMPTY_RETURN_PATH", value: "ALL =~ /<>/i"}
+  - { type: "describe", key: "EMPTY_RETURN_PATH", value: "empty address in the Return Path header."}
+  - { type: "score", key: "EMPTY_RETURN_PATH", value: "3.0"}
+  - { type: "header", key: "CUSTOM_DMARC_FAIL", value: "Authentication-Results =~ /dmarc=fail/"}
+  - { type: "describe", key: "CUSTOM_DMARC_FAIL", value: "This email failed DMARC check"}
+  - { type: "score", key: "CUSTOM_DMARC_FAIL", value: "3.0"}
+  - type: "body"
+    key: "BE_POLITE"
+    value: >
+      /(hi|hello|dear) (
+      {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
+      {%- for user in users|default([]) %}
+      {%- set mail_users = mail_users.append( user['name'] ) %}
+      {%- endfor %}
+      {{- mail_users|join('|') -}}
+      )@(
+      {%- set domains = [mailserver_domain] %}
+      {%- for domain in custom_domains|default([]) %}
+      {%- set domains = domains.append( domain ) %}
+      {%- endfor %}
+      {{- domains|join('|') -}}
+      )/i
+  - { type: "describe", key: "BE_POLITE", value: "This email doesn't use a proper name for the recipient" }
+  - { type: "score", key: "BE_POLITE", value: "5.0" }
+  - { type: "body", key: "GOOD_EMAIL", value: "/(debian|ubuntu|linux mint|centos|red hat|RHEL|OpenSUSE|Fedora|Arch Linux|Raspberry Pi|Kali Linux)/i" }
+  - { type: "describe", key: "GOOD_EMAIL", value: "I don't think spammer would include these words in the email body." }
+  - { type: "score", key: "GOOD_EMAIL", value: "-4.0" }
+  - { type: "body", key: "BOUNCE_MSG", value: "/(Undelivered Mail Returned to Sender|Undeliverable|Auto-Reply|Automatic reply)/i" }
+  - { type: "describe", key: "BOUNCE_MSG", value: "Undelivered mail notifications or auto-reply messages" }
+  - { type: "score", key: "BOUNCE_MSG", value: "-1.5" }
+  - { type: "body", key: "__RESUME", value: "/(C.V|Resume)/i" }
+  - { type: "meta", key: "RESUME_VIRUS", value: "(__RESUME && __MIME_BASE64)" }
+  - { type: "describe", key: "RESUME_VIRUS", value: "The attachment contains virus." }
+  - { type: "score", key: "RESUME_VIRUS", value: "5.5" }
+  - { type: "rawbody", key: "__MIME_BASE64", value: "eval:check_for_mime('mime_base64_count')" }
+  - { type: "describe", key: "__MIME_BASE64", value: "Includes a base64 attachment" }
+  - { type: "header", key: "__AT_IN_FROM", value: 'From =~ /\@/' }
+  - { type: "meta", key: "NO_AT_IN_FROM", value: "!__AT_IN_FROM" }
+  - { type: "score", key: "NO_AT_IN_FROM", value: "4.0" }
+  - { type: "header", key: "__DOT_IN_FROM", value: 'From =~ /\./' }
+  - { type: "meta", key: "NO_DOT_IN_FROM", value: "!__DOT_IN_FROM" }
+  - { type: "score", key: "NO_DOT_IN_FROM", value: "4.0" }
+  - { type: "allow_user_rules", key: "1", value: "# Allow user rules"}
+  - type: "header"
+    key: "SUBJECT_SPAM"
+    value: >
+      Subject =~ /(
+      {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
+      {%- for user in users|default([]) %}
+      {%- set mail_users = mail_users.append( user['name'] ) %}
+      {%- endfor %}
+      {{- mail_users|join('|') -}}
+      )@(
+      {%- set domains = [mailserver_domain] %}
+      {%- for domain in custom_domains|default([]) %}
+      {%- set domains = domains.append( domain ) %}
+      {%- endfor %}
+      {{- domains|join('|') -}}
+      )/i
+  - { type: "describe", key: "SUBJECT_SPAM", value: "Subject contains my email address."}
+  - { type: "score", key: "SUBJECT_SPAM", value: "4.0" }
+  - type: "header"
+    key: "__DOMAIN_IN_TO"
+    value: >
+      To =~ /(
+      {%- set domains = [mailserver_domain] %}
+      {%- for domain in custom_domains|default([]) %}
+      {%- set domains = domains.append( domain ) %}
+      {%- endfor %}
+      {{- domains|join('|') -}}
+      )/
+  - { type: "meta", key: "NO_DOMAIN_IN_TO", value: "!__DOMAIN_IN_TO" }
+  - { type: "score", key: "NO_DOMAIN_IN_TO", value: "3.0" }

@@ -60,7 +60,7 @@
     mode: u=rwX,og=rX
     owner: root
     group: root
-- name: Render config template
+- name: Render PostfixAdmin config template
   template:
     src: postfixadmin.config.local.php.j2
     dest: /var/www/postfixadmin/config.local.php

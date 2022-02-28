@@ -1,0 +1,25 @@
+- name: Configure OpenDMARC
+  lineinfile:
+    regexp: '\b{{ item.key }}\b'
+    line: "{{ '#' if item.comment }}{{ item.key }}    {{ item.value }}"
+    path: /etc/opendmarc.conf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "AuthservID", value: "OpenDMARC", comment: false }
+    - key: "TrustedAuthservIDs"
+      value: >
+        {%- set domains = [mailserver_domain] %}
+        {%- for domain in custom_domains|default([]) %}
+        {%- set domains = domains.append( domain ) %}
+        {%- endfor %}
+        {{- domains|join(',') -}}
+      comment: false
+    - { key: "IgnoreAuthenticatedClients", value: "true", comment: false }
+    - { key: "RejectFailures", value: "true", comment: false }
+    - { key: "RequiredHeaders", value: "true", comment: false }
+    - { key: "SPFIgnoreResults", value: "false", comment: false }
+    - { key: "SPFSelfValidate", value: "true", comment: false }

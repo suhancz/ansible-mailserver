@@ -24,6 +24,10 @@
   include: postfixadmin.yml
 - name: Set up DKIM
   include: dkim.yml
+- name: Set up DMARC
+  include: dmarc.yml
+- name: Set up SPAMAssassin
+  include: spamassassin.yml
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"
@@ -38,9 +42,12 @@
     - mariadb
     - php-fpm
     - opendkim
+    - opendmarc
     - postgrey
     - named
     - NetworkManager
+    - spamassassin
+    - spamass-milter
 - name: Read DKIM keys
   command: "cat /etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.txt"
   loop: "{{ [mailserver_domain] + custom_domains }}"
