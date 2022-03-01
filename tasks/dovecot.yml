@@ -86,6 +86,9 @@
   loop:
     - 10-master.conf
     - 15-mailboxes.conf
+    - 15-lda.conf
+    - 20-lmtp.conf
+    - 90-sieve.conf
 - name: Render DB connection config template
   template:
     src: dovecot.dovecot-sql.conf.ext.j2

@@ -53,4 +53,7 @@
       - bind
       - NetworkManager-libnm
       - nm-connection-editor
+      - spamassassin
+      - spamass-milter
+      - dovecot-pigeonhole
     state: present
