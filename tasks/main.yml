@@ -28,6 +28,8 @@
   include: dmarc.yml
 - name: Set up SPAMAssassin
   include: spamassassin.yml
+- name: Set up Horde
+  include: horde.yml
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"

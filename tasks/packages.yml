@@ -1,4 +1,8 @@
-- name: "Set up Remi repository"
+- name: Set up ELRepo
+  dnf:
+    name: https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm
+    disable_gpg_check: yes
+- name: Set up Remi repository
   dnf:
     name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
     disable_gpg_check: yes
@@ -56,4 +60,16 @@
       - spamassassin
       - spamass-milter
       - dovecot-pigeonhole
+      - php-devel
+      # - php56-php-devel
+      - php-pear
+      - php56-php-channel-horde
+      - ImageMagick
+      - php-pecl-imagick
+      - php56-php-pecl-imagick
+      - aspell
+      - memcached
+      - php56-php-pecl-memcache
+      - php-pecl-memcache
+      - php-pecl-http
     state: present

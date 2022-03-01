@@ -1,0 +1,19 @@
+- name: Update PEAR repo
+  command: pear channel-update pear.php.net
+- name: Get source for Horde packages
+  block:
+    - name: Refresh Horde PEAR repo
+      command: pear channel-update pear.horde.org
+  rescue:
+    - name: Enable the Horde PEAR repository
+      command: pear channel-discover pear.horde.org
+- name: Install Horde
+  pear:
+    name: "{{ item }}"
+    state: present
+  loop:
+    # - pear/Net_FTP, pear/Cache, pear/DB, pear/SOAP, pear/XML_Serializer
+    # - Services_Weather
+    - Net_DNS2, File_Fstab, http, horde/horde_role, horde/horde, horde/horde_lz4
+    - pecl/memcache
+    - pecl/imagick
