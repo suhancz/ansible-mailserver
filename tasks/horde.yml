@@ -23,3 +23,9 @@
     - Net_DNS2, File_Fstab, http, horde/horde, horde/horde_lz4
     - pecl/memcache
     - pecl/imagick
+- name: Enable Horde
+  copy:
+    src: /var/www/html/horde/config/conf.php.dist
+    dest: /var/www/html/horde/config/conf.php
+    remote_src: yes
+    backup: yes
