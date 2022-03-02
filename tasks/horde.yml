@@ -7,13 +7,19 @@
   rescue:
     - name: Enable the Horde PEAR repository
       command: pear channel-discover pear.horde.org
-- name: Install Horde
+- name: Install Horde role
+  pear:
+    name: horde/horde_role
+    state: present
+- name: Set Horde install directory
+  shell: 'echo /var/www/html/horde | pear run-scripts horde/horde_role'
+- name: Install Horde extensions
   pear:
     name: "{{ item }}"
     state: present
   loop:
-    # - pear/Net_FTP, pear/Cache, pear/DB, pear/SOAP, pear/XML_Serializer
-    # - Services_Weather
-    - Net_DNS2, File_Fstab, http, horde/horde_role, horde/horde, horde/horde_lz4
+    - pear/Net_FTP, pear/Cache, pear/DB, pear/SOAP-beta, pear/XML_Serializer-beta
+    # - pear/HTTP_Request, pear/DB, Services_Weather
+    - Net_DNS2, File_Fstab, http, horde/horde, horde/horde_lz4
     - pecl/memcache
     - pecl/imagick

@@ -61,9 +61,11 @@
       - spamass-milter
       - dovecot-pigeonhole
       - php-devel
-      # - php56-php-devel
+      - php74-php-devel
       - php-pear
       - php56-php-channel-horde
+      # - php-horde-horde-lz4
+      - php56-php-horde-horde-lz4
       - ImageMagick
       - php-pecl-imagick
       - php56-php-pecl-imagick
@@ -72,4 +74,5 @@
       - php56-php-pecl-memcache
       - php-pecl-memcache
       - php-pecl-http
-    state: present
+      - mod_ssl
+    state: latest
