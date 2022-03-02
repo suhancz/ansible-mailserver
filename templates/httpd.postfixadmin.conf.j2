@@ -1,5 +1,7 @@
 <VirtualHost *:80>
   ServerName postfixadmin.{{ mailserver_domain }}
+  ServerAlias {% for custom_domain in custom_domains %}postfixadmin.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+
   DocumentRoot /var/www/postfixadmin/public/
 
   ErrorLog /var/log/httpd/postfixadmin_error.log

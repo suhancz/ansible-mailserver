@@ -32,5 +32,5 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf" }
-    - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/postfixadmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.conf" }
+    - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
