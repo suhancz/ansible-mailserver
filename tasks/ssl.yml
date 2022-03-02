@@ -1,5 +1,5 @@
 - name: Request Let's Encrypt certificates
-  command: "certbot --apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ item }} --noninteractive --redirect"
+  command: "certbot --apache --agree-tos --staple-ocsp --email {{ ssl_admin_email }} -d {{ item }} --noninteractive --redirect"
   args:
     creates: "/etc/letsencrypt/live/{{ item }}"
   loop:

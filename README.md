@@ -8,7 +8,7 @@ Role Variables
 
     mailserver_hostname
     mailserver_domain
-    mailserver_admin_email
+    ssl_admin_email
     mailserver_admin_user
     users:
       - name
