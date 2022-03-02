@@ -61,5 +61,11 @@
       - 1.1.1.1
     state: present
     type: ethernet
+- name: Make sure BIND is running
+  systemd:
+    name: named
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Reload DNS cache
   command: rndc reload
