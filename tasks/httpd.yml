@@ -34,3 +34,9 @@
   loop:
     - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.conf" }
     - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
+- name: Make sure Apache is running
+  systemd:
+    name: httpd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
