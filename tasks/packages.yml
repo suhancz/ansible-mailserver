@@ -75,4 +75,9 @@
       - php-pecl-memcache
       - php-pecl-http
       - mod_ssl
+      - php-bcmath
+      - php56-php-bcmath
+      - php-ldap
+      - php56-php-ldap
+      - libmemcached
     state: latest

@@ -2,8 +2,11 @@
   command: pear channel-update pear.php.net
 - name: Get source for Horde packages
   block:
-    - name: Refresh Horde PEAR repo
-      command: pear channel-update pear.horde.org
+    - name: Refresh PEAR repos
+      command: "pear channel-update {{ item }}"
+      loop:
+        - pear.horde.org
+        - pecl.php.net
   rescue:
     - name: Enable the Horde PEAR repository
       command: pear channel-discover pear.horde.org
@@ -16,13 +19,20 @@
 - name: Install Horde extensions
   pear:
     name: "{{ item }}"
-    state: present
+    state: latest
   loop:
     - pear/Net_FTP, pear/Cache, pear/DB, pear/SOAP-beta, pear/XML_Serializer-beta
     # - pear/HTTP_Request, pear/DB, Services_Weather
     - Net_DNS2, File_Fstab, http, horde/horde, horde/horde_lz4
-    - pecl/memcache
+    # - pecl/memcache
     - pecl/imagick
+    - horde/horde_core-beta
+    # - horde/Horde_Backup
+    - horde/Horde_Util
+    # - horde/Horde_Sql-beta
+    - horde/webmail
+    # - horde/imp
+    - horde/ansel, horde/content, horde/groupware, horde/Horde_ActiveSync, horde/Horde_Crypt, horde/Horde_Imap_Client, horde/Horde_Ldap, horde/Horde_Mail_Autoconfig, horde/Horde_ManageSieve, horde/Horde_Mapi, horde/Horde_Mongo, horde/Horde_Oauth, horde/Horde_OpenXchange, horde/Horde_Pdf, horde/Horde_Queue, horde/Horde_Routes, horde/Horde_Scheduler, horde/Horde_Service_Facebook, horde/Horde_Service_Gravatar, horde/Horde_Service_Twitter, horde/Horde_Service_UrlShortener, horde/Horde_Service_Weather, horde/Horde_Smtp, horde/Horde_Socket_Client, horde/Horde_SpellChecker, horde/Horde_SyncMl, horde/Horde_Timezone, horde/Horde_Yaml, horde/ingo, horde/kronolith, horde/mnemo, horde/nag, horde/passwd, horde/sesha-beta, horde/trean, horde/turba, horde/wicked
 - name: Enable Horde
   copy:
     src: /var/www/html/horde/config/conf.php.dist
