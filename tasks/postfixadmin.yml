@@ -24,16 +24,12 @@
     recurse: yes
 - name: Set postfixadmin ACLs
   acl:
-    path: "{{ item.path }}"
-    entity: "{{ item.entity }}"
-    etype: "{{ item.etype }}"
-    permissions: "{{ item.permissions }}"
+    path: /var/www/postfixadmin/templates_c
+    entity: apache
+    etype: user
+    permissions: rx
     state: present
     recursive: yes
-  loop:
-    - { path: "/var/www/postfixadmin/templates_c", entity: "apache", etype: "user", permissions: "rwx"}
-    - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
-    - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
 - name: Create postfixadmin DB
   mysql_db:
     name: postfixadmin

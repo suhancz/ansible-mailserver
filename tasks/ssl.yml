@@ -2,6 +2,17 @@
   command: 'certbot --apache --agree-tos --staple-ocsp --email {{ ssl_admin_email }} -d {{ ([mailserver_domain] + [mailserver_hostname] + ["postfixadmin." ~ mailserver_domain] + custom_domains)|join(",") }} --noninteractive --redirect --hsts{{ " --test-cert" if production is not defined or not production }}'
   args:
     creates: "/etc/letsencrypt/live/{{ mailserver_hostname }}"
+- name: Allow Apache to reach letsencrypt keys
+  acl:
+    path: "{{ item.path }}"
+    entity: "{{ item.entity }}"
+    etype: "{{ item.etype }}"
+    permissions: "{{ item.permissions }}"
+    state: present
+    recursive: yes
+  loop:
+    - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
+    - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
 - name: Generate OpenSSL DHParam
   openssl_dhparam:
     path: /etc/dovecot/dh.pem
