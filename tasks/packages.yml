@@ -10,6 +10,25 @@
   command: dnf module reset php -y
 - name: Enable the Remi PHP DNF module
   command: dnf module enable php:remi-7.4 -y
+- name: Enable the ElasticSearch repository
+  blockinfile:
+    path: /etc/yum.repos.d/elastic.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK ElasticSearch 8.x repository"
+    block: |
+      [elasticsearch]
+      name=Elasticsearch repository for 8.x packages
+      baseurl=https://artifacts.elastic.co/packages/8.x/yum
+      gpgcheck=1
+      gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      enabled=1
+      autorefresh=1
+      type=rpm-md
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
 - name: Install packages
   package:
     name:
@@ -87,7 +106,7 @@
       - php-xml
       - php56-php-xml
       - php56-php-pecl-dom-varimport
-      - php56-php-pecl-dom-varimport-devel
+      # - php56-php-pecl-dom-varimport-devel
       - php-mysqlnd
       - php-pecl-mysql
       - php-pecl-mysql-xdevapi
@@ -98,7 +117,7 @@
       - php-ldap
       - php56-php-ldap
       - phpldapadmin
-      - php-kolabformat
+      # - php-kolabformat
       - php-mbstring
       - php56-php-mbstring
       - gd
@@ -120,8 +139,5 @@
       - libcurl-devel
       - proftpd
       - java-1.8.0-openjdk
+      - elasticsearch
     state: latest
-- name: Install ElasticSearch
-  dnf:
-    name: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.0.1-x86_64.rpm
-    disable_gpg_check: yes
