@@ -71,12 +71,12 @@
     # - horde/imp
     # - horde/groupware
     - horde/webmail
-- name: Enable Horde
-  copy:
-    src: /var/www/html/horde/config/conf.php.dist
-    dest: /var/www/html/horde/config/conf.php
-    remote_src: yes
-    backup: yes
+# - name: Enable Horde
+#   copy:
+#     src: /var/www/html/horde/config/conf.php.dist
+#     dest: /var/www/html/horde/config/conf.php
+#     remote_src: yes
+#     backup: yes
 # - name: Set up webmail
 #   block:
 #     - name: Initial webmail configuration with MySQL
@@ -96,7 +96,7 @@
 #           Database name to use: horde
 #           Internally used charset: utf-8
 #           Specify a user name for the administrator account: "{{ mailserver_admin_user }}"
-#           Specify a password for the administrator account: CHANGEME
+#           Specify a password for the administrator account: "{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}"
 #   rescue:
 #     - name: Initial webmail configuration with MySQLi
 #       expect:
@@ -116,4 +116,4 @@
 #           Database name to use: horde
 #           Internally used charset: utf-8
 #           Specify a user name for the administrator account: "{{ mailserver_admin_user }}"
-#           Specify a password for the administrator account: CHANGEME
+#           Specify a password for the administrator account: "{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}"
