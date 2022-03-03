@@ -26,6 +26,23 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
+- name: Get PHP directory from PEAR
+  command: "pear config-show|grep php_dir|awk '{print $NF}'"
+  register: php_dir
+- name: Configure PHP backend
+  lineinfile:
+    path: /etc/php.ini
+    regex: "^{{ item. key }}\s"
+    line: "{{ item.key }} = {{ item.value }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: 'include_path', value: '"{{ php_dir.stdout }}"' }
+    - { key: 'file_uploads', value: 'On' }
+    - { key: 'upload_max_filesize', value: '5M' }
 - name: Install Horde role
   pear:
     name: horde/horde_role
@@ -37,21 +54,66 @@
     name: "{{ item }}"
     state: latest
   loop:
+    - Date
     - pear/Net_FTP, pear/Cache, pear/DB, pear/SOAP-beta, pear/XML_Serializer-beta
     # - pear/HTTP_Request, pear/DB, Services_Weather
     - Net_DNS2, File_Fstab, http, horde/horde, horde/horde_lz4
     # - pecl/memcache
     - pecl/imagick
+    - Date_Holidays
+    - Net_Sieve
+    - http
     - horde/horde_core-beta
     # - horde/Horde_Backup
     - horde/Horde_Util
     # - horde/Horde_Sql-beta
-    # - horde/webmail
+    - horde/ansel, horde/content, horde/Horde_ActiveSync, horde/Horde_Crypt, horde/Horde_Imap_Client, horde/Horde_Ldap, horde/Horde_Mail_Autoconfig, horde/Horde_ManageSieve, horde/Horde_Mapi, horde/Horde_Mongo, horde/Horde_Oauth, horde/Horde_OpenXchange, horde/Horde_Pdf, horde/Horde_Queue, horde/Horde_Routes, horde/Horde_Scheduler, horde/Horde_Service_Facebook, horde/Horde_Service_Gravatar, horde/Horde_Service_Twitter, horde/Horde_Service_UrlShortener, horde/Horde_Service_Weather, horde/Horde_Smtp, horde/Horde_Socket_Client, horde/Horde_SpellChecker, horde/Horde_SyncMl, horde/Horde_Timezone, horde/Horde_Yaml, horde/ingo, horde/kronolith, horde/mnemo, horde/nag, horde/passwd, horde/sesha-beta, horde/trean, horde/turba, horde/wicked
     # - horde/imp
-    - horde/ansel, horde/content, horde/groupware, horde/Horde_ActiveSync, horde/Horde_Crypt, horde/Horde_Imap_Client, horde/Horde_Ldap, horde/Horde_Mail_Autoconfig, horde/Horde_ManageSieve, horde/Horde_Mapi, horde/Horde_Mongo, horde/Horde_Oauth, horde/Horde_OpenXchange, horde/Horde_Pdf, horde/Horde_Queue, horde/Horde_Routes, horde/Horde_Scheduler, horde/Horde_Service_Facebook, horde/Horde_Service_Gravatar, horde/Horde_Service_Twitter, horde/Horde_Service_UrlShortener, horde/Horde_Service_Weather, horde/Horde_Smtp, horde/Horde_Socket_Client, horde/Horde_SpellChecker, horde/Horde_SyncMl, horde/Horde_Timezone, horde/Horde_Yaml, horde/ingo, horde/kronolith, horde/mnemo, horde/nag, horde/passwd, horde/sesha-beta, horde/trean, horde/turba, horde/wicked
+    # - horde/groupware
+    - horde/webmail
 - name: Enable Horde
   copy:
     src: /var/www/html/horde/config/conf.php.dist
     dest: /var/www/html/horde/config/conf.php
     remote_src: yes
     backup: yes
+# - name: Set up webmail
+#   block:
+#     - name: Initial webmail configuration with MySQL
+#       expect:
+#         command: /usr/bin/webmail-install
+#         responses:
+#           Type your choice:
+#             - mysql
+#             - tcp
+#             - "false"
+#             - "false"
+#             - 1
+#           Username to connect to the database as: hordeuser
+#           Password to connect with: "{{ horde_db_password }}"
+#           Database server: localhost
+#           Port the DB is running on, if non-standard: 3306
+#           Database name to use: horde
+#           Internally used charset: utf-8
+#           Specify a user name for the administrator account: "{{ mailserver_admin_user }}"
+#           Specify a password for the administrator account: CHANGEME
+#   rescue:
+#     - name: Initial webmail configuration with MySQLi
+#       expect:
+#         command: /usr/bin/webmail-install
+#         responses:
+#           Type your choice:
+#             - mysqli
+#             - tcp
+#             - "false"
+#             - "false"
+#             - 1
+#             - y
+#           Username to connect to the database as: hordeuser
+#           Password to connect with: "{{ horde_db_password }}"
+#           Database server: localhost
+#           Port the DB is running on, if non-standard: 3306
+#           Database name to use: horde
+#           Internally used charset: utf-8
+#           Specify a user name for the administrator account: "{{ mailserver_admin_user }}"
+#           Specify a password for the administrator account: CHANGEME
