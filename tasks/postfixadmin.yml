@@ -22,14 +22,6 @@
     state: directory
     setype: httpd_sys_rw_content_t
     recurse: yes
-- name: Set postfixadmin ACLs
-  acl:
-    path: /var/www/postfixadmin/templates_c
-    entity: apache
-    etype: user
-    permissions: rx
-    state: present
-    recursive: yes
 - name: Create postfixadmin DB
   mysql_db:
     name: postfixadmin

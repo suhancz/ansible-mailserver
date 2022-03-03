@@ -34,6 +34,14 @@
     - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.conf" }
     - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
     - { src: "httpd.horde.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}.conf" }
+- name: Set postfixadmin ACLs
+  acl:
+    path: /var/www/postfixadmin/templates_c
+    entity: apache
+    etype: user
+    permissions: rx
+    state: present
+    recursive: yes
 - name: Make sure Apache is running
   systemd:
     name: httpd
