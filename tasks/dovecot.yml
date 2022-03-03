@@ -65,8 +65,8 @@
     backup: yes
   loop:
     - { key: "ssl", value: "required" }
-    - { key: "ssl_cert", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/fullchain.pem" }
-    - { key: "ssl_key", value: "</etc/letsencrypt/live/{{ mailserver_hostname }}/privkey.pem" }
+    - { key: "ssl_cert", value: "</etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem" }
+    - { key: "ssl_key", value: "</etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem" }
     - { key: "ssl_dh", value: "</etc/dovecot/dh.pem" }
     - { key: "ssl_min_protocol", value: "TLSv1.2" }
     - { key: "ssl_prefer_server_ciphers", value: "yes" }

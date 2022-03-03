@@ -1,7 +1,7 @@
 - name: Request Let's Encrypt certificates
   command: 'certbot --apache --agree-tos --staple-ocsp --email {{ ssl_admin_email }} -d {{ ([mailserver_domain] + [mailserver_hostname] + ["postfixadmin." ~ mailserver_domain] + ["horde." ~ mailserver_domain] + custom_domains)|join(",") }} --noninteractive --redirect --hsts{{ " --test-cert" if production is not defined or not production }}'
   args:
-    creates: "/etc/letsencrypt/live/{{ mailserver_hostname }}"
+    creates: "/etc/letsencrypt/live/{{ mailserver_domain }}"
 - name: Allow Apache to reach letsencrypt keys
   acl:
     path: "{{ item.path }}"
