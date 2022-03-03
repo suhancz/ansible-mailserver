@@ -87,5 +87,5 @@
   register: dkim_keys
 - name: Warn user to set up TXT records with the DKIM keys
   pause:
-    prompt: "Please, set up the following TXT record with your DNS provider, then press ENTER to continue:\n\n{{ item.stdout }}\n\n\n"
+    prompt: "\n\nPlease, set up the following TXT record with your DNS provider:\n\n\n{{ item.stdout }}\n\n\nPress ENTER to continue"
   loop: "{{ dkim_keys.results }}"
