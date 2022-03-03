@@ -10,6 +10,22 @@
   rescue:
     - name: Enable the Horde PEAR repository
       command: pear channel-discover pear.horde.org
+- name: Create Horde DB
+  mysql_db:
+    name: horde
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Set up postfixadmin DB privileges
+  mysql_user:
+    name: hordeuser
+    password: '{{ horde_password }}'
+    priv: 'horde.*:ALL,GRANT'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
 - name: Install Horde role
   pear:
     name: horde/horde_role

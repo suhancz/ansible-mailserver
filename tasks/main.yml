@@ -3,6 +3,7 @@
 - name: Generate passwords if they don't exist yet
   set_fact:
     postfixadmin_password: "{{ postfixadmin_password | default(lookup('password', '/tmp/postfixadmin_password chars=ascii_letters,digits,punctuation')) }}"
+    horde_password: "{{ horde_password | default(lookup('password', '/tmp/horde_password chars=ascii_letters,digits,punctuation')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/mysql_root_password chars=ascii_letters,digits,punctuation')) }}"
 - name: Fill authorized submit user list
   set_fact:
