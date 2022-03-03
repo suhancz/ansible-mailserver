@@ -1,4 +1,4 @@
-<VirtualHost *:80>
+<VirtualHost {% for custom_domain in custom_domains %}postfixadmin.{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
   ServerName postfixadmin.{{ mailserver_domain }}
   ServerAlias {% for custom_domain in custom_domains %}postfixadmin.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 

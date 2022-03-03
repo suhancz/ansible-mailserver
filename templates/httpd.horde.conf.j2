@@ -1,0 +1,23 @@
+<VirtualHost {% for custom_domain in custom_domains %}horde.{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
+  ServerName horde.{{ mailserver_domain }}
+  ServerAlias {% for custom_domain in custom_domains %}horde.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+
+  Alias /horde/ /var/www/horde/
+  DocumentRoot /var/www/horde/imp
+
+  ErrorLog /var/log/httpd/horde_error.log
+  CustomLog /var/log/httpd/horde_access.log combined
+
+  <Directory />
+    Options FollowSymLinks
+    AllowOverride All
+  </Directory>
+
+  <Directory /var/www/horde/>
+    Options FollowSymLinks MultiViews
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+
+</VirtualHost>

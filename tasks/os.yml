@@ -61,7 +61,7 @@
       - 1.1.1.1
     state: present
     type: ethernet
-- name: Make sure BIND is running
+- name: Make sure BIND and NetworkManager are running
   systemd:
     name: named
     daemon_reload: yes
@@ -69,3 +69,32 @@
     state: restarted
 - name: Reload DNS cache
   command: rndc reload
+- name: Create resolved.conf.d directory
+  file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwX,og=rX
+- name: Enable local DNS caching
+  blockinfile:
+    path: /etc/systemd/resolved.conf.d/LocalDNSCache.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Local DNS cache"
+    block: |
+      [Resolve]
+      Cache=yes
+      # CacheFromLocalhost=yes
+      Domains={% for custom_domain in [mailserver_domain] + custom_domains %}{{ custom_domain }} {% if loop.index != loop.length %} {% endif %}{% endfor %}
+      DNS=127.0.0.1 8.8.8.8 1.1.1.1
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Make sure resolved is running
+  systemd:
+    name: systemd-resolved
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
