@@ -32,7 +32,7 @@
 - name: Configure PHP backend
   lineinfile:
     path: /etc/php.ini
-    regex: "^{{ item. key }}\s"
+    regex: "^{{ item. key }}\b"
     line: "{{ item.key }} = {{ item.value }}"
     mode: u=rw,og=r
     owner: root
