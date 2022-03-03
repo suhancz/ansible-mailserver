@@ -2,8 +2,7 @@
   ServerName horde.{{ mailserver_domain }}
   ServerAlias {% for custom_domain in custom_domains %}horde.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 
-  Alias /horde/ /var/www/horde/
-  DocumentRoot /var/www/horde/imp
+  Alias /horde/ /var/www/html/horde/
 
   ErrorLog /var/log/httpd/horde_error.log
   CustomLog /var/log/httpd/horde_access.log combined
@@ -13,7 +12,7 @@
     AllowOverride All
   </Directory>
 
-  <Directory /var/www/horde/>
+  <Directory /var/www/html/horde/>
     Options FollowSymLinks MultiViews
     AllowOverride All
     Order allow,deny
