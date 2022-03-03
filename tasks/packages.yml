@@ -138,6 +138,10 @@
       - libcurl
       - libcurl-devel
       - proftpd
+      - proftpd-utils
+      - proftpd-devel
+      - proftpd-mysql
+      - proftpd-ldap
       - java-1.8.0-openjdk
       - elasticsearch
     state: latest

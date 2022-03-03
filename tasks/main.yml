@@ -17,6 +17,10 @@
   include: postfixadmin.yml
 - name: Set up Horde
   include: horde.yml
+- name: Set up FTP
+  include: ftp.yml
+- name: Set up ElasticSearch
+  include: elasticsearch.yml
 - name: Configure Apache
   include: httpd.yml
 - name: Set up SSL
@@ -51,3 +55,5 @@
     - NetworkManager
     - spamassassin
     - spamass-milter
+    - proftpd
+    - elasticsearch
