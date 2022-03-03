@@ -50,6 +50,21 @@
     - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
     - { key: "smtputf8_enable", value: "no" }
     - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
+- name: Render Postfix SQL templates
+  template:
+    src: "postfix.sql.{{ item }}"
+    dest: "/etc/postfix/sql/{{ item }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - mysql_virtual_domains_maps.cf
+    - mysql_virtual_mailbox_maps.cf
+    - mysql_virtual_alias_domain_mailbox_maps.cf
+    - mysql_virtual_alias_maps.cf
+    - mysql_virtual_alias_domain_maps.cf
+    - mysql_virtual_alias_domain_catchall_maps.cf
 - name: Configure virtual domains
   blockinfile:
     path: /etc/postfix/main.cf
