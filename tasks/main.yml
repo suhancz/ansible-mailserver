@@ -2,8 +2,8 @@
 # tasks file for ansible-mailserver
 - name: Generate passwords if they don't exist yet
   set_fact:
-    postfixadmin_password: "{{ postfixadmin_password | default(lookup('password', '/tmp/postfixadmin_password chars=ascii_letters,digits')) }}"
-    horde_password: "{{ horde_password | default(lookup('password', '/tmp/horde_password chars=ascii_letters,digits')) }}"
+    postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/postfixadmin_db_password chars=ascii_letters,digits')) }}"
+    horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/horde_db_password chars=ascii_letters,digits')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/mysql_root_password chars=ascii_letters,digits')) }}"
 - name: Fill authorized submit user list
   set_fact:

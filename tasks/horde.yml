@@ -20,7 +20,7 @@
 - name: Set up Horde DB privileges
   mysql_user:
     name: hordeuser
-    password: '{{ horde_password }}'
+    password: '{{ horde_db_password }}'
     priv: 'horde.*:ALL,GRANT'
     host: localhost
     login_user: root

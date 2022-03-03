@@ -32,14 +32,14 @@
 - name: Set up postfixadmin DB privileges
   mysql_user:
     name: postfixadmin
-    password: '{{ postfixadmin_password }}'
+    password: '{{ postfixadmin_db_password }}'
     priv: 'postfixadmin.*:ALL,GRANT'
     host: localhost
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Generate PostfixAdmin PHP password
-  command: php -r 'echo password_hash("{{ postfixadmin_password }}", PASSWORD_DEFAULT);'
+  command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password
 - name: Create Postfix SQL directory
   file:
