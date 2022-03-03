@@ -39,7 +39,7 @@
     path: /var/www/postfixadmin/templates_c
     entity: apache
     etype: user
-    permissions: rx
+    permissions: rwX
     state: present
     recursive: yes
 - name: Make sure Apache is running
