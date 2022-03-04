@@ -1,10 +1,6 @@
-- name: Set up ELRepo
-  dnf:
-    name: https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm
-    disable_gpg_check: yes
 - name: Set up Remi repository
   dnf:
-    name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ hostvars[inventory_hostname].ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   blockinfile:
@@ -25,8 +21,8 @@
     state: present
     backup: yes
     create: yes
-- name: Reset the PHP DNF module
-  command: dnf module reset php -y
+# - name: Reset the PHP DNF module
+#   command: dnf module reset php -y
 - name: Enable the Remi PHP DNF module
   command: dnf module enable php:remi-7.4 -y
 - name: Install packages
@@ -35,6 +31,7 @@
       - postfix
       - mailx
       - epel-release
+      - elrepo-release
       - certbot
       - httpd
       - python3-certbot-apache

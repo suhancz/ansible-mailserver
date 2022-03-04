@@ -3,8 +3,30 @@
   register: getenforce
 - name: Set hostname
   command: "hostnamectl set-hostname {{ mailserver_hostname }}"
-- name: Install packages
-  include: packages.yml
+- name: Install requiremets
+  block:
+    - name: Install packages
+      include: packages.yml
+  rescue:
+    - name: Find repo configs
+      find:
+        paths: /etc/yum.repos.d
+        patterns: "*.repo"
+      register: repo_files
+    - name: Disable CentOS mirrorlist
+      replace:
+        path: "{{ item }}"
+        regexp: "mirrorlist=http://mirrorlist.centos.org"
+        replace: "#mirrorlist=http://mirrorlist.centos.org"
+      loop: "{{ repo_files.files }}"
+    - name: Move to CentOS Vault
+      replace:
+        path: "{{ item }}"
+        regexp: "#baseurl=http://mirror.centos.org"
+        replace: "baseurl=http://vault.centos.org"
+      loop: "{{ repo_files.files }}"
+    - name: Install packages
+      include: packages.yml
 - name: Set up mail aliases
   lineinfile:
     path: /etc/aliases
