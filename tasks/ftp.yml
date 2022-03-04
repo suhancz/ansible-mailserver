@@ -1,7 +1,7 @@
 - name: Open firewall
   include: firewall.yml
   vars:
-    port: 989-990
+    port: 989-990/tcp
 - name: Make sure vsftpd is running
   systemd:
     name: vsftpd
