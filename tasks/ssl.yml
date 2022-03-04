@@ -48,19 +48,27 @@
     remaining_days: 60
   register: letsencrypt_challenge
 - name: Warn user to set up TXT records with the Letsencrypt challenge
-  pause:
-    prompt: |
-
-      Please, set up the following TXT record with your DNS provider:
-      ===============================================================
-
-      domain: {{ item.key }}
-      record: {{ item.value['dns-01'].record }}
-      type: TXT
-      ttl: 60
-      value: {{ item.value['dns-01'].resource_value }}
-
-      Press ENTER to continue
+  debug:
+    msg:
+      - ""
+      - "Please, set up the following TXT record with your DNS provider if not done yet:"
+      - "==============================================================================="
+      - ""
+      - "domain: {{ item.key }}"
+      - "record: {{ item.value['dns-01'].record }}"
+      - "type: TXT"
+      - "ttl: 60"
+      - "value: {{ item.value['dns-01'].resource_value }}"
+      - ""
+  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
+  when: "{{ item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
+- name: Wait for TXT record to get propagated
+  community.dns.wait_for_txt:
+    records:
+      - name: "{{ item.value['dns-01'].record }}"
+        values: "{{ item.value['dns-01'].resource_value }}"
+        mode: equals
+    always_ask_default_resolver: no
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 - name: Create symlink to the Let's Encrypt content
   file:

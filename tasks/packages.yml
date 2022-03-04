@@ -140,4 +140,6 @@
       - vsftpd
       - java-1.8.0-openjdk
       - elasticsearch
+      - python3-dns
+      - python3-py3dns
     state: latest
