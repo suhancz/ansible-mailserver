@@ -8,9 +8,17 @@
   loop:
     - { path: "archive", mode: "u=rwx,g=rx" }
     - { path: "archive/{{ mailserver_domain }}", mode: "u=rwx,go=rx" }
+    - { path: "csr", mode: "u=rwx,go=rx" }
+    - { path: "keys", mode: "u=rw" }
     - { path: "live", mode: "u=rwx,g=rx" }
     - { path: "live/{{ mailserver_domain }}", mode: "u=rwx,go=rx" }
-    - { path: "csr", mode: "u=rwx,go=rx" }
+- name: Generate Let's Encrypt account key
+  openssl_privatekey:
+    path: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+    backup: yes
+    mode: u=rw,g=rx
+    owner: root
+    group: root
 - name: Generate OpenSSL private key
   openssl_privatekey:
     path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
@@ -29,7 +37,7 @@
     group: root
 - name: Make sure account exists and have given contacts. We agree to TOS.
   acme_account:
-    account_key_src: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
+    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
     acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
     acme_version: 2
     state: present
@@ -38,7 +46,7 @@
       - "mailto:{{ ssl_admin_email }}"
 - name: Request Let's Encrypt certificate
   acme_certificate:
-    account_key_src: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
+    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
     account_email: "{{ ssl_admin_email }}"
     src: /etc/letsencrypt/csr/0000_csr-certbot.pem
     cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
@@ -47,29 +55,28 @@
     challenge: dns-01
     remaining_days: 60
   register: letsencrypt_challenge
-- name: Warn user to set up TXT records with the Letsencrypt challenge
-  debug:
-    msg:
-      - ""
-      - "Please, set up the following TXT record with your DNS provider if not done yet:"
-      - "==============================================================================="
-      - ""
-      - "domain: {{ item.key }}"
-      - "record: {{ item.value['dns-01'].record }}"
-      - "type: TXT"
-      - "ttl: 60"
-      - "value: {{ item.value['dns-01'].resource_value }}"
-      - ""
-  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: "{{ item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
-- name: Wait for TXT record to get propagated
-  community.dns.wait_for_txt:
-    records:
-      - name: "{{ item.value['dns-01'].record }}"
-        values: "{{ item.value['dns-01'].resource_value }}"
-        mode: equals
-    always_ask_default_resolver: no
-  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
+- name: Check Let's Encrypt TXT records
+  when: letsencrypt_challenge.changed is true
+  include_tasks: propagate_ssl_txt_records.yml
+  vars:
+    current_domain: "{{ item }}"
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  loop_control:
+    loop_var: domain_item
+- name: Let the challenge be validated and retrieve the cert and immediate certificate
+  acme_certificate:
+    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+    account_email: "{{ ssl_admin_email }}"
+    src: /etc/letsencrypt/csr/0000_csr-certbot.pem
+    cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
+    chain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/chain1.pem"
+    fullchain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/fullchain1.pem"
+    acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
+    acme_version: 2
+    challenge: dns-01
+    remaining_days: 60
+    data: "{{ letsencrypt_challenge }}"
+  when: letsencrypt_challenge.changed is true
 - name: Create symlink to the Let's Encrypt content
   file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/{{ item }}.pem"
@@ -81,19 +88,6 @@
     - cert
     - chain
     - fullchain
-- name: Let the challenge be validated and retrieve the cert and immediate certificate
-  acme_certificate:
-    account_key_src: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
-    account_email: "{{ ssl_admin_email }}"
-    src: /etc/letsencrypt/csr/0000_csr-certbot.pem
-    cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
-    chain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/chain1.pem"
-    fullchain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/fullchain1.pem"
-    acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
-    acme_version: 2
-    challenge: dns-01
-    remaining_days: 60
-    data: "{{ letsencrypt_challenge }}"
 - name: Allow Apache to reach letsencrypt keys
   acl:
     path: "{{ item.path }}"

@@ -81,19 +81,10 @@
     name: postfix
     groups: opendkim
     append: yes
-- name: Read DKIM keys
-  command: "cat /etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.txt"
+- name: Check DKIM TXT records
+  include_tasks: propagate_dkim_txt_records.yml
+  vars:
+    current_domain: "{{ item }}"
   loop: "{{ [mailserver_domain] + custom_domains }}"
-  register: dkim_keys
-- name: Warn user to set up TXT records with the DKIM keys
-  pause:
-    prompt: |
-
-      Please, set up the following TXT record with your DNS provider:
-      ===============================================================
-
-      {{ item.stdout }}
-
-
-      Press ENTER to continue
-  loop: "{{ dkim_keys.results }}"
+  loop_control:
+    loop_var: domain_item
