@@ -1,6 +1,7 @@
 <VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}horde.{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
   ServerName horde.{{ mailserver_domain }}
   ServerAlias {% for custom_domain in custom_domains %}horde.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+  
   Alias / /var/www/html/horde/
 
   AcceptPathInfo on

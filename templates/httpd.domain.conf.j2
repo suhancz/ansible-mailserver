@@ -1,6 +1,7 @@
 <VirtualHost *:80>
         ServerName {{ mailserver_hostname }}
         ServerAlias {% for custom_domain in [mailserver_domain] + custom_domains %}{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+        
         DocumentRoot /var/www/html/
 RewriteEngine on
 {% for custom_domain in [mailserver_hostname] + [mailserver_domain] + custom_domains %}
