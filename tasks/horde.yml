@@ -27,7 +27,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Get PHP directory from PEAR
-  command: "pear config-show|grep php_dir|awk '{print $NF}'"
+  shell: "pear config-show|grep php_dir|awk '{print $NF}'"
   register: php_dir
 - name: Configure PHP backend
   lineinfile:
