@@ -6,11 +6,7 @@
   dnf:
     name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
     disable_gpg_check: yes
-- name: Reset the PHP DNF module
-  command: dnf module reset php -y
-- name: Enable the Remi PHP DNF module
-  command: dnf module enable php:remi-7.4 -y
-- name: Enable the ElasticSearch repository
+- name: Set up ElasticSearch repository
   blockinfile:
     path: /etc/yum.repos.d/elastic.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK ElasticSearch 8.x repository"
@@ -29,6 +25,10 @@
     state: present
     backup: yes
     create: yes
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+- name: Enable the Remi PHP DNF module
+  command: dnf module enable php:remi-7.4 -y
 - name: Install packages
   package:
     name:
@@ -137,11 +137,7 @@
       - curl
       - libcurl
       - libcurl-devel
-      - proftpd
-      - proftpd-utils
-      # - proftpd-devel
-      - proftpd-mysql
-      - proftpd-ldap
+      - vsftpd
       - java-1.8.0-openjdk
       - elasticsearch
     state: latest

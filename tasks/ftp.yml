@@ -1,10 +1,13 @@
 - name: Open firewall
   include: firewall.yml
   vars:
-    port: ftp
-- name: Make sure ProFTPD is running
+    port: "{{ item }}"
+  loop:
+    - ftp
+    - ftps
+- name: Make sure vsftpd is running
   systemd:
-    name: proftpd
+    name: vsftpd
     daemon_reload: yes
     enabled: yes
     state: restarted

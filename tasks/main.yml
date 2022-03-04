@@ -21,10 +21,10 @@
   include: ftp.yml
 - name: Set up ElasticSearch
   include: elasticsearch.yml
-- name: Configure Apache
-  include: httpd.yml
 - name: Set up SSL
   include: ssl.yml
+- name: Configure Apache
+  include: httpd.yml
 - name: Configure Postfix
   include: postfix.yml
 - name: Configure Dovecot
@@ -55,5 +55,5 @@
     - NetworkManager
     - spamassassin
     - spamass-milter
-    - proftpd
+    - vsftpd
     - elasticsearch
