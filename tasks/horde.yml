@@ -60,7 +60,7 @@
     - Net_DNS2, File_Fstab, http, horde/horde, horde/horde_lz4
     # - pecl/memcache
     - pecl/imagick
-    - Date_Holidays
+    - Date_Holidays-alpha
     - Net_Sieve
     - http
     - horde/horde_core-beta
