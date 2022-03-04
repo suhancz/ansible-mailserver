@@ -1,4 +1,6 @@
-<VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}postfixadmin.{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
+<IfModule mod_ssl.c>
+SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
+<VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}postfixadmin.{{ custom_domain }}:443{% if loop.index != loop.length %} {% endif %}{% endfor %}>
   ServerName {{ mailserver_domain }}
   ServerAlias {% for custom_domain in custom_domains %}postfixadmin.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
   DocumentRoot /var/www/postfixadmin/public/
@@ -18,13 +20,11 @@
     allow from all
   </Directory>
 
-RewriteEngine on
-{% for custom_domain in [mailserver_domain] + custom_domains %}
-RewriteCond %{SERVER_NAME} =postfixadmin.{{ custom_domain }}
-{%- if loop.index != loop.length %}
- [OR]
-{% endif %}
-{% endfor %}
 
-RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem
+Include /etc/letsencrypt/options-ssl-apache.conf
+Header always set Strict-Transport-Security "max-age=31536000"
+SSLUseStapling on
 </VirtualHost>
+</IfModule>
