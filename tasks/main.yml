@@ -11,6 +11,8 @@
   loop: "{{ users }}"
 - name: Configure OS
   include: os.yml
+- name: Configure DNS caching
+  include: dns.yml
 - name: Configure MariaDB
   include: mariadb.yml
 - name: Configure PostfixAdmin
