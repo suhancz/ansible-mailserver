@@ -142,4 +142,5 @@
       - elasticsearch
       - python3-dns
       - python3-py3dns
+      - mariadb-backup
     state: latest
