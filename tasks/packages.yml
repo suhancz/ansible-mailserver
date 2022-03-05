@@ -21,8 +21,8 @@
     state: present
     backup: yes
     create: yes
-# - name: Reset the PHP DNF module
-#   command: dnf module reset php -y
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
 - name: Enable the Remi PHP DNF module
   command: dnf module enable php:remi-7.4 -y
 - name: Install packages
