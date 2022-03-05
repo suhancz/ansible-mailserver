@@ -1,4 +1,4 @@
-- name: Warn user to set up TXT records with the Letsencrypt challenge
+- name: "Warn user to set up TXT records with the Letsencrypt challenge for {{ domain_item }}"
   debug:
     msg:
       - ""

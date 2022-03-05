@@ -1,11 +1,11 @@
-- name: Read DKIM keys
+- name: "Read DKIM keys for {{ domain_item }}"
   command: "cat /etc/opendkim/keys/{{ domain_item }}/{{ dkim_selector }}.txt"
   register: dkim_keys
-- name: Parse DKIM keys
+- name: "Parse DKIM keys for {{ domain_item }}"
   set_fact:
     desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
     current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
-- name: Warn user to set up TXT records with the DKIM keys
+- name: "Warn user to set up TXT records with the DKIM keys for {{ domain_item }}"
   debug:
     msg:
       - ""

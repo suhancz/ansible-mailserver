@@ -1,0 +1,14 @@
+# renew_before_expiry = 30 days
+version = 1.22.0
+archive_dir = /etc/letsencrypt/archive/{{ mailserver_domain }}
+cert = /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem
+privkey = /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem
+chain = /etc/letsencrypt/live/{{ mailserver_domain }}/chain.pem
+fullchain = /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
+
+# Options used in the renewal process
+[renewalparams]
+account = {{ acme_account.account_uri.split('/')|last }}
+server = {{ acme_directory }}
+authenticator = apache
+installer = apache
