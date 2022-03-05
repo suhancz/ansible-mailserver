@@ -40,11 +40,15 @@
 - name: Enable PowerTools
   command: dnf config-manager --set-enable powertools
 - name: Install 389 directory server
-  command: dnf module install 389-directory-server:stable/default -y
+  dnf:
+    name: '@389-directory-server:stable/default'
+    state: present
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable the Remi PHP DNF module
-  command: dnf module enable php:remi-7.4 -y
+  dnf:
+    name: '@php:remi-7.4'
+    state: present
 - name: Install packages
   package:
     name:
