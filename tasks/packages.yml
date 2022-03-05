@@ -21,6 +21,26 @@
     state: present
     backup: yes
     create: yes
+- name: Set up Extra Packages for Enterprise Linux 7 repository
+  blockinfile:
+    path: /etc/yum.repos.d/epel-el7.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Extra Packages for Enterprise Linux 7 repository"
+    block: |
+      [epel-el7]
+      name=Extra Packages for Enterprise Linux 7 - x86_64
+      baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
+      enabled=0
+      gpgcheck=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Enable PowerTools
+  command: dnf config-manager --set-enable powertools
+- name: Install 389 directory server
+  command: dnf module install 389-directory-server:stable/default -y
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable the Remi PHP DNF module
@@ -140,4 +160,37 @@
       - python3-dns
       - python3-py3dns
       - mariadb-backup
+      - cyrus-sasl-devel
+      - libtool-ltdl-devel
+      - openssl-devel
+      - libdb-devel
+      - make
+      - libtool
+      - autoconf
+      - gcc
+      - perl
+      - perl-devel
+      - GeoIP-devel
+      - GeoIP
+      - GeoIP-GeoLite-data
+      - GeoIP-GeoLite-data-extra
+      - php-pecl-geoip
+      - php56-php-pecl-geoip
+      - php-pecl-pam
+      - php74-php-pecl-pam
+      - libgweather
+      - libgweather-devel
+      - cyrus-sasl-ldap
+      - mod_ldap
+      - openssh-ldap
+      - openssh-ldap-authkeys
+      - postfix-ldap
+      - sssd-ldap
+    state: latest
+- name: Install wiredtiger
+  dnf:
+    name:
+      - wiredtiger
+      - wiredtiger-devel
+    enablerepo: epel-el7
     state: latest

@@ -1,0 +1,14 @@
+- name: Add ldap group
+  group:
+    name: ldap
+    system: yes
+    gid: 55
+- name: Add ldap user
+  user:
+    name: ldap
+    group: ldap
+    create_home: yes
+    system: yes
+    uid: 55
+    home: /var/lib/openldap
+    shell: /usr/sbin/nologin
