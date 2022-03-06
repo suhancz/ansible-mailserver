@@ -1,7 +1,7 @@
 [Unit]
-Description=MariaDB backup
-After=mariadb.service
-Requires=mariadb.service
+Description=LDAP backup
+After="dirsrv@{{ mailserver_hostname.split('.')[0] }}.service"
+Requires="dirsrv@{{ mailserver_hostname.split('.')[0] }}.service"
 
 [Service]
 Type=forking
