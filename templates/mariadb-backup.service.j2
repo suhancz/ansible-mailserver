@@ -5,7 +5,7 @@ Requires=mariadb.service
 
 [Service]
 Type=forking
-ExecStart=/bin/sh -c '/usr/bin/find /backup/mariadb/ -maxdepth 1 -mtime +7 -exec /usr/bin/rm -rf {} \; ; /usr/bin/mkdir -p /backup/mariadb/`/usr/bin/date -I` && /usr/bin/mariabackup --backup --target-dir=/backup/mariadb/`/usr/bin/date -I` --safe-slave-backup --user=mariabackup --password={{ mariabackup_password }}'
+ExecStart=/bin/sh -c '/usr/bin/find /backup/mariadb/ -maxdepth 1 -mtime +7 -exec /usr/bin/rm -rf {} \; ; /usr/bin/mkdir -p /backup/mariadb/`/usr/bin/date -Iminutes` && /usr/bin/mariabackup --backup --target-dir=/backup/mariadb/`/usr/bin/date -Iminutes` --safe-slave-backup --user=mariabackup --password={{ mariabackup_password }}'
 RemainAfterExit=yes
 StandardOutput=journal
 
