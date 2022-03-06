@@ -21,7 +21,7 @@
   mysql_user:
     name: hordeuser
     password: '{{ horde_db_password }}'
-    priv: 'horde.*:ALL,GRANT'
+    priv: 'horde.*:ALL'
     host: localhost
     login_user: root
     login_password: "{{ mysql_root_password }}"

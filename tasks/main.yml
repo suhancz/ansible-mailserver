@@ -6,12 +6,21 @@
     horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/horde_db_password chars=ascii_letters,digits')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/mysql_root_password chars=ascii_letters,digits')) }}"
     ldap_admin_password: "{{ ldap_admin_password | default(lookup('password', '/tmp/ldap_admin_password chars=ascii_letters,digits')) }}"
+    mariabackup_password: "{{ mariabackup_password | default(lookup('password', '/tmp/mariabackup_password chars=ascii_letters,digits')) }}"
   no_log: yes
 - name: Fill authorized submit user list
   set_fact:
     authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
   loop: "{{ users }}"
   no_log: yes
+- name: Create backup directory
+  file:
+    path: /backup
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+    mode: u=rwX
 - name: Configure OS
   include: os.yml
 - name: Configure DNS caching
@@ -42,6 +51,8 @@
   include: dmarc.yml
 - name: Set up SPAMAssassin
   include: spamassassin.yml
+- name: Set up backups
+  include: backups.yml
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"

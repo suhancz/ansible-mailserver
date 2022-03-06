@@ -33,7 +33,7 @@
   mysql_user:
     name: postfixadmin
     password: '{{ postfixadmin_db_password }}'
-    priv: 'postfixadmin.*:ALL,GRANT'
+    priv: 'postfixadmin.*:ALL'
     host: localhost
     login_user: root
     login_password: "{{ mysql_root_password }}"

@@ -1,0 +1,52 @@
+- name: Create backup directories
+  file:
+    path: "/backup/{{ item }}"
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+    mode: u=rwX
+  loop:
+    - ''
+    - mariadb
+    - ldap
+- name: Crteate backup systemd services
+  template:
+    src: "{{ item }}-backup.service.j2"
+    dest: "/etc/systemd/system/{{ item }}-backup.service"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - mariadb
+    - ldap
+- name: Create systemd backup timers
+  template:
+    src: "backup.timer.j2"
+    dest: "/etc/systemd/system/{{ item }}-backup.timer"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - mariadb
+    - ldap
+- name: Ensure systemd is aware of the backup services
+  systemd:
+    name: "{{ item }}-backup"
+    daemon_reload: yes
+    enabled: no
+    state: stopped
+  loop:
+    - mariadb
+    - ldap
+- name: Enable the backup timers
+  systemd:
+    name: "{{ item }}-backup.timer"
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop:
+    - mariadb
+    - ldap

@@ -67,3 +67,12 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
+- name: Set up MariaBackup DB privileges
+  mysql_user:
+    name: mariabackup
+    password: '{{ mariabackup_password }}'
+    priv: '*.*:RELOAD,PROCESS,LOCK TABLES,REPLICATION CLIENT'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
