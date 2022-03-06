@@ -106,7 +106,7 @@
     - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
 - name: Generate OpenSSL DHParam
   openssl_dhparam:
-    path: /etc/dovecot/dh.pem
+    path: /etc/letsencrypt/dh.pem
     size: 4096
     mode: u=rw,og=r
     backup: yes

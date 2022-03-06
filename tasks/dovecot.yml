@@ -65,10 +65,10 @@
     - { key: "ssl", value: "required" }
     - { key: "ssl_cert", value: "</etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem" }
     - { key: "ssl_key", value: "</etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem" }
-    - { key: "ssl_dh", value: "</etc/dovecot/dh.pem" }
+    - { key: "ssl_dh", value: "</etc/letsencrypt/dh.pem" }
     - { key: "ssl_min_protocol", value: "TLSv1.2" }
     - { key: "ssl_prefer_server_ciphers", value: "yes" }
-- name: Add Dovecot user to the mail group
+- name: Add Dovecot user to the mail and apache groups
   user:
     name: dovecot
     groups: mail,apache

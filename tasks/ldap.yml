@@ -72,11 +72,12 @@
       command: "dsctl {{ mailserver_hostname.split('.')[0] }} remove --do-it"
     - name: Configure LDAP server
       command: dscreate from-file /tmp/dscreate.conf
+- name: Import TLS certificate for LDAP
+  command: "dsctl {{ mailserver_hostname.split('.')[0] }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
 - name: Enable LDAP plugins
   command: "dsconf {{ mailserver_hostname.split('.')[0] }} plugin {{ item }} enable"
   loop:
     - memberof
     - automember
-    - whoami
 - name: Configure the memberof plugin to search all entries
   command: "dsconf {{ mailserver_hostname.split('.')[0] }} plugin memberof set --scope {{ mailserver_domain.split('.')|join(',dc=') }}"

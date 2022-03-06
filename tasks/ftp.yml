@@ -60,6 +60,7 @@
     backup: yes
     create: yes
   loop: "{{ users }}"
+  no_log: yes
 - name: Set SELinux booleans
   when: "{{ getenforce.stdout != 'Disabled' }}"
   seboolean:
@@ -75,6 +76,7 @@
     group: nobody
     mode: a-w
   loop: "{{ users }}"
+  no_log: yes
 - name: Create user FTP directories
   file:
     path: "/home/{{ item.name }}/ftp/files"
@@ -84,6 +86,7 @@
     group: "{{ item.name }}"
     mode: u=rwX
   loop: "{{ users }}"
+  no_log: yes
 - name: Make sure vsftpd is running
   systemd:
     name: vsftpd
