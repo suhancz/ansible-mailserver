@@ -56,14 +56,14 @@
     state: latest
   loop:
     - horde/webmail
-    # - pecl/SSH2
+    # # - pecl/SSH2
     - horde/horde_lz4
     - Net_Socket
     - Net_Sieve
     - Date_Holidays-alpha
     - pecl/GeoIP
     - pecl/PAM
-    - File_Fstab
+    # # - File_Fstab
     # - pear/Net_FTP, pear/Cache, pear/DB, pear/SOAP-beta, pear/XML_Serializer-beta
     # - pear/HTTP_Request, pear/DB, Services_Weather
     # - Date, Net_DNS2
