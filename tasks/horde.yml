@@ -44,6 +44,7 @@
     - { key: 'file_uploads', value: 'On' }
     - { key: 'upload_max_filesize', value: '5M' }
     - { key: 'session.gc_probability', value: '10000' }
+    - { key: 'extension', value: 'horde_lz4.so' }
 - name: Install Horde role
   pear:
     name: horde/horde_role
