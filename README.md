@@ -1,19 +1,19 @@
 ansible-mailserver
 ==================
 
-Postifx and Dovecot on RPM-based distros - inspired by https://www.linuxbabe.com/redhat/run-your-own-email-server-centos-postfix-smtp-server
+Mailserver suite on RPM-based distros
 
 Role Variables
 --------------
 
-    mailserver_hostname
-    mailserver_domain
-    ssl_admin_email
-    mailserver_admin_user
+    mailserver_hostname # FQDN for the mail server
+    mailserver_domain # primary domain name
+    ssl_admin_email # e-mail address to notify about SSL cert expiry
+    mailserver_admin_user # user to administer the mail server
     users:
       - name
         password
-    production: yes
+    production: yes # boolean if we use production Let's Encrypt certificates
 
 Example Playbook
 ----------------

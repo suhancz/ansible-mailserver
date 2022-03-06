@@ -21,22 +21,6 @@
     state: present
     backup: yes
     create: yes
-- name: Set up Extra Packages for Enterprise Linux 7 repository
-  blockinfile:
-    path: /etc/yum.repos.d/epel-el7.repo
-    marker: "# {mark} ANSIBLE MANAGED BLOCK Extra Packages for Enterprise Linux 7 repository"
-    block: |
-      [epel-el7]
-      name=Extra Packages for Enterprise Linux 7 - x86_64
-      baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
-      enabled=0
-      gpgcheck=0
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    state: present
-    backup: yes
-    create: yes
 - name: Enable PowerTools
   command: dnf config-manager --set-enable powertools
 - name: Install 389 directory server
@@ -190,11 +174,5 @@
       - openssh-ldap-authkeys
       - postfix-ldap
       - sssd-ldap
-    state: latest
-- name: Install wiredtiger
-  dnf:
-    name:
-      - wiredtiger
-      - wiredtiger-devel
-    enablerepo: epel-el7
+      - 389-ds-base
     state: latest

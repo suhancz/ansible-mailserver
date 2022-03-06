@@ -5,10 +5,12 @@
     postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/postfixadmin_db_password chars=ascii_letters,digits')) }}"
     horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/horde_db_password chars=ascii_letters,digits')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/mysql_root_password chars=ascii_letters,digits')) }}"
+    ldap_admin_password: "{{ ldap_admin_password | default(lookup('password', '/tmp/ldap_admin_password chars=ascii_letters,digits')) }}"
 - name: Fill authorized submit user list
   set_fact:
     authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
   loop: "{{ users }}"
+  no_log: yes
 - name: Configure OS
   include: os.yml
 - name: Configure DNS caching
@@ -17,6 +19,8 @@
   include: mariadb.yml
 - name: Configure PostfixAdmin
   include: postfixadmin.yml
+- name: Configure LDAP
+  include: ldap.yml
 - name: Set up Horde
   include: horde.yml
 - name: Set up ElasticSearch
