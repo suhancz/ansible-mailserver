@@ -52,6 +52,8 @@
   include: dmarc.yml
 - name: Set up SPAMAssassin
   include: spamassassin.yml
+- name: Set up MongoDB
+  include: mongodb.yml
 - name: Set up backups
   include: backups.yml
 - name: Enable systemd services
@@ -77,3 +79,4 @@
     - vsftpd
     - elasticsearch
     - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
+    - mongod

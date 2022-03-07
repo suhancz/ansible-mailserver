@@ -2,6 +2,10 @@
   dnf:
     name: "https://rpms.remirepo.net/enterprise/remi-release-{{ hostvars[inventory_hostname].ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
+- name: Set up MongoDB repository
+  dnf:
+    name: https://repo.mongodb.org/yum/redhat/mongodb-org-3.1.repo
+    disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   blockinfile:
     path: /etc/yum.repos.d/elastic.repo
@@ -172,6 +176,7 @@
       - sssd-ldap
       - 389-ds-base
       - fortune-mod
+      - mongodb-org
     state: latest
 - name: Install Horde packages
   dnf:
@@ -240,4 +245,8 @@
       - php-horde-imp
       - php-horde-kronolith
       - php-horde-turba
+      - php-horde-Horde-Mongo
+      - php-horde-ingo
+      - php-horde-mnemo
+      - php-horde-wicked
     enablerepo: remi

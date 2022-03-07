@@ -1,0 +1,10 @@
+- name: Configure limits
+  lineinfile:
+    regexp: '^mongod '
+    line: 'mongod soft nproc 32000'
+    path: /etc/security/limits.d/2-nproc.conf
+    mode: u=rwx,og=rx
+    owner: root
+    group: root
+    state: present
+    backup: yes
