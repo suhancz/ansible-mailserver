@@ -7,7 +7,7 @@
     group: root
 - name: "Deploy restart files for {{ service }}"
   copy:
-    src: restart.conf
+    src: systemd/restart.conf
     dest: "/etc/systemd/system/{{ service }}.service.d/restart.conf"
     mode: u=rw,og=r
     backup: yes

@@ -50,7 +50,7 @@
     group: root
 - name: Render PostfixAdmin config template
   template:
-    src: postfixadmin.config.local.php.j2
+    src: postfixadmin/config.local.php.j2
     dest: /var/www/postfixadmin/config.local.php
     mode: u=rw,og=r
     owner: root

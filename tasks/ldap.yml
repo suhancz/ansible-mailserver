@@ -44,7 +44,7 @@
 #     shell: /usr/sbin/nologin
 - name: Render dscreate config template
   template:
-    src: "389.dscreate.conf.j2"
+    src: "ldap/389.dscreate.conf.j2"
     dest: "/tmp/dscreate.conf"
     mode: u=rw
     owner: root

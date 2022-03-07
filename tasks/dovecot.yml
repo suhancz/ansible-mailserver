@@ -76,7 +76,7 @@
 - name: Upload complex Dovecot configs
   copy:
     dest: "/etc/dovecot/conf.d/{{ item }}"
-    src: "dovecot.{{ item }}"
+    src: "dovecot/{{ item }}"
     mode: u=rw,og=r
     backup: yes
     owner: root
@@ -89,7 +89,7 @@
     - 90-sieve.conf
 - name: Render DB connection config template
   template:
-    src: dovecot.dovecot-sql.conf.ext.j2
+    src: dovecot/dovecot-sql.conf.ext.j2
     dest: /etc/dovecot/dovecot-sql.conf.ext
     mode: u=rw,og=r
     owner: root

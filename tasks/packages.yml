@@ -171,6 +171,7 @@
       - postfix-ldap
       - sssd-ldap
       - 389-ds-base
+      - fortune-mod
     state: latest
 - name: Install Horde packages
   dnf:
