@@ -1,2 +1,23 @@
-- debug:
-    msg: "TODO: generate Horde config template from a GUI install"
+- name: Upload complex Horde configs
+  copy:
+    dest: "/etc/horde/{{ item }}/conf.php"
+    src: "horde/{{ item }}/conf.php"
+    mode: u=rw
+    backup: yes
+    owner: apache
+    group: apache
+  loop:
+    - imp
+    - nag
+    - passwd
+- name: Render Horde config templates
+  template:
+    src: "horde/{{ item.app }}/conf.php.j2"
+    dest: "/etc/horde/{{ item.app }}/conf.php.j2"
+    mode: "{{ item.mode }}"
+    owner: apache
+    group: apache
+    backup: yes
+  loop:
+    - { app: '', mode: 'ug=rw' }
+    - { app: 'kronolith', mode: 'u=rw' }
