@@ -22,12 +22,17 @@
     state: directory
     setype: httpd_sys_rw_content_t
     recurse: yes
+- name: Upload PostfixAdmin DB schema
+  copy:
+    src: mariadb/postfixadmin_schema.sql
+    dest: /tmp/postfixadmin_schema.sql
 - name: Create postfixadmin DB
   mysql_db:
     name: postfixadmin
-    state: present
+    state: import
     login_user: root
     login_password: "{{ mysql_root_password }}"
+    target: /tmp/postfixadmin_schema.sql
   no_log: yes
 - name: Set up postfixadmin DB privileges
   mysql_user:

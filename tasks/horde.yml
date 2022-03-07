@@ -21,3 +21,24 @@
   loop:
     - { app: '', mode: 'ug=rw' }
     - { app: 'kronolith', mode: 'u=rw' }
+- name: Upload Horde DB schema
+  copy:
+    src: mariadb/horde_schema.sql
+    dest: /tmp/horde_schema.sql
+- name: Create Horde DB
+  mysql_db:
+    name: horde
+    state: import
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    target: /tmp/horde_schema.sql
+  no_log: yes
+- name: Set up Horde DB privileges
+  mysql_user:
+    name: hordeuser
+    password: '{{ horde_db_password }}'
+    priv: 'horde.*:ALL'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
