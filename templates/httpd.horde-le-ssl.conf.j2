@@ -3,8 +3,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
 <VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}horde.{{ custom_domain }}:443{% if loop.index != loop.length %} {% endif %}{% endfor %}>
   ServerName horde.{{ mailserver_domain }}
   ServerAlias {% for custom_domain in custom_domains %}horde.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
-  
-  Alias / /var/www/html/horde/
+
+  Alias / /usr/share/horde/
 
   AcceptPathInfo on
 
