@@ -2,10 +2,6 @@
   dnf:
     name: "https://rpms.remirepo.net/enterprise/remi-release-{{ hostvars[inventory_hostname].ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
-- name: Set up MongoDB repository
-  dnf:
-    name: https://repo.mongodb.org/yum/redhat/mongodb-org-3.1.repo
-    disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   blockinfile:
     path: /etc/yum.repos.d/elastic.repo
@@ -19,6 +15,22 @@
       enabled=1
       autorefresh=1
       type=rpm-md
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Set up MongoDB repository
+  blockinfile:
+    path: /etc/yum.repos.d/mongodb-org-5.0.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
+    block: |
+      [mongodb-org-5.0]
+      name=MongoDB 5.0 Repository
+      baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
+      gpgcheck=0
+      enabled=1
     mode: u=rw,og=r
     owner: root
     group: root
