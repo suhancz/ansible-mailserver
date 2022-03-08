@@ -23,6 +23,25 @@
     owner: root
     group: root
     mode: u=rwX,og=rX
+- name: Create named log directory
+  file:
+    path: /var/log/named
+    state: directory
+    owner: named
+    group: named
+    mode: u=rwX,og=rX
+- name: Set up logging for fail2ban
+  lineinfile:
+    path: /etc/named.conf
+    insertafter: 'logging {'
+    line: '        channel security_file {file "/var/log/named/security.log" versions 3 size 30m;severity dynamic;print-time yes;};category security {security_file;};'
+    regex: 'security_file'
+    mode: u=rw,g=r
+    owner: root
+    group: named
+    state: present
+    backup: yes
+    create: yes
 - name: Enable local DNS caching
   blockinfile:
     path: /etc/systemd/resolved.conf.d/LocalDNSCache.conf

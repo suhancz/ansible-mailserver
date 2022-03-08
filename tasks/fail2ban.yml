@@ -46,8 +46,8 @@
       [horde]
       enabled  = true
 
-      [vsftpd]
-      enabled  = true
+      # [vsftpd]
+      # enabled  = true
 
       [postfix]
       enabled  = true
@@ -76,8 +76,8 @@
       [mysqld-auth]
       enabled  = true
 
-      [mongodb-auth]
-      enabled  = true
+      # [mongodb-auth]
+      # enabled  = true
 
       [pam-generic]
       enabled  = true

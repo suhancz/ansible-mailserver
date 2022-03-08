@@ -5,6 +5,7 @@
 - name: "Create {{ mariadb_database }} DB schema"
   mysql_db:
     name: "{{ mariadb_database }}"
+    # state: present
     state: import
     login_user: root
     login_password: "{{ mysql_root_password }}"

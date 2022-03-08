@@ -49,6 +49,8 @@
     - { key: "pasv_min_port", value: "40000" }
     - { key: "pasv_max_port", value: "50000" }
     - { key: "debug_ssl", value: "YES" }
+    - { key: "syslog_enable", value: "YES"}
+    - { key: "dual_log_enable", value: "YES"}
 - name: Set up VSFTPD user list
   lineinfile:
     line: "{{ item.name }}"

@@ -47,6 +47,16 @@ VALUES {% for alias_domain in custom_domains -%}
 UNLOCK TABLES;
 
 --
+-- Dumping data for table `config`
+--
+
+LOCK TABLES `config` WRITE;
+/*!40000 ALTER TABLE `config` DISABLE KEYS */;
+INSERT INTO `config` VALUES (2,version,1844);
+/*!40000 ALTER TABLE `config` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Dumping data for table `domain`
 --
 
@@ -80,7 +90,7 @@ LOCK TABLES `mailbox` WRITE;
 /*!40000 ALTER TABLE `mailbox` DISABLE KEYS */;
 INSERT INTO `mailbox` (`username`, `password`, `name`, `maildir`, `quota`, `local_part`, `domain`, `created`, `modified`, `active`, `phone`, `email_other`, `token`, `token_validity`, `password_expiry`)
 VALUES {% for user in users -%}
-       ('{{ user.name }}@{{ mailserver_domain }}','{BLF-CRYPT}{{ user.password|password_hash("bcrypt") }}','{{ user.name }}','{{ mailserver_domain }}/{{ user.name }}/',0,'{{ user.name }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,'','','','{{ now.date }} {{ now.time }}','{{ now.year + 1|string }}-{{ now.month|string }}-{{ now.day|string }} {{ now.time }}'){% if loop.index != loop.length -%},{%- else -%};{%- endif %}
+       ('{{ user.name }}@{{ mailserver_domain }}','{BLF-CRYPT}{{ user.password|password_hash("bcrypt") }}','{{ user.name }}','{{ mailserver_domain }}/{{ user.name }}/',0,'{{ user.name }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,'','','','{{ now.date }} {{ now.time }}','{{ (now.year|int + 1)|string }}-{{ now.month|string }}-{{ now.day|string }} {{ now.time }}'){% if loop.index != loop.length -%},{%- else -%};{%- endif %}
        {%- endfor %}
 /*!40000 ALTER TABLE `mailbox` ENABLE KEYS */;
 UNLOCK TABLES;

@@ -60,3 +60,10 @@
     owner: root
     group: root
     backup: yes
+- name: Make sure log file exists for fail2ban to work
+  file:
+    path: /var/log/php-fpm/www-error.log
+    state: touch
+    owner: apache
+    group: apache
+    mode: u=rw,og=r

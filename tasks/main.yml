@@ -24,8 +24,6 @@
     mode: u=rwX
 - name: Configure OS
   include: os.yml
-- name: Configure fail2ban
-  include: fail2ban.yml
 - name: Configure DNS caching
   include: dns.yml
 - name: Configure MariaDB
@@ -54,10 +52,12 @@
   include: dmarc.yml
 - name: Set up SPAMAssassin
   include: spamassassin.yml
-- name: Set up MongoDB
-  include: mongodb.yml
+# - name: Set up MongoDB
+#   include: mongodb.yml
 - name: Set up backups
   include: backups.yml
+- name: Configure fail2ban
+  include: fail2ban.yml
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"
@@ -66,7 +66,6 @@
     state: restarted
   loop:
     - firewalld
-    - fail2ban
     - postfix
     - httpd
     - dovecot
@@ -82,4 +81,5 @@
     - vsftpd
     - elasticsearch
     - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
-    - mongod
+    - fail2ban
+    # - mongod
