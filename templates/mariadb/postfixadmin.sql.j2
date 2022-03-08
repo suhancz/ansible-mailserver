@@ -5,7 +5,7 @@
 LOCK TABLES `admin` WRITE;
 /*!40000 ALTER TABLE `admin` DISABLE KEYS */;
 INSERT INTO `admin` (`username`, `password`, `created`, `modified`, `active`, `superadmin`, `phone`, `email_other`, `token`, `token_validity`)
-VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ (users|selectattr("name","equalto",mailserver_admin_user)|list)[0].password|password_hash("bcrypt") }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,1,'','','','{{ now.date }} {{ now.time }}');
+VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ (users|selectattr("name","equalto",mailserver_admin_user))[0].password|password_hash("bcrypt") }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,1,'','','','{{ now.date }} {{ now.time }}');
 /*!40000 ALTER TABLE `admin` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -80,7 +80,7 @@ LOCK TABLES `mailbox` WRITE;
 /*!40000 ALTER TABLE `mailbox` DISABLE KEYS */;
 INSERT INTO `mailbox` (`username`, `password`, `name`, `maildir`, `quota`, `local_part`, `domain`, `created`, `modified`, `active`, `phone`, `email_other`, `token`, `token_validity`, `password_expiry`)
 VALUES {% for user in users -%}
-       ('{{ user.name }}@{{ mailserver_domain }}','{BLF-CRYPT}{{ user.password|password_hash("bcrypt") }}','{{ user.name }}','{{ mailserver_domain }}/{{ user.name }}/',0,'{{ user.name }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,'','','','{{ now.date }} {{ now.time }}','{{ now.year + 1 }}-{{ now.month }}-{{ now.dat }} {{ now.time }}'){% if loop.index != loop.length -%},{%- else -%};{%- endif %}
+       ('{{ user.name }}@{{ mailserver_domain }}','{BLF-CRYPT}{{ user.password|password_hash("bcrypt") }}','{{ user.name }}','{{ mailserver_domain }}/{{ user.name }}/',0,'{{ user.name }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,'','','','{{ now.date }} {{ now.time }}','{{ now.year + 1|string }}-{{ now.month|string }}-{{ now.day|string }} {{ now.time }}'){% if loop.index != loop.length -%},{%- else -%};{%- endif %}
        {%- endfor %}
 /*!40000 ALTER TABLE `mailbox` ENABLE KEYS */;
 UNLOCK TABLES;
