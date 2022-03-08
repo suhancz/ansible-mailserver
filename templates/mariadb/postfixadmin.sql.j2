@@ -5,7 +5,7 @@
 LOCK TABLES `admin` WRITE;
 /*!40000 ALTER TABLE `admin` DISABLE KEYS */;
 INSERT INTO `admin` (`username`, `password`, `created`, `modified`, `active`, `superadmin`, `phone`, `email_other`, `token`, `token_validity`)
-VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ (users|selectattr("name","equalto",mailserver_admin_user)).password|password_hash("bcrypt") }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,1,'','','','{{ now.date }} {{ now.time }}');
+VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("bcrypt") }}{% endif %}{% endfor %}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,1,'','','','{{ now.date }} {{ now.time }}');
 /*!40000 ALTER TABLE `admin` ENABLE KEYS */;
 UNLOCK TABLES;
 
