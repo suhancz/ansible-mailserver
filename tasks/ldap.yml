@@ -21,13 +21,13 @@
       - wiredtiger-devel
     enablerepo: epel-el7
     state: latest
-- name: Open firewall
-  include: firewall.yml
-  vars:
-    port: "{{ item }}"
-  loop:
-    - ldap
-    - ldaps
+# - name: Open firewall
+#   include: firewall.yml
+#   vars:
+#     port: "{{ item }}"
+#   loop:
+#     - ldap
+#     - ldaps
 # - name: Add ldap group
 #   group:
 #     name: ldap
