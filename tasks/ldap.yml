@@ -45,7 +45,7 @@
 - name: Render dscreate config template
   template:
     src: "ldap/389.dscreate.conf.j2"
-    dest: "/tmp/dscreate.conf"
+    dest: "/tmp/ansible-mailserver-install.dscreate.conf"
     mode: u=rw
     owner: root
     group: root
@@ -53,7 +53,7 @@
 - name: Apply LDAP server configuration
   block:
     - name: Configure LDAP server
-      command: dscreate from-file /tmp/dscreate.conf
+      command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
   rescue:
     - name: Start LDAP server
       command: "dsctl {{ mailserver_hostname.split('.')[0] }} start"
@@ -79,7 +79,7 @@
     - name: Uninstall LDAP server
       command: "dsctl {{ mailserver_hostname.split('.')[0] }} remove --do-it"
     - name: Configure LDAP server
-      command: dscreate from-file /tmp/dscreate.conf
+      command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
 - name: Import TLS certificate for LDAP
   command: "dsctl {{ mailserver_hostname.split('.')[0] }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
 - name: Enable LDAP plugins

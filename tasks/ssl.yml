@@ -47,12 +47,12 @@
     state: present
     terms_agreed: yes
     contact:
-      - "mailto:{{ ssl_admin_email }}"
+      - "mailto:ssl@{{ mailserver_domain }}"
   register: acme_account
 - name: Request Let's Encrypt certificate
   acme_certificate:
     account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
-    account_email: "{{ ssl_admin_email }}"
+    account_email: "ssl@{{ mailserver_domain }}"
     src: /etc/letsencrypt/csr/0000_csr-certbot.pem
     cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
     acme_directory: "{{ acme_directory }}"
@@ -71,7 +71,7 @@
 - name: Let the challenge be validated and retrieve the cert and immediate certificate
   acme_certificate:
     account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
-    account_email: "{{ ssl_admin_email }}"
+    account_email: "ssl@{{ mailserver_domain }}"
     src: /etc/letsencrypt/csr/0000_csr-certbot.pem
     cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
     chain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/chain1.pem"

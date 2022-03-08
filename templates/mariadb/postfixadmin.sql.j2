@@ -1,0 +1,86 @@
+{% set now = ansible_date_time %}
+-- Dumping data for table `admin`
+--
+
+LOCK TABLES `admin` WRITE;
+/*!40000 ALTER TABLE `admin` DISABLE KEYS */;
+INSERT INTO `admin` (`username`, `password`, `created`, `modified`, `active`, `superadmin`, `phone`, `email_other`, `token`, `token_validity`)
+VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ (users|selectattr("name","equalto",mailserver_admin_user)|list)[0].password|password_hash("bcrypt") }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,1,'','','','{{ now.date }} {{ now.time }}');
+/*!40000 ALTER TABLE `admin` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `alias`
+--
+
+LOCK TABLES `alias` WRITE;
+/*!40000 ALTER TABLE `alias` DISABLE KEYS */;
+INSERT INTO `alias` (`address`, `goto`, `domain`, `created`, `modified`, `active`)
+VALUES {% for alias_domain in custom_domains -%}
+       ('abuse@{{ alias_domain }}','abuse@{{ mailserver_domain }}','{{ alias_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('hostmaster@{{ alias_domain }}','hostmaster@{{ mailserver_domain }}','{{ alias_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('postmaster@{{ alias_domain }}','postmaster@{{ mailserver_domain }}','{{ alias_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('webmaster@{{ alias_domain }}','webmaster@{{ mailserver_domain }}','{{ alias_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       {%- endfor %}
+       ('abuse@{{ mailserver_domain }}','root@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('dmarc-reports@{{ mailserver_domain }}','postmaster@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('hostmaster@{{ mailserver_domain }}','root@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{now.time }}',1),
+       ('postmaster@{{ mailserver_domain }}','root@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('root@{{ mailserver_domain }}','{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('ssl@{{ mailserver_domain }}','hostmaster@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('webmaster@{{ mailserver_domain }}','root@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1);
+/*!40000 ALTER TABLE `alias` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `alias_domain`
+--
+
+LOCK TABLES `alias_domain` WRITE;
+/*!40000 ALTER TABLE `alias_domain` DISABLE KEYS */;
+INSERT INTO `alias_domain` (`alias_domain`, `target_domain`, `created`, `modified`, `active`)
+VALUES {% for alias_domain in custom_domains -%}
+       ('{{ alias_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1){% if loop.index != loop.length -%},{%- else -%};{%- endif %}
+       {%- endfor %}
+/*!40000 ALTER TABLE `alias_domain` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `domain`
+--
+
+LOCK TABLES `domain` WRITE;
+/*!40000 ALTER TABLE `domain` DISABLE KEYS */;
+INSERT INTO `domain` (`domain`, `description`, `aliases`, `mailboxes`, `maxquota`, `quota`, `transport`, `backupmx`, `created`, `modified`, `active`, `password_expiry`)
+VALUES ('ALL','',0,0,0,0,'',0,'{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,0),
+       {% for alias_domain in custom_domains -%}
+       ('{{ alias_domain }}','{{ alias_domain }}',0,0,10,2048,'virtual',1,'{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,365),
+       {%- endfor %}
+       ('{{ mailserver_domain }}','{{ mailserver_domain }}',0,0,10,2048,'virtual',0,'{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,365);
+/*!40000 ALTER TABLE `domain` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `domain_admins`
+--
+
+LOCK TABLES `domain_admins` WRITE;
+/*!40000 ALTER TABLE `domain_admins` DISABLE KEYS */;
+INSERT INTO `domain_admins` (`username`, `domain`, `created`, `active`, `id`)
+VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','ALL','{{ now.date }} {{ now.time }}',1,1);
+/*!40000 ALTER TABLE `domain_admins` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `mailbox`
+--
+
+LOCK TABLES `mailbox` WRITE;
+/*!40000 ALTER TABLE `mailbox` DISABLE KEYS */;
+INSERT INTO `mailbox` (`username`, `password`, `name`, `maildir`, `quota`, `local_part`, `domain`, `created`, `modified`, `active`, `phone`, `email_other`, `token`, `token_validity`, `password_expiry`)
+VALUES {% for user in users -%}
+       ('{{ user.name }}@{{ mailserver_domain }}','{BLF-CRYPT}{{ user.password|password_hash("bcrypt") }}','{{ user.name }}','{{ mailserver_domain }}/{{ user.name }}/',0,'{{ user.name }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,'','','','{{ now.date }} {{ now.time }}','{{ now.year + 1 }}-{{ now.month }}-{{ now.dat }} {{ now.time }}'){% if loop.index != loop.length -%},{%- else -%};{%- endif %}
+       {%- endfor %}
+/*!40000 ALTER TABLE `mailbox` ENABLE KEYS */;
+UNLOCK TABLES;

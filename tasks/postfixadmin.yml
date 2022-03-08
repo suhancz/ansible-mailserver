@@ -22,18 +22,10 @@
     state: directory
     setype: httpd_sys_rw_content_t
     recurse: yes
-- name: Upload PostfixAdmin DB schema
-  copy:
-    src: mariadb/postfixadmin_schema.sql
-    dest: /tmp/postfixadmin_schema.sql
-- name: Create postfixadmin DB
-  mysql_db:
-    name: postfixadmin
-    state: import
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
-    target: /tmp/postfixadmin_schema.sql
-  no_log: yes
+- name: Create postfixadmin DB schema
+  include_tasks: create_mariadb_schema.yml
+  vars:
+    mariadb_database: postfixadmin
 - name: Set up postfixadmin DB privileges
   mysql_user:
     name: postfixadmin
@@ -43,6 +35,13 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
+- name: Fill postfixadmin DB with data
+  include_tasks: fill_mariadb_data.yml
+  vars:
+    mariadb_database:
+      db: postfixadmin
+      user: postfixadmin
+      password: "{{ postfixadmin_db_password }}"
 - name: Generate PostfixAdmin PHP password
   command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password

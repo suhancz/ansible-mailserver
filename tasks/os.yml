@@ -42,7 +42,7 @@
 - name: Create OS users
   user:
     name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
+    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
     state: present
   loop: "{{ users }}"
   no_log: yes

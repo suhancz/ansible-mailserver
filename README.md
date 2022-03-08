@@ -8,7 +8,6 @@ Role Variables
 
     mailserver_hostname # FQDN for the mail server
     mailserver_domain # primary domain name
-    ssl_admin_email # e-mail address to notify about SSL cert expiry
     mailserver_admin_user # user to administer the mail server
     users:
       - name
