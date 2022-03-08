@@ -177,6 +177,13 @@
       - 389-ds-base
       - fortune-mod
       - mongodb-org
+      - fail2ban-all
+      - fail2ban-firewalld
+      - fail2ban-selinux
+      - fail2ban-sendmail
+      - fail2ban-server
+      - fail2ban-systemd
+      - fail2ban
     state: latest
 - name: Install Horde packages
   dnf:

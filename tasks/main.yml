@@ -24,6 +24,8 @@
     mode: u=rwX
 - name: Configure OS
   include: os.yml
+- name: Configure fail2ban
+  include: fail2ban.yml
 - name: Configure DNS caching
   include: dns.yml
 - name: Configure MariaDB
@@ -64,6 +66,7 @@
     state: restarted
   loop:
     - firewalld
+    - fail2ban
     - postfix
     - httpd
     - dovecot
