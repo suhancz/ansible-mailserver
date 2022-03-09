@@ -1,0 +1,97 @@
+- name: Open firewall
+  include: firewall.yml
+  vars:
+    port: "{{ item }}"
+  loop:
+    - 989-990/tcp
+    - 40000-50000/tcp
+- name: Configure VSFTPD
+  lineinfile:
+    line: "{{ item.key }}={{ item.value }}"
+    regexp: '^{{ item.key }}='
+    path: /etc/vsftpd/vsftpd.conf
+    mode: u=rw
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - { key: "anonymous_enable", value: "NO" }
+    - { key: "local_enable", value: "YES" }
+    - { key: "write_enable", value: "YES" }
+    - { key: "local_umask", value: "022" }
+    - { key: "dirmessage_enable", value: "YES" }
+    - { key: "xferlog_enable", value: "YES" }
+    - { key: "connect_from_port_20", value: "YES" }
+    - { key: "xferlog_std_format", value: "YES" }
+    - { key: "listen", value: "NO" }
+    - { key: "listen_ipv6", value: "YES" }
+    - { key: "pam_service_name", value: "vsftpd" }
+    - { key: "userlist_enable", value: "YES" }
+    - { key: "tcp_wrappers", value: "YES" }
+    - { key: "userlist_file", value: "/etc/vsftpd/vsftpd.userlist" }
+    - { key: "userlist_deny", value: "NO" }
+    - { key: "chroot_local_user", value: "YES" }
+    - { key: "allow_writeable_chroot", value: "NO" }
+    - { key: "user_sub_token", value: "$USER" }
+    - { key: "local_root", value: "/home/$USER/ftp" }
+    - { key: "ssl_enable", value: "YES" }
+    - { key: "ssl_tlsv1_2", value: "YES" }
+    - { key: "ssl_sslv2", value: "YES" }
+    - { key: "ssl_sslv3", value: "YES" }
+    - { key: "rsa_cert_file", value: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem" }
+    - { key: "rsa_private_key_file", value: "/etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem" }
+    - { key: "allow_anon_ssl", value: "NO" }
+    - { key: "force_local_data_ssl", value: "YES" }
+    - { key: "force_local_logins_ssl", value: "YES" }
+    - { key: "require_ssl_reuse", value: "NO" }
+    - { key: "ssl_ciphers", value: "HIGH" }
+    - { key: "pasv_min_port", value: "40000" }
+    - { key: "pasv_max_port", value: "50000" }
+    - { key: "debug_ssl", value: "YES" }
+    - { key: "syslog_enable", value: "YES"}
+    - { key: "dual_log_enable", value: "YES"}
+- name: Set up VSFTPD user list
+  lineinfile:
+    line: "{{ item.name }}"
+    path: /etc/vsftpd/vsftpd.userlist
+    mode: u=rw
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+  loop: "{{ users }}"
+  no_log: yes
+- name: Set SELinux booleans
+  when: "{{ getenforce.stdout != 'Disabled' }}"
+  seboolean:
+    name: ftpd_full_access
+    state: yes
+    persistent: yes
+- name: Create user FTP roots
+  file:
+    path: "/home/{{ item.name }}/ftp"
+    state: directory
+    recurse: yes
+    owner: nobody
+    group: nobody
+    mode: a-w
+  loop: "{{ users }}"
+  no_log: yes
+- name: Create user FTP directories
+  file:
+    path: "/home/{{ item.name }}/ftp/files"
+    state: directory
+    recurse: yes
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: u=rwX
+  loop: "{{ users }}"
+  no_log: yes
+- name: Make sure vsftpd is running
+  systemd:
+    name: vsftpd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted

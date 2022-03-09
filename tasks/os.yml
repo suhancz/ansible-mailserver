@@ -1,11 +1,35 @@
 - name: Check SELinux status
   shell: getenforce
   register: getenforce
-- name: Set hostname
+- name: "Set hostname to {{ mailserver_hostname}}"
   command: "hostnamectl set-hostname {{ mailserver_hostname }}"
-- name: Install packages
-  include: packages.yml
-- name: Set up mail aliases
+- name: Install requiremets
+  block:
+    - name: Install packages
+      include: packages.yml
+  rescue:
+    - name: Find repo configs
+      find:
+        paths: /etc/yum.repos.d
+        patterns: "*.repo"
+      register: repo_files
+    - name: Disable CentOS mirrorlist
+      replace:
+        path: "{{ item }}"
+        regexp: "mirrorlist=http://mirrorlist.centos.org"
+        replace: "#mirrorlist=http://mirrorlist.centos.org"
+        validate: "grep '#mirrorlist=http://mirrorlist.centos.org' %s"
+      loop: "{{ repo_files.files }}"
+    - name: Move to CentOS Vault
+      replace:
+        path: "{{ item }}"
+        regexp: "#baseurl=http://mirror.centos.org"
+        replace: "baseurl=http://vault.centos.org"
+        validate: "grep '^baseurl=http://vault.centos.org' %s"
+      loop: "{{ repo_files.files }}"
+    - name: Install packages
+      include: packages.yml
+- name: Set up OS mail aliases
   lineinfile:
     path: /etc/aliases
     regexp: '^root: *{{ mailserver_admin_user }}'
@@ -18,46 +42,13 @@
 - name: Create OS users
   user:
     name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
+    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
     state: present
   loop: "{{ users }}"
   no_log: yes
-- name: Add vmail group
-  group:
-    name: vmail
-    system: yes
-    gid: 2000
-- name: Add vmail user
-  user:
-    name: vmail
-    group: vmail
-    create_home: no
-    system: yes
-    uid: 2000
-- name: Create policyd-spf group
-  group:
-    name: policyd-spf
-    state: present
-- name: Create policyd-spf user
-  user:
-    name: policyd-spf
-    group: policyd-spf
-    create_home: no
-    shell: /bin/false
-- name: Apply mail aliases
-  command: newaliases
 - name: Set up cron mailto
   cron:
     backup: yes
     env: yes
     name: MAILTO
     job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
-- name: Configure local DNS cache
-  nmcli:
-    conn_name: ens192
-    dns4:
-      - 127.0.0.1
-      - 8.8.8.8
-      - 1.1.1.1
-    state: present
-    type: ethernet

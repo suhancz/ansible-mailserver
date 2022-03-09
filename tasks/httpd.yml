@@ -1,8 +1,7 @@
 - name: Open firewall
-  firewalld:
-    service: "{{ item }}"
-    permanent: yes
-    state: enabled
+  include: firewall.yml
+  vars:
+    port: "{{ item }}"
   loop:
     - http
     - https
@@ -32,5 +31,31 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd.domain.conf.j2", dest: "/etc/httpd/conf.d/{{ mailserver_hostname }}.conf" }
-    - { src: "httpd.postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/postfixadmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.conf" }
+    - { src: "httpd/postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/horde.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/domain-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}-le-ssl.conf" }
+    - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
+    - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}-le-ssl.conf" }
+- name: Deploy SSL config
+  copy:
+    src: httpd/options-ssl-apache.conf
+    dest: /etc/letsencrypt/options-ssl-apache.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+- name: Set postfixadmin ACLs
+  acl:
+    path: /var/www/postfixadmin/templates_c
+    entity: apache
+    etype: user
+    permissions: rwX
+    state: present
+    recursive: yes
+- name: Make sure Apache is running
+  systemd:
+    name: httpd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted

@@ -1,0 +1,91 @@
+- name: Set up Extra Packages for Enterprise Linux 7 repository
+  blockinfile:
+    path: /etc/yum.repos.d/epel-el7.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Extra Packages for Enterprise Linux 7 repository"
+    block: |
+      [epel-el7]
+      name=Extra Packages for Enterprise Linux 7 - x86_64
+      baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
+      enabled=0
+      gpgcheck=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Install wiredtiger
+  dnf:
+    name:
+      - wiredtiger
+      - wiredtiger-devel
+    enablerepo: epel-el7
+    state: latest
+# - name: Open firewall
+#   include: firewall.yml
+#   vars:
+#     port: "{{ item }}"
+#   loop:
+#     - ldap
+#     - ldaps
+# - name: Add ldap group
+#   group:
+#     name: ldap
+#     system: yes
+#     gid: 55
+# - name: Add ldap user
+#   user:
+#     name: ldap
+#     group: ldap
+#     create_home: yes
+#     system: yes
+#     uid: 55
+#     home: /var/lib/openldap
+#     shell: /usr/sbin/nologin
+- name: Render dscreate config template
+  template:
+    src: "ldap/389.dscreate.conf.j2"
+    dest: "/tmp/ansible-mailserver-install.dscreate.conf"
+    mode: u=rw
+    owner: root
+    group: root
+    backup: yes
+- name: Apply LDAP server configuration
+  block:
+    - name: Configure LDAP server
+      command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
+  rescue:
+    - name: Start LDAP server
+      command: "dsctl {{ mailserver_hostname.split('.')[0] }} start"
+    - name: Create backup before taking destructive actions
+      command: "dsconf {{ mailserver_hostname.split('.')[0] }} backup create"
+    - name: List LDAP server backups
+      command: "dsctl {{ mailserver_hostname.split('.')[0] }} backups"
+      register: ldap_backups
+    - name: Create backup directory
+      file:
+        path: /backup/ldap
+        state: directory
+        recurse: yes
+        owner: root
+        group: root
+        mode: u=rwX
+    - name: Save last LDAP backup
+      archive:
+        path: "{{ (ldap_backups.stdout_lines|last).split(' ')[1] }}"
+        dest: "/backup/ldap/LDAP_backup.{{ (ldap_backups.stdout_lines|last).split(' ')[1].split('/')|last }}.tar.bz2"
+        format: bz2
+        force_archive: yes
+    - name: Uninstall LDAP server
+      command: "dsctl {{ mailserver_hostname.split('.')[0] }} remove --do-it"
+    - name: Configure LDAP server
+      command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
+- name: Import TLS certificate for LDAP
+  command: "dsctl {{ mailserver_hostname.split('.')[0] }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
+- name: Enable LDAP plugins
+  command: "dsconf {{ mailserver_hostname.split('.')[0] }} plugin {{ item }} enable"
+  loop:
+    - memberof
+    - automember
+- name: Configure the memberof plugin to search all entries
+  command: "dsconf {{ mailserver_hostname.split('.')[0] }} plugin memberof set --scope dc={{ mailserver_domain.split('.')|join(',dc=') }}"

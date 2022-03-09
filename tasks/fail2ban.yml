@@ -1,0 +1,107 @@
+- name: Create PostfixAdmin fail2ban filters
+  copy:
+    src: fail2ban/postfixadmin.conf
+    dest: /etc/fail2ban/filter.d/postfixadmin.conf
+- name: Enable fail2ban jails
+  blockinfile:
+    path: /etc/fail2ban/jail.d/ansible-mailserver.local
+    marker: "# {mark} ANSIBLE MANAGED BLOCK ansible-mailserver fail2ban jails"
+    block: |
+      [sshd]
+      enabled  = true
+
+      [selinux-ssh]
+      enabled  = true
+
+      [apache-auth]
+      enabled  = true
+
+      [apache-badbots]
+      enabled  = true
+
+      [apache-noscript]
+      enabled  = true
+
+      [apache-overflows]
+      enabled  = true
+
+      [apache-nohome]
+      enabled  = true
+
+      [apache-botsearch]
+      enabled  = true
+
+      [apache-fakegooglebot]
+      enabled  = true
+
+      [apache-modsecurity]
+      enabled  = true
+
+      [apache-shellshock]
+      enabled  = true
+
+      [php-url-fopen]
+      enabled  = true
+
+      [horde]
+      enabled  = true
+
+      # [vsftpd]
+      # enabled  = true
+
+      [postfix]
+      enabled  = true
+
+      [postfix-rbl]
+      enabled  = true
+
+      [sendmail-auth]
+      enabled  = true
+
+      [sendmail-reject]
+      enabled  = true
+
+      [dovecot]
+      enabled  = true
+
+      [sieve]
+      enabled  = true
+
+      [postfix-sasl]
+      enabled  = true
+
+      [named-refused]
+      enabled  = true
+
+      [mysqld-auth]
+      enabled  = true
+
+      # [mongodb-auth]
+      # enabled  = true
+
+      [pam-generic]
+      enabled  = true
+
+      # [slapd]
+      # enabled  = true
+
+      [postfixadmin]
+      enabled  = true
+      port     = http,https
+      filter   = postfixadmin
+      logpath  = /var/log/php-fpm/www-error.log
+      findtime = 60
+      maxretry = 3
+      bantime  = 120
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Reload fail2ban configs
+  systemd:
+    name: fail2ban
+    daemon_reload: yes
+    enabled: yes
+    state: restarted

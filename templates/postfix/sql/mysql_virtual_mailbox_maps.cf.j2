@@ -1,5 +1,5 @@
 user = postfixadmin
-password = {{ postfixadmin_password }}
+password = {{ postfixadmin_db_password }}
 hosts = localhost
 dbname = postfixadmin
 query = SELECT maildir FROM mailbox WHERE username='%s' AND active = '1'

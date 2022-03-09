@@ -1,18 +1,125 @@
-- name: Request Let's Encrypt certificates
-  command: "certbot certonly -a apache --agree-tos --staple-ocsp --email {{ mailserver_admin_email }} -d {{ item }}"
-  args:
-    creates: "/etc/letsencrypt/live/{{ item }}"
+- name: Determine ACME directory
+  set_fact:
+    acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
+- name: Create Certbot config directories
+  file:
+    state: directory
+    path: "/etc/letsencrypt/{{ item.path }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
   loop:
-    - "{{ mailserver_hostname }}"
-    - "postfixadmin.{{ mailserver_domain }}"
+    - { path: "archive", mode: "u=rwx,g=rx" }
+    - { path: "archive/{{ mailserver_domain }}", mode: "u=rwx,go=rx" }
+    - { path: "csr", mode: "u=rwx,go=rx" }
+    - { path: "keys", mode: "u=rw" }
+    - { path: "live", mode: "u=rwx,g=rx" }
+    - { path: "live/{{ mailserver_domain }}", mode: "u=rwx,go=rx" }
+    - { path: "renewal", mode: "u=rwX,g=rX" }
+- name: Generate Let's Encrypt account key
+  openssl_privatekey:
+    path: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+    backup: yes
+    mode: u=rw,g=rx
+    owner: root
+    group: root
+- name: Generate OpenSSL private key
+  openssl_privatekey:
+    path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
+    backup: yes
+    mode: u=rw,g=rx
+    owner: root
+    group: root
+- name: Generate SAN CSR
+  openssl_csr:
+    path: /etc/letsencrypt/csr/0000_csr-certbot.pem
+    privatekey_path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
+    subject_alt_name: '{% for custom_domain in [mailserver_domain] + custom_domains %}DNS:*.{{ custom_domain }}{% if loop.index != loop.length %},{% endif %}{% endfor %}'
+    backup: yes
+    mode: u=rw,go=r
+    owner: root
+    group: root
+- name: Make sure account exists and have given contacts. We agree to TOS.
+  acme_account:
+    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+    acme_directory: "{{ acme_directory }}"
+    acme_version: 2
+    state: present
+    terms_agreed: yes
+    contact:
+      - "mailto:ssl@{{ mailserver_domain }}"
+  register: acme_account
+- name: Request Let's Encrypt certificate
+  acme_certificate:
+    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+    account_email: "ssl@{{ mailserver_domain }}"
+    src: /etc/letsencrypt/csr/0000_csr-certbot.pem
+    cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
+    acme_directory: "{{ acme_directory }}"
+    acme_version: 2
+    challenge: dns-01
+    remaining_days: 60
+  register: letsencrypt_challenge
+- name: Check Let's Encrypt TXT records
+  when: letsencrypt_challenge.changed is true
+  include_tasks: propagate_ssl_txt_records.yml
+  vars:
+    current_domain: "{{ item }}"
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  loop_control:
+    loop_var: domain_item
+- name: Let the challenge be validated and retrieve the cert and immediate certificate
+  acme_certificate:
+    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+    account_email: "ssl@{{ mailserver_domain }}"
+    src: /etc/letsencrypt/csr/0000_csr-certbot.pem
+    cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
+    chain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/chain1.pem"
+    fullchain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/fullchain1.pem"
+    acme_directory: "{{ acme_directory }}"
+    acme_version: 2
+    challenge: dns-01
+    remaining_days: 60
+    data: "{{ letsencrypt_challenge }}"
+  when: letsencrypt_challenge.changed is true
+- name: Create symlink to the Let's Encrypt content
+  file:
+    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/{{ item }}.pem"
+    src: "../../archive/{{ mailserver_domain }}/{{ item }}1.pem"
+    backup: yes
+    state: link
+  loop:
+    - privkey
+    - cert
+    - chain
+    - fullchain
+- name: Allow Apache to reach letsencrypt keys
+  acl:
+    path: "{{ item.path }}"
+    entity: "{{ item.entity }}"
+    etype: "{{ item.etype }}"
+    permissions: "{{ item.permissions }}"
+    state: present
+    recursive: yes
+  loop:
+    - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
+    - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
 - name: Generate OpenSSL DHParam
   openssl_dhparam:
-    path: /etc/dovecot/dh.pem
+    path: /etc/letsencrypt/dh.pem
     size: 4096
     mode: u=rw,og=r
     backup: yes
     owner: root
     group: root
+- name: Render certbot renewal config template
+  template:
+    src: ssl/letsencrypt.renewal.conf.j2
+    dest: "/etc/letsencrypt/renewal/{{ mailserver_domain }}.conf"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
 - name: Auto-renew certificates
   cron:
     name: certbot
