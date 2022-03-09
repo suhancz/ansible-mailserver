@@ -5,7 +5,7 @@
 LOCK TABLES `admin` WRITE;
 /*!40000 ALTER TABLE `admin` DISABLE KEYS */;
 INSERT INTO `admin` (`username`, `password`, `created`, `modified`, `active`, `superadmin`, `phone`, `email_other`, `token`, `token_validity`)
-VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("bcrypt") }}{% endif %}{% endfor %}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,1,'','','','{{ now.date }} {{ now.time }}');
+VALUES ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{% for user in users %}{% if user.name == mailserver_admin_user %}{BLF-CRYPT}{{ user.password|password_hash("bcrypt") }}{% endif %}{% endfor %}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1,1,'','','','{{ now.date }} {{ now.time }}');
 /*!40000 ALTER TABLE `admin` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -21,7 +21,14 @@ VALUES {% for alias_domain in custom_domains -%}
        ('hostmaster@{{ alias_domain }}','hostmaster@{{ mailserver_domain }}','{{ alias_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
        ('postmaster@{{ alias_domain }}','postmaster@{{ mailserver_domain }}','{{ alias_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
        ('webmaster@{{ alias_domain }}','webmaster@{{ mailserver_domain }}','{{ alias_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
-       {%- endfor %}
+       {% endfor %}
+       {%- for user in users -%}
+       {%- if user.aliases is defined and user.aliases -%}
+       {% for alias in user.aliases -%}
+       ('{{ alias }}','{{ user.name }}@{{ mailserver_domain }}','{{ alias.split('@')[1] }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       {% endfor -%}
+       {%- endif -%}
+       {%- endfor -%}
        ('abuse@{{ mailserver_domain }}','root@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
        ('dmarc-reports@{{ mailserver_domain }}','postmaster@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
        ('hostmaster@{{ mailserver_domain }}','root@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{now.time }}',1),
@@ -52,7 +59,8 @@ UNLOCK TABLES;
 
 LOCK TABLES `config` WRITE;
 /*!40000 ALTER TABLE `config` DISABLE KEYS */;
-INSERT INTO `config` VALUES (2,version,1844);
+INSERT INTO `config` (`id`, `name`, `value`)
+VALUES (1,'version','1844');
 /*!40000 ALTER TABLE `config` ENABLE KEYS */;
 UNLOCK TABLES;
 

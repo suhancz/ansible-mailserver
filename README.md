@@ -12,6 +12,9 @@ Role Variables
     users:
       - name
         password
+        aliases:
+          - alias@domain.com
+          - otheralias@otherdomain.org
     production: yes # boolean if we use production Let's Encrypt certificates
 
 Example Playbook
