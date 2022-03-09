@@ -1,4 +1,4 @@
-- name: "Warn user to set up {{ item.value['dns-01'].record }} TXT record with the Letsencrypt challenge"
+- name: "Warn user to set up TXT records with the Letsencrypt challenge for {{ domain_item }}"
   debug:
     msg:
       - ""
@@ -13,7 +13,7 @@
       - ""
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
   when: "{{ (item.value['dns-01'].resource ~ '.' ~ domain_item) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
-- name: "Wait for {{ item.value['dns-01'].record }} TXT record to get propagated"
+- name: "Wait for TXT record to get propagated"
   community.dns.wait_for_txt:
     records:
       - name: "{{ item.value['dns-01'].record }}"
