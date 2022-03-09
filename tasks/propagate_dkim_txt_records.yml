@@ -1,0 +1,27 @@
+- name: "Read DKIM keys for {{ domain_item }}"
+  command: "cat /etc/opendkim/keys/{{ domain_item }}/{{ dkim_selector }}.txt"
+  register: dkim_keys
+- name: "Parse DKIM keys for {{ domain_item }}"
+  set_fact:
+    desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
+    current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
+- name: "Warn user to set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record with the DKIM keys"
+  debug:
+    msg:
+      - ""
+      - "Please, set up the following TXT record with your DNS provider if not done yet:"
+      - "==============================================================================="
+      - ""
+      - "domain: *.{{ domain_item }}"
+      - "record: {{ dkim_selector }}._domainkey.{{ domain_item }}"
+      - "type: TXT"
+      - "value: {{ desired_dkim_record }}"
+      - ""
+  when: desired_dkim_record != current_dkim_record
+- name: "Wait for {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record to get propagated"
+  community.dns.wait_for_txt:
+    records:
+      - name: "{{ dkim_selector }}._domainkey.{{ domain_item }}"
+        values: "{{ desired_dkim_record }}"
+        mode: equals
+    always_ask_default_resolver: no

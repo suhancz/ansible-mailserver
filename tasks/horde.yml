@@ -1,0 +1,38 @@
+- name: Upload complex Horde configs
+  copy:
+    dest: "/etc/horde/{{ item }}/conf.php"
+    src: "horde/{{ item }}/conf.php"
+    mode: u=rw
+    backup: yes
+    owner: apache
+    group: apache
+  loop:
+    - imp
+    - nag
+    - passwd
+- name: Render Horde config templates
+  template:
+    src: "horde/{{ item.app }}/conf.php.j2"
+    dest: "/etc/horde/{{ item.app }}/conf.php"
+    mode: "{{ item.mode }}"
+    owner: apache
+    group: apache
+    backup: yes
+  loop:
+    - { app: '', mode: 'ug=rw' }
+    - { app: 'kronolith', mode: 'u=rw' }
+- name: Create horde DB schema
+  include_tasks: create_mariadb_schema.yml
+  vars:
+    mariadb_database: horde
+- name: Set up Horde DB privileges
+  mysql_user:
+    name: hordeuser
+    password: '{{ horde_db_password }}'
+    priv: 'horde.*:ALL'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Generate Horde DB schema
+  command: horde-db-migrate

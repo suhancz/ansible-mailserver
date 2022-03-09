@@ -1,0 +1,10 @@
+[Unit]
+Description=Backup {{ item }}
+
+[Timer]
+Unit={{ item }}-backup.service
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=basic.target

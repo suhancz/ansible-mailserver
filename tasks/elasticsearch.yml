@@ -1,0 +1,6 @@
+- name: Make sure ElasticSearch is running
+  systemd:
+    name: elasticsearch
+    daemon_reload: yes
+    enabled: yes
+    state: restarted

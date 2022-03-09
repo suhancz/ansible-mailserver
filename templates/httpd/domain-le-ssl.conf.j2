@@ -1,0 +1,15 @@
+<IfModule mod_ssl.c>
+SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
+<VirtualHost *:443>
+        ServerName {{ mailserver_hostname }}
+        ServerAlias {% for custom_domain in [mailserver_domain] + custom_domains %}{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+        
+        DocumentRoot /var/www/html/
+
+Include /etc/letsencrypt/options-ssl-apache.conf
+SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem
+Header always set Strict-Transport-Security "max-age=31536000"
+SSLUseStapling on
+</VirtualHost>
+</IfModule>

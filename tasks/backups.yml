@@ -1,0 +1,109 @@
+- name: Create backup directories
+  file:
+    path: "/backup/{{ item }}"
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+    mode: u=rwX
+  loop:
+    - ''
+    - mariadb
+    - ldap
+- name: Crteate systemd backup services
+  template:
+    src: "systemd/{{ item }}-backup.service.j2"
+    dest: "/etc/systemd/system/{{ item }}-backup.service"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - mariadb
+    - ldap
+- name: Create systemd backup timers
+  template:
+    src: "systemd/backup.timer.j2"
+    dest: "/etc/systemd/system/{{ item }}-backup.timer"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - mariadb
+    - ldap
+- name: Ensure systemd is aware of the backup services
+  systemd:
+    name: "{{ item }}-backup"
+    daemon_reload: yes
+    enabled: no
+    state: stopped
+  loop:
+    - mariadb
+    - ldap
+- name: Enable the backup timers
+  systemd:
+    name: "{{ item }}-backup.timer"
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop:
+    - mariadb
+    - ldap
+- name: Restore latest backups
+  when: mariadb_backup_path is defined or ldap_backup_path is defined
+  block:
+    - name: Prepare MariaDB backup
+      when: mariadb_backup_path is defined
+      command: "mariabackup --prepare --target-dir={{ mariadb_backup_path }}"
+    - name: Stop MariaDB
+      when: mariadb_backup_path is defined
+      systemd:
+        name: mariadb
+        state: stopped
+    - name: Erase data directory
+      when: mariadb_backup_path is defined
+      file:
+        path: /var/lib/mysql
+        state: absent
+    - name: Create data directory
+      when: mariadb_backup_path is defined
+      file:
+        path: /var/lib/mysql
+        state: directory
+        owner: mysql
+        group: mysql
+        mode: u=rwx,go=rx
+    - name: Restore MariaDB backup
+      when: mariadb_backup_path is defined
+      command: "mariabackup --copy-back --target-dir={{ mariadb_backup_path }}"
+    - name: Ensure data directory permissions
+      when: mariadb_backup_path is defined
+      file:
+        path: /var/lib/mysql
+        state: directory
+        owner: mysql
+        group: mysql
+        recurse: yes
+    - name: Start MariaDB
+      when: mariadb_backup_path is defined
+      systemd:
+        name: mariadb
+        state: started
+    - name: Stop LDAP server
+      when: ldap_backup_path is defined
+      command: "dsctl {{ mailserver_hostname.split('.')[0] }} stop"
+    - name: Prepare LDAP backup
+      when: ldap_backup_path is defined
+      unarchive:
+        src: "{{ ldap_backup_path }}"
+        dest: /
+        list_files: yes
+        remote_src: yes
+      register: ldap_backup_files
+    - name: Restore LDAP backup
+      when: ldap_backup_path is defined
+      command: "dsctl {{ mailserver_hostname.split('.')[0] }} bak2db /{{ ldap_backup_files.files[0] }}"
+    - name: Start LDAP server
+      when: ldap_backup_path is defined
+      command: "dsctl {{ mailserver_hostname.split('.')[0] }} start"

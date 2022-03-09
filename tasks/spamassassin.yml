@@ -37,7 +37,7 @@
 - name: Upload sieve config
   copy:
     dest: /var/mail/SpamToJunk.sieve
-    src: "SpamToJunk.sieve"
+    src: spamassassin/SpamToJunk.sieve
     mode: u=rw,og=r
     backup: yes
     owner: root
