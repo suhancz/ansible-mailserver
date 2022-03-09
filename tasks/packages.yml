@@ -269,3 +269,4 @@
       - php-horde-mnemo
       - php-horde-wicked
     enablerepo: remi
+    state: latest
