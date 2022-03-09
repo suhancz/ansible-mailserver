@@ -1,7 +1,7 @@
 - name: Check SELinux status
   shell: getenforce
   register: getenforce
-- name: Set hostname
+- name: "Set hostname to {{ mailserver_hostname}}"
   command: "hostnamectl set-hostname {{ mailserver_hostname }}"
 - name: Install requiremets
   block:
@@ -29,7 +29,7 @@
       loop: "{{ repo_files.files }}"
     - name: Install packages
       include: packages.yml
-- name: Set up mail aliases
+- name: Set up OS mail aliases
   lineinfile:
     path: /etc/aliases
     regexp: '^root: *{{ mailserver_admin_user }}'
