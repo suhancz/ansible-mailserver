@@ -20,7 +20,7 @@
     backup: yes
   loop:
     - { app: '', mode: 'ug=rw' }
-    - { app: 'kronolith', mode: 'u=rw' }
+    # - { app: 'kronolith', mode: 'u=rw' }
 - name: Create horde DB schema
   include_tasks: create_mariadb_schema.yml
   vars:
