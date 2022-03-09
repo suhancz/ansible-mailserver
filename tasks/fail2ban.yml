@@ -82,8 +82,8 @@
       [pam-generic]
       enabled  = true
 
-      [slapd]
-      enabled  = true
+      # [slapd]
+      # enabled  = true
 
       [postfixadmin]
       enabled  = true
