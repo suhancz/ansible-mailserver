@@ -13,7 +13,7 @@
 - name: Render Horde config templates
   template:
     src: "horde/{{ item.app }}/conf.php.j2"
-    dest: "/etc/horde/{{ item.app }}/conf.php.j2"
+    dest: "/etc/horde/{{ item.app }}/conf.php"
     mode: "{{ item.mode }}"
     owner: apache
     group: apache
@@ -34,3 +34,5 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
+- name: Generate Horde DB schema
+  command: horde-db-migrate

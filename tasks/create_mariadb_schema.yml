@@ -5,9 +5,8 @@
 - name: "Create {{ mariadb_database }} DB schema"
   mysql_db:
     name: "{{ mariadb_database }}"
-    # state: present
-    state: import
+    state: "{{ mariadb_state|default('present') }}"
     login_user: root
     login_password: "{{ mysql_root_password }}"
-    target: "/tmp/ansible-mailserver-install.{{ mariadb_database }}_schema.sql"
+    target: "{{ '/tmp/ansible-mailserver-install.' ~ mariadb_database ~ '_schema.sql' if mariadb_state is defined and mariadb_state == 'import' }}"
   no_log: yes

@@ -26,6 +26,7 @@
   include_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: postfixadmin
+    mariadb_state: import
 - name: Set up postfixadmin DB privileges
   mysql_user:
     name: postfixadmin

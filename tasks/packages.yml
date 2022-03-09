@@ -21,22 +21,22 @@
     state: present
     backup: yes
     create: yes
-- name: Set up MongoDB repository
-  blockinfile:
-    path: /etc/yum.repos.d/mongodb-org-5.0.repo
-    marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
-    block: |
-      [mongodb-org-5.0]
-      name=MongoDB 5.0 Repository
-      baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
-      gpgcheck=0
-      enabled=1
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    state: present
-    backup: yes
-    create: yes
+# - name: Set up MongoDB repository
+#   blockinfile:
+#     path: /etc/yum.repos.d/mongodb-org-5.0.repo
+#     marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
+#     block: |
+#       [mongodb-org-5.0]
+#       name=MongoDB 5.0 Repository
+#       baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
+#       gpgcheck=0
+#       enabled=1
+#     mode: u=rw,og=r
+#     owner: root
+#     group: root
+#     state: present
+#     backup: yes
+#     create: yes
 - name: Enable PowerTools
   command: dnf config-manager --set-enable powertools
 - name: Reset the PHP DNF module
@@ -188,7 +188,7 @@
       - sssd-ldap
       - 389-ds-base
       - fortune-mod
-      - mongodb-org
+      # - mongodb-org
       - fail2ban-all
       - fail2ban-firewalld
       - fail2ban-selinux
@@ -264,7 +264,7 @@
       - php-horde-imp
       - php-horde-kronolith
       - php-horde-turba
-      - php-horde-Horde-Mongo
+      # - php-horde-Horde-Mongo
       - php-horde-ingo
       - php-horde-mnemo
       - php-horde-wicked
