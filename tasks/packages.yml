@@ -196,6 +196,9 @@
       - fail2ban-server
       - fail2ban-systemd
       - fail2ban
+      - procmail
+      - fetchmail
+      - mutt
     state: latest
 - name: Install Horde packages
   dnf:
