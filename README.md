@@ -16,6 +16,12 @@ Role Variables
           - alias@domain.com
           - otheralias@otherdomain.org
     production: yes # boolean if we use production Let's Encrypt certificates
+    mariadb_backup_path # path to the MariaDB backups
+    ldap_backup_path # path to the tarball containing LDAP backups
+    opendkim_backup_path # path to the tarball containing OpenDKIM backups
+    opendmarc_backup_path # path to the tarball containing OpenDMARC backups
+    vsftpd_backup_path # path to the tarball containing backups of user home FTP directory contents
+    ssl_backup_path # path to the tarball containing SSL-related backups
 
 Example Playbook
 ----------------
