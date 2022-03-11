@@ -217,6 +217,11 @@
       - mutt
       - moreutils
       - incron
+      - perl-DBI
+      - perl-MIME-Base64
+      - perl-File-Temp
+      - perl-Sys-Syslog
+      - perl-LockFile-Simple
     state: latest
 - name: Install Remi packages
   dnf:
