@@ -14,6 +14,10 @@
     - opendmarc
     - vsftpd
     - ssl
+    - horde
+    - dovecot
+    - postfix
+    - mail
 - name: Create systemd tarball backup services
   template:
     src: "systemd/tarball-backup.service.j2"
@@ -25,6 +29,10 @@
   loop:
     - opendkim
     - opendmarc
+    - horde
+    - dovecot
+    - postfix
+    - mail
 - name: Create systemd backup services
   template:
     src: "systemd/{{ item }}-backup.service.j2"
@@ -53,6 +61,10 @@
     - opendmarc
     - vsftpd
     - ssl
+    - horde
+    - dovecot
+    - postfix
+    - mail
 - name: Ensure systemd is aware of the backup services
   systemd:
     name: "{{ item }}-backup"
@@ -66,6 +78,10 @@
     - opendmarc
     - vsftpd
     - ssl
+    - horde
+    - dovecot
+    - postfix
+    - mail
 - name: Enable the backup timers
   systemd:
     name: "{{ item }}-backup.timer"
@@ -79,6 +95,10 @@
     - opendmarc
     - vsftpd
     - ssl
+    - horde
+    - dovecot
+    - postfix
+    - mail
 - name: Restore backups
   when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined
   block:
@@ -146,6 +166,10 @@
         - opendkim
         - opendmarc
         - vsftpd
+        - horde
+        - dovecot
+        - postfix
+        - mail
     - name: Restore SSL backup
       when: ssl_backup_path is defined
       unarchive:
