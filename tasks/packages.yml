@@ -21,6 +21,22 @@
     state: present
     backup: yes
     create: yes
+- name: Set up Extra Packages for Enterprise Linux 7 repository
+  blockinfile:
+    path: /etc/yum.repos.d/epel-el7.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Extra Packages for Enterprise Linux 7 repository"
+    block: |
+      [epel-el7]
+      name=Extra Packages for Enterprise Linux 7 - x86_64
+      baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
+      enabled=0
+      gpgcheck=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
 # - name: Set up MongoDB repository
 #   blockinfile:
 #     path: /etc/yum.repos.d/mongodb-org-5.0.repo
@@ -42,12 +58,7 @@
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable DNF modules
-  dnf:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - '@php:remi-7.4'
-    - '@389-directory-server:stable/default'
+  command: dnf module enable php:remi-7.4 389-directory-server:stable/default -y
 - name: Install packages
   package:
     name:
@@ -199,8 +210,16 @@
       - procmail
       - fetchmail
       - mutt
+      - moreutils
+      - incron
+      - perl-DBI
+      - perl-MIME-Base64
+      - perl-File-Temp
+      - perl-Sys-Syslog
+      - perl-LockFile-Simple
+      - figlet
     state: latest
-- name: Install Horde packages
+- name: Install Remi packages
   dnf:
     name:
       - php-channel-horde
@@ -271,5 +290,14 @@
       - php-horde-ingo
       - php-horde-mnemo
       - php-horde-wicked
+      - php-pear-Text-Figlet
     enablerepo: remi
+    state: latest
+- name: Install EL7 packages
+  dnf:
+    name:
+      - wiredtiger
+      - wiredtiger-devel
+      - getmail
+    enablerepo: epel-el7
     state: latest
