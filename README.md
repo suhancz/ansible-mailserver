@@ -15,6 +15,14 @@ Role Variables
         aliases:
           - alias@domain.com
           - otheralias@otherdomain.org
+        old_imap_mail: # Dovecot imapc configuration values
+          host
+          ssl
+          ssl_verify
+          port
+          user
+          password
+          sync: yes # this boolean is not a default Dovecot thing. indicates if mailbox should be hourly synced after the initial copy
     production: yes # boolean if we use production Let's Encrypt certificates
     mariadb_backup_path # path to the MariaDB backups
     ldap_backup_path # path to the tarball containing LDAP backups
