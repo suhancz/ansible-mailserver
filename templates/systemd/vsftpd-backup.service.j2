@@ -5,7 +5,7 @@ Requires=vsftpd.service
 
 [Service]
 Type=forking
-ExecStart=/bin/sh -c '/usr/bin/find /backup/vsftpd/ -maxdepth 1 -mtime +7 -exec /usr/bin/rm -rf {} \; ; /usr/bin/tar cjvf /backup/vsftpd/vsftpd-`/usr/bin/date -Iminutes`.tar.bz2{% for user in users %} /home/{{ user.name }}/ftp{% endfor %}'
+ExecStart=/bin/sh -c '/usr/bin/find /backup/vsftpd/ -maxdepth 1 -mtime +7 -exec /usr/bin/rm -rf {} \; ; /usr/bin/tar cjvf /backup/vsftpd/vsftpd-`/usr/bin/date -Iminutes`.tar.bz2 /etc/vsftpd*{% for user in users %} /home/{{ user.name }}/ftp{% endfor %}'
 RemainAfterExit=yes
 StandardOutput=journal
 
