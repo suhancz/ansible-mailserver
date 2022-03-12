@@ -143,6 +143,7 @@
   when: "{{ item.old_imap_mail is defined }}"
   no_log: yes
   loop: "{{ users }}"
+  no_log: yes
 - name: Sync old imap account
   cron:
     name: Sync old imap account
