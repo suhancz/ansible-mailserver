@@ -46,17 +46,30 @@
 - name: Generate PostfixAdmin PHP password
   command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password
-- name: Create Postfix SQL directory
+- name: Create PostfixAdmin directories
   file:
-    path: /etc/postfix/sql/
+    path: "{{ item }}"
     state: directory
     mode: u=rwX,og=rX
     owner: root
     group: root
+    recurse: yes
+  loop:
+    - /etc/postfix/sql
+    - /etc/mail/postfixadmin
+    - /var/lock/fetchmail
 - name: Render PostfixAdmin config template
   template:
     src: postfixadmin/config.local.php.j2
     dest: /var/www/postfixadmin/config.local.php
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+- name: Render PostfixAdmin fetchmail config template
+  template:
+    src: postfixadmin/fetchmail.conf.j2
+    dest: /etc/mail/postfixadmin/fetchmail.conf
     mode: u=rw,og=r
     owner: root
     group: root

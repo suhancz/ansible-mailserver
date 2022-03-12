@@ -1,0 +1,20 @@
+# database backend
+$db_type = 'mysql';
+
+# host name
+$db_host="127.0.0.1";
+# database name
+$db_name="postfixadmin";
+# database username
+$db_username="posfixadmin";
+# database password
+$db_password="{{ postfixadmin_db_password }}";
+
+# Where to create a lockfile; please ensure path exists.
+$run_dir="/var/lock/fetchmail";
+
+# in case you want to use dovecot deliver to put the mail directly into the users mailbox,
+# set "mda" in the fetchmail table to the keyword "dovecot".
+
+# Where the delivery binary is located
+$dovecot_deliver = "/usr/libexec/dovecot/deliver";
