@@ -222,6 +222,8 @@
       - perl-File-Temp
       - perl-Sys-Syslog
       - perl-LockFile-Simple
+      - figlet
+      - php-pear-Text-Figlet
     state: latest
 - name: Install Remi packages
   dnf:
