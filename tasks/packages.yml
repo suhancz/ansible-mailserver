@@ -58,12 +58,7 @@
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable DNF modules
-  dnf:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - '@php:remi-7.4'
-    - '@389-directory-server:stable/default'
+  command: dnf module enable php:remi-7.4 389-directory-server:stable/default -y
 - name: Install packages
   package:
     name:
@@ -223,7 +218,6 @@
       - perl-Sys-Syslog
       - perl-LockFile-Simple
       - figlet
-      - php-pear-Text-Figlet
     state: latest
 - name: Install Remi packages
   dnf:
@@ -296,6 +290,7 @@
       - php-horde-ingo
       - php-horde-mnemo
       - php-horde-wicked
+      - php-pear-Text-Figlet
     enablerepo: remi
     state: latest
 - name: Install EL7 packages
