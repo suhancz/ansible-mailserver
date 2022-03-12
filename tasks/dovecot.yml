@@ -104,6 +104,7 @@
   command: 'doveadm -o imapc_features="rfc822.size fetch-headers" -o imapc_host={{ item.old_imap_mail.host }} -o imapc_ssl={{ item.old_imap_mail.ssl|default("imaps") }} -o imapc_ssl_verify={{ item.old_imap_mail.ssl_verify|default("yes") }} -o imapc_port={{ item.old_imap_mail.port|default(993)|string }} -o imapc_user={{ item.old_imap_mail.user }} -o imapc_password={{ item.old_imap_mail.password }} backup -Ru {{ item.name }}@{{ mailserver_domain }} imapc:'
   when: "{{ item.old_imap_mail is defined }}"
   loop: "{{ users }}"
+  no_log: yes
 - name: Sync old imap account
   cron:
     name: Sync old imap account
@@ -113,3 +114,4 @@
     user: "{{ item.name }}"
   when: "{{ item.old_imap_mail is defined and item.old_imap_mail.sync is defined and item.old_imap_mail.sync }}"
   loop: "{{ users }}"
+  no_log: yes
