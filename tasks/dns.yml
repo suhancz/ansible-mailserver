@@ -2,6 +2,7 @@
   nmcli:
     conn_name: ens192
     ip4: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    ip6: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
     dns4:
       - 127.0.0.1
       - 8.8.8.8
