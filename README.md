@@ -26,6 +26,9 @@ Role Variables
     custom_domains: # list of domains to also configure the mailserver for
       - domain.com
       - otherdomain.org
+    undeliverable_exceptions: # list of domains from where mail always should be delivered
+      - domain.com
+      - otherdomain.org
     production: yes # boolean if we use production Let's Encrypt certificates
     mariadb_backup_path # path to the MariaDB backups
     ldap_backup_path # path to the tarball containing LDAP backups
