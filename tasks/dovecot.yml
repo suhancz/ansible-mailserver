@@ -106,11 +106,46 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
-- name: Restore old imap account
-  command: 'doveadm -o imapc_features="rfc822.size fetch-headers" -o imapc_host={{ item.old_imap_mail.host }} -o imapc_ssl={{ item.old_imap_mail.ssl|default("imaps") }} -o imapc_ssl_verify={{ item.old_imap_mail.ssl_verify|default("yes") }} -o imapc_port={{ item.old_imap_mail.port|default(993)|string }} -o imapc_user={{ item.old_imap_mail.user }} -o imapc_password={{ item.old_imap_mail.password }} backup -Ru {{ item.name }}@{{ mailserver_domain }} imapc:'
-  when: "{{ item.old_imap_mail is defined }}"
-  loop: "{{ users }}"
-  no_log: yes
+- name: Overwrite IMAP with the old account's contents
+  block:
+    - name: Check if old IMAP account is already restored
+      command: cat /etc/dovecot/already_restored_imap_accounts.txt
+      register: already_restored_imap_accounts
+    - name: Restore old imap account
+      command: 'doveadm -o imapc_features="rfc822.size fetch-headers" -o imapc_host={{ item.old_imap_mail.host }} -o imapc_ssl={{ item.old_imap_mail.ssl|default("imaps") }} -o imapc_ssl_verify={{ item.old_imap_mail.ssl_verify|default("yes") }} -o imapc_port={{ item.old_imap_mail.port|default(993)|string }} -o imapc_user={{ item.old_imap_mail.user }} -o imapc_password={{ item.old_imap_mail.password }} backup -Ru {{ item.name }}@{{ mailserver_domain }} imapc:'
+      when: "{{ item.old_imap_mail is defined and user.name not in already_restored_imap_accounts.stdout_lines }}"
+      loop: "{{ users }}"
+      no_log: yes
+    - name: Record account as already restored
+      lineinfile:
+        line: "{{ item.name }}"
+        path: /etc/dovecot/already_restored_imap_accounts.txt
+        mode: u=rw,og=r
+        owner: root
+        group: root
+        state: present
+        backup: yes
+      when: "{{ item.old_imap_mail is defined and user.name not in already_restored_imap_accounts.stdout_lines }}"
+      loop: "{{ users }}"
+      no_log: yes
+  rescue:
+    - name: Restore old IMAP account
+      command: 'doveadm -o imapc_features="rfc822.size fetch-headers" -o imapc_host={{ item.old_imap_mail.host }} -o imapc_ssl={{ item.old_imap_mail.ssl|default("imaps") }} -o imapc_ssl_verify={{ item.old_imap_mail.ssl_verify|default("yes") }} -o imapc_port={{ item.old_imap_mail.port|default(993)|string }} -o imapc_user={{ item.old_imap_mail.user }} -o imapc_password={{ item.old_imap_mail.password }} backup -Ru {{ item.name }}@{{ mailserver_domain }} imapc:'
+      when: "{{ item.old_imap_mail is defined }}"
+      loop: "{{ users }}"
+      no_log: yes
+    - name: Record account as already restored
+      lineinfile:
+        line: "{{ item.name }}"
+        path: /etc/dovecot/already_restored_imap_accounts.txt
+        mode: u=rw,og=r
+        owner: root
+        group: root
+        state: present
+        backup: yes
+      when: "{{ item.old_imap_mail is defined }}"
+      loop: "{{ users }}"
+      no_log: yes
 - name: Sync old imap account
   cron:
     name: Sync old imap account
