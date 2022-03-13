@@ -21,18 +21,18 @@
 - name: Create systemd tarball backup services
   template:
     src: "systemd/tarball-backup.service.j2"
-    dest: "/etc/systemd/system/{{ item }}-backup.service"
+    dest: "/etc/systemd/system/{{ item.name }}-backup.service"
     mode: u=rw,og=r
     owner: root
     group: root
     backup: yes
   loop:
-    - opendkim
-    - opendmarc
-    - horde
-    - dovecot
-    - postfix
-    - mail
+    - { name: "opendkim", paths: ["/etc/opendkim", "/etc/opendkim.conf"], service: True }
+    - { name: "opendmarc", paths: ["/etc/opendmarc", "/etc/opendmarc.conf"], service: True }
+    - { name: "horde", paths: ["/etc/horde"] }
+    - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
+    - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
+    - { name: "ssl", paths: ["/etc/letsencrypt"] }
 - name: Create systemd backup services
   template:
     src: "systemd/{{ item }}-backup.service.j2"
@@ -45,7 +45,6 @@
     - mariadb
     - ldap
     - vsftpd
-    - ssl
 - name: Create systemd backup timers
   template:
     src: "systemd/backup.timer.j2"
@@ -64,7 +63,6 @@
     - horde
     - dovecot
     - postfix
-    - mail
 - name: Ensure systemd is aware of the backup services
   systemd:
     name: "{{ item }}-backup"
@@ -81,7 +79,6 @@
     - horde
     - dovecot
     - postfix
-    - mail
 - name: Enable the backup timers
   systemd:
     name: "{{ item }}-backup.timer"
@@ -98,7 +95,6 @@
     - horde
     - dovecot
     - postfix
-    - mail
 - name: Restore backups
   when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined
   block:
@@ -160,19 +156,20 @@
       include: restore_service_tarball_backup.yml
       vars:
         service: "{{ item }}"
-        service_backup_path: "{{ item }}_backup_path"
-      when: "{{ item }}_backup_path is defined"
+        service_backup_path: "{{ item + '_backup_path' }}"
+      when: "{{ item + '_backup_path' is defined }}"
       loop:
         - opendkim
         - opendmarc
         - vsftpd
-        - horde
         - dovecot
         - postfix
-        - mail
-    - name: Restore SSL backup
-      when: ssl_backup_path is defined
+    - name: Restore non-service tarball backups
+      when: "{{ item + '_backup_path'  is defined }}"
       unarchive:
-        src: "{{ ssl_backup_path }}"
+        src: "{{ item + '_backup_path' }}"
         dest: /
         remote_src: yes
+      loop:
+        - horde
+        - ssl
