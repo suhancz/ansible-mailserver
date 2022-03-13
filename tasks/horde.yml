@@ -8,8 +8,13 @@
     group: apache
   loop:
     - imp
+    - ingo
+    - kronolith
+    - mnemo
     - nag
     - passwd
+    - turba
+    - wicked
 - name: Render Horde config templates
   template:
     src: "horde/{{ item.app }}/conf.php.j2"
