@@ -1,6 +1,7 @@
 authorized_submit_users:
   - root
   - www-data
+  - apache
 undeliverable_exceptions:
   - mailserver_domain
 custom_domains:
