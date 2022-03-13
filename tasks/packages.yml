@@ -98,6 +98,7 @@
       - dovecot-mysql
       - pypolicyd-spf
       - opendkim
+      - opendkim-tools
       - perl-Getopt-Long
       - opendmarc
       - bind-utils
