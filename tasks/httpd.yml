@@ -45,6 +45,14 @@
     backup: yes
     owner: root
     group: root
+- name: Deploy Horde default config
+  copy:
+    src: httpd/php-horde-horde.conf
+    dest: /etc/httpd/conf.d/php-horde-horde.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
 - name: Set postfixadmin ACLs
   acl:
     path: /var/www/postfixadmin/templates_c
