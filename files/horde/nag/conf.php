@@ -5,6 +5,6 @@
 $conf['storage']['params']['table'] = 'nag_tasks';
 $conf['storage']['params']['driverconfig'] = 'horde';
 $conf['storage']['driver'] = 'sql';
-$conf['tasklists']['driver'] = 'kolab';
+$conf['tasklists']['driver'] = 'default';
 $conf['menu']['import_export'] = true;
 /* CONFIG END. DO NOT CHANGE ANYTHING IN OR BEFORE THIS LINE. */
