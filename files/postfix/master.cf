@@ -35,14 +35,6 @@ submission     inet     n    -    y    -    -    smtpd
 #  -o smtpd_recipient_restrictions=
 #  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
 #  -o milter_macro_daemon_name=ORIGINATING
-smtps     inet  n       -       y       -       -       smtpd
-  -o syslog_name=postfix/smtps
-  -o smtpd_tls_wrappermode=yes
-  -o smtpd_sasl_auth_enable=yes
-  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-  -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
-  -o smtpd_sasl_type=dovecot
-  -o smtpd_sasl_path=private/auth
 #smtps     inet  n       -       n       -       -       smtpd
 #  -o syslog_name=postfix/smtps
 #  -o smtpd_tls_wrappermode=yes
@@ -158,4 +150,5 @@ smtps inet n - n - - smtpd -o smtpd_tls_wrappermode=yes
 plesk_saslauthd unix y y n - 1 plesk_saslauthd status=5 listen=6 dbpath=/var/spool/postfix/plesk/passwd.db
 # BEGIN ANSIBLE MANAGED BLOCK
 smtps     inet  n       -       y       -       -       smtpd -o syslog_name=postfix/smtps -o smtpd_tls_wrappermode=yes -o smtpd_sasl_auth_enable=yes -o smtpd_relay_restrictions=permit_sasl_authenticated,reject -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject -o smtpd_sasl_type=dovecot -o smtpd_sasl_path=private/auth
+
 # END ANSIBLE MANAGED BLOCK
