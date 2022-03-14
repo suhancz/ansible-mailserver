@@ -42,6 +42,8 @@
   include: ftp.yml
 - name: Configure Apache
   include: httpd.yml
+- name: Set up SPAMAssassin
+  include: spamassassin.yml
 - name: Configure Postfix
   include: postfix.yml
 - name: Configure Dovecot
@@ -50,8 +52,6 @@
   include: dkim.yml
 - name: Set up DMARC
   include: dmarc.yml
-- name: Set up SPAMAssassin
-  include: spamassassin.yml
 # - name: Set up MongoDB
 #   include: mongodb.yml
 - name: Set up backups
