@@ -66,20 +66,20 @@
     state: restarted
   loop:
     - firewalld
-    - postfix
-    - httpd
-    - dovecot
-    - mariadb
-    - php-fpm
-    - opendkim
-    - opendmarc
-    - postgrey
     - named
     - NetworkManager
+    - mariadb
+    - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
+    - elasticsearch
+    - vsftpd
+    - httpd
+    - php-fpm
     - spamassassin
     - spamass-milter
-    - vsftpd
-    - elasticsearch
-    - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
-    - fail2ban
+    - postfix
+    - postgrey
+    - dovecot
+    - opendkim
+    - opendmarc
     # - mongod
+    - fail2ban
