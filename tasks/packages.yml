@@ -219,6 +219,9 @@
       - perl-Sys-Syslog
       - perl-LockFile-Simple
       - figlet
+      - telnet
+      - htop
+      - iotop
     state: latest
 - name: Install Remi packages
   dnf:
