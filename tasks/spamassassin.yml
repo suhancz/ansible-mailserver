@@ -46,3 +46,12 @@
   command: sievec /var/mail/SpamToJunk.sieve
   args:
     creates: /var/mail/SpamToJunk.svbin
+- name: Enable systemd services
+  systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  loop:
+    - spamassassin
+    - spamass-milter
