@@ -41,3 +41,12 @@
   no_log: yes
 - name: Generate Horde DB schema
   command: horde-db-migrate
+- name: Fetch themes
+  unarchive:
+    src: http://eph.dk/horde-addons/5.2/combined-1.0.0.zip
+    dest: /tmp
+    remote_src: yes
+- name: Install themes
+  shell: 'echo -e "/usr/share/horde\nroot\nroot\n755\n644\nYes\n"|./install.sh'
+  args:
+    chdir: /tmp/combined-1.0.0
