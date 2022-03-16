@@ -4,9 +4,8 @@ authorized_submit_users:
   - apache
 undeliverable_exceptions:
   - mailserver_domain
-custom_domains:
-  - mailserver_domain
 dkim_selector: 20220222
+reset: no
 helo_access:
   - { key: "optimus-webapi-prod-2.localdomain", value: "OK"}
   - { key: "va-massmail-02.rakutenmarketing.com", value: "OK"}
