@@ -36,14 +36,16 @@
   include: ldap.yml
 - name: Set up Horde
   include: horde.yml
-- name: Set up ElasticSearch
-  include: elasticsearch.yml
+# - name: Set up ElasticSearch
+#   include: elasticsearch.yml
 - name: Set up FTP
   include: ftp.yml
 - name: Configure Apache
   include: httpd.yml
 - name: Set up SPAMAssassin
   include: spamassassin.yml
+- name: Configure Antivirus
+  include: antivirus.yml
 - name: Configure Postfix
   include: postfix.yml
 - name: Configure Dovecot
@@ -70,12 +72,15 @@
     - NetworkManager
     - mariadb
     - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
-    - elasticsearch
+    # - elasticsearch
     - vsftpd
     - httpd
     - php-fpm
+    - amavisd
+    - clamav-freshclam
     - spamassassin
     - spamass-milter
+    - sa-update.timer
     - postfix
     - postgrey
     - dovecot

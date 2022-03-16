@@ -74,6 +74,7 @@
     - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
     - { key: "smtputf8_enable", value: "no" }
     - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
+    - { key: "content_filter", value: "amavisfeed:[127.0.0.1]:10024" }
 - name: Render Postfix SQL templates
   template:
     src: "postfix/sql/{{ item }}.j2"
