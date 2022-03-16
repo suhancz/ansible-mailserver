@@ -14,7 +14,7 @@ smtp      inet  n       -       n       -       -       smtpd
 #smtpd     pass  -       -       n       -       -       smtpd
 #dnsblog   unix  -       -       n       -       0       dnsblog
 #tlsproxy  unix  -       -       n       -       0       tlsproxy
-submission     inet     n    -    y    -    -    smtpd
+submission     inet     n    -    n    -    -    smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
   -o smtpd_tls_wrappermode=no
@@ -139,9 +139,9 @@ postlog   unix-dgram n  -       n       -       1       postlogd
 #  flags=FRX user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
 #  ${nexthop} ${user}
 
-plesk_virtual unix - n n - - pipe flags=DORhu user=popuser:popuser argv=/usr/lib64/plesk-9.0/postfix-local -f ${sender} -d ${recipient} -p /var/qmail/mailnames -q ${queue_id}
-127.0.0.1:12346 inet n n n - - spawn user=popuser:popuser argv=/usr/lib64/plesk-9.0/postfix-srs
-mailman unix - n n - - pipe flags=R user=mailman:mailman argv=/usr/lib64/plesk-9.0/postfix-mailman ${nexthop} ${user} ${recipient}
+# plesk_virtual unix - n n - - pipe flags=DORhu user=popuser:popuser argv=/usr/lib64/plesk-9.0/postfix-local -f ${sender} -d ${recipient} -p /var/qmail/mailnames -q ${queue_id}
+# 127.0.0.1:12346 inet n n n - - spawn user=popuser:popuser argv=/usr/lib64/plesk-9.0/postfix-srs
+# mailman unix - n n - - pipe flags=R user=mailman:mailman argv=/usr/lib64/plesk-9.0/postfix-mailman ${nexthop} ${user} ${recipient}
 pickup fifo n - n 60 1 pickup
 qmgr fifo n - n 1 1 qmgr
 
@@ -173,6 +173,6 @@ amavisfeed unix - - n - 2 lmtp
 
 plesk_saslauthd unix y y n - 1 plesk_saslauthd status=5 listen=6 dbpath=/var/spool/postfix/plesk/passwd.db
 # BEGIN ANSIBLE MANAGED BLOCK
-smtps     inet  n       -       y       -       -       smtpd -o syslog_name=postfix/smtps -o smtpd_tls_wrappermode=yes -o smtpd_sasl_auth_enable=yes -o smtpd_relay_restrictions=permit_sasl_authenticated,reject -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject -o smtpd_sasl_type=dovecot -o smtpd_sasl_path=private/auth
+smtps     inet  n       -       n       -       -       smtpd -o syslog_name=postfix/smtps -o smtpd_tls_wrappermode=yes -o smtpd_sasl_auth_enable=yes -o smtpd_relay_restrictions=permit_sasl_authenticated,reject -o smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject -o smtpd_sasl_type=dovecot -o smtpd_sasl_path=private/auth
 
 # END ANSIBLE MANAGED BLOCK

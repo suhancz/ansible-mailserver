@@ -4,6 +4,8 @@
     state: directory
 - name: Create Razor account
   command: razor-admin -create -home=/var/lib/razor
+- name: Discover Razor account
+  command: razor-admin -discover -home=/var/lib/razor
 - name: Register Razor account
   command: razor-admin -register -home=/var/lib/razor
 - name: Configure SPAMAssassin options
