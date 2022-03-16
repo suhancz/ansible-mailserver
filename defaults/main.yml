@@ -6,6 +6,7 @@ undeliverable_exceptions:
   - mailserver_domain
 dkim_selector: 20220222
 reset: no
+forgotten_mariadb_root_password: no
 helo_access:
   - { key: "optimus-webapi-prod-2.localdomain", value: "OK"}
   - { key: "va-massmail-02.rakutenmarketing.com", value: "OK"}

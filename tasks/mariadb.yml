@@ -7,12 +7,64 @@
 - name: Set MariaDB root password
   block:
     - name: Set the MariaDB root password
-      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost
+      mysql_user:
+        user: root
+        password: "{{ mysql_root_password }}"
+        host: localhost
       no_log: yes
   rescue:
-    - name: Ensure the MariaDB root password
-      mysql_user: user=root password="{{ mysql_root_password }}" host=localhost login_user=root login_password="{{ mysql_root_password }}"
-      no_log: yes
+    - name: Make sure MySQL root password is right
+      block:
+        - name: Ensure the MariaDB root password
+          mysql_user:
+            user: root
+            password: "{{ mysql_root_password }}"
+            host: localhost
+            login_user: root
+            login_password: "{{ mysql_root_password }}"
+          no_log: yes
+      rescue:
+        - name: Stop MariaDB
+          when: reset or forgotten_mariadb_root_password
+          systemd:
+            name: mariadb
+            daemon-reload: yes
+            enabled: yes
+            state: stopped
+        - name: Start MariaDB in safe mode
+          when: reset
+          shell: "mysqld_safe --skip-grant-tables --skip-networking &"
+        - name: "Generate MariaDB root password reset SQL"
+          when: reset or forgotten_mariadb_root_password
+          template:
+            src: mariadb/reset_mariadb_root_password.sql.j2
+            dest: /tmp/ansible-mailserver-install.reset_mariadb_root_password.sql
+            mode: u=rw,og=r
+            owner: root
+            group: root
+            backup: yes
+        - name: Force-reset the MariaDB root password
+          when: reset or forgotten_mariadb_root_password
+          mysql_db:
+            name: all
+            state: import
+            login_user: root
+            target: /tmp/ansible-mailserver-install.reset_mariadb_root_password.sql
+          no_log: yes
+        - name: Read MariaDB PID
+          when: reset or forgotten_mariadb_root_password
+          command: cat /var/run/mariadb/mariadb.pid
+          register: mariadb_pid
+        - name: Stop MariaDB
+          when: reset or forgotten_mariadb_root_password
+          command: "kill {{ mariadb_pid.stdout }}"
+        - name: Make sure MariaDB is running
+          when: reset or forgotten_mariadb_root_password
+          systemd:
+            name: mariadb
+            daemon_reload: yes
+            enabled: yes
+            state: restarted
 - name: Delete anonymous MySQL server user for ansible_fqdn
   mysql_user:
     user: ""
