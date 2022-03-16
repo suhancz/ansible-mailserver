@@ -1,7 +1,17 @@
+- name: Create razor hopme directory
+  file:
+    path: /var/lib/razor/
+    state: directory
+- name: Create Razor account
+  command: razor-admin -create -home=/var/lib/razor
+- name: Discover Razor account
+  command: razor-admin -discover -home=/var/lib/razor
+- name: Register Razor account
+  command: razor-admin -register -home=/var/lib/razor
 - name: Configure SPAMAssassin options
   lineinfile:
     regexp: 'SPAMDOPTIONS'
-    line: SPAMDOPTIONS="-c -m5 -H --razor-home-dir='/var/lib/razor/' --razor-log-file='sys-syslog' --no-user-config --virtual-config-dir=/var/vmail/%d/%l/spamassassin --username=vmail"
+    line: SPAMDOPTIONS="-c -m5 -H --razor-home-dir='/var/lib/razor/' --razor-log-file='sys-syslog' --virtual-config-dir=/var/vmail/%d/%l/spamassassin --username=vmail"
     path: /etc/sysconfig/spamassassin
     mode: u=rw,og=r
     owner: root

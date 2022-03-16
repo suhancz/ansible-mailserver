@@ -1,0 +1,29 @@
+- name: Set SELinux booleans
+  when: "{{ getenforce.stdout != 'Disabled' }}"
+  seboolean:
+    name: antivirus_can_scan_system
+    state: yes
+    persistent: yes
+- name: Render AMAVISD config
+  template:
+    src: amavisd/amavisd.conf.j2
+    dest: /etc/amavisd/amavisd.conf
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+- name: Refresh ClamAV database
+  command: freshclam
+- name: Update SPAMAssassin's signatures
+  command: sa-update -D
+  register: sa_update
+  failed_when: "{{ sa_update.rc >= 4 }}"
+- name: Enable systemd services
+  systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  loop:
+    - amavisd
+    - spamassassin

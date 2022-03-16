@@ -222,6 +222,11 @@
       - telnet
       - htop
       - iotop
+      - screen
+      - amavisd-milter
+      - clamav-unofficial-sigs
+      - clamav-milter
+      - clamav-update
     state: latest
 - name: Install Remi packages
   dnf:

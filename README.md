@@ -30,6 +30,8 @@ Role Variables
       - domain.com
       - otherdomain.org
     production: yes # boolean if we use production Let's Encrypt certificates
+    reset: no # boolean if mail data found on the server should be overwritten
+    forgotten_mariadb_root_password: yes # boolean if MariaDB root password should be reset
     mariadb_backup_path # path to the MariaDB backups
     ldap_backup_path # path to the tarball containing LDAP backups
     opendkim_backup_path # path to the tarball containing OpenDKIM backups
