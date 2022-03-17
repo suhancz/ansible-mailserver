@@ -109,6 +109,7 @@
 - name: Check if old IMAP account is already restored
   command: cat /etc/dovecot/already_restored_imap_accounts.txt
   register: already_restored_imap_accounts
+  ignore_errors: yes
 - name: Restore old imap account
   block:
     - name: Overwrite IMAP with the old account's contents
