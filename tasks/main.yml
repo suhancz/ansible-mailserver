@@ -68,7 +68,7 @@
     state: restarted
   loop:
     - firewalld
-    - named
+    - dnsmasq
     - NetworkManager
     - mariadb
     - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
