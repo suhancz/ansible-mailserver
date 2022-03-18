@@ -48,6 +48,10 @@
     state: present
   loop: "{{ users }}"
   no_log: yes
+- name: Enable ip_conntrack
+  modprobe:
+    name: ip_conntrack
+    state: present
 - name: Set up cron mailto
   cron:
     backup: yes

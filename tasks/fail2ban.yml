@@ -1,12 +1,18 @@
-- name: Create PostfixAdmin fail2ban filters
+- name: Create custom fail2ban filters
   copy:
-    src: fail2ban/postfixadmin.conf
-    dest: /etc/fail2ban/filter.d/postfixadmin.conf
+    src: "fail2ban/{{ item }}"
+    dest: "/etc/fail2ban/filter.d/{{ item }}"
+  loop:
+    - postfixadmin.conf
+    - dnsmasq.conf
 - name: Enable fail2ban jails
   blockinfile:
     path: /etc/fail2ban/jail.d/ansible-mailserver.local
     marker: "# {mark} ANSIBLE MANAGED BLOCK ansible-mailserver fail2ban jails"
     block: |
+      [DEFAULT]
+      ignoreip = 127.0.0.1/8, ::1
+
       [sshd]
       enabled  = true
 
@@ -70,9 +76,6 @@
       [postfix-sasl]
       enabled  = true
 
-      [named-refused]
-      enabled  = true
-
       [mysqld-auth]
       enabled  = true
 
@@ -93,6 +96,16 @@
       findtime = 60
       maxretry = 3
       bantime  = 120
+
+      [dnsmasq]
+      enabled = true
+      port     = 53
+      action   = %(banaction)s[name=%(__name__)s-tcp, port="%(port)s", protocol="tcp", chain="%(chain)s", actname=%(banaction)s-tcp]
+                 %(banaction)s[name=%(__name__)s-udp, port="%(port)s", protocol="udp", chain="%(chain)s", actname=%(banaction)s-udp]
+      logpath = /var/log/messages
+      findtime = 60
+      maxretry = 42
+      bantime = 3600
     mode: u=rw,og=r
     owner: root
     group: root

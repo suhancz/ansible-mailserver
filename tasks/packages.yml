@@ -104,8 +104,6 @@
       - bind-utils
       - postgrey
       - postfix-perl-scripts
-      - mutt
-      - bind
       - NetworkManager-libnm
       - nm-connection-editor
       - spamassassin
@@ -127,31 +125,24 @@
       - mod_ssl
       - php-bcmath
       - php56-php-bcmath
-      - php-ldap
-      - php56-php-ldap
       - libmemcached
       - gettext
       - gettext-common-devel
       - gettext-devel
       - gettext-libs
-      - php-xml
       - php56-php-xml
       - php56-php-pecl-dom-varimport
-      - php-mysqlnd
       - php-pecl-mysql
       - php-pecl-mysql-xdevapi
       - php56-php-mysqlnd
       - openldap
       - openldap-clients
       - openldap-devel
-      - php-ldap
       - php56-php-ldap
       - phpldapadmin
-      - php-mbstring
       - php56-php-mbstring
       - gd
       - gd-devel
-      - php-gd
       - php56-php-gd
       - tidy
       - libtidy
@@ -161,7 +152,6 @@
       - php-pecl-crypto
       - php56-php-pecl-crypto
       - intltool
-      - php-intl
       - php56-php-intl
       - curl
       - libcurl
@@ -227,6 +217,10 @@
       - clamav-unofficial-sigs
       - clamav-milter
       - clamav-update
+      - dnsmasq
+      - dnsmasq-utils
+      - iptables-services
+      - conntrack-tools
     state: latest
 - name: Install Remi packages
   dnf:

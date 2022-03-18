@@ -9,14 +9,32 @@
       - 1.1.1.1
     state: present
     type: ethernet
-- name: Make sure BIND and NetworkManager are running
+- name: Configure DNSMASQ
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    line: "{{ item }}"
+    mode: u=rw,og=r
+    owner: root
+    group: dnsmasq
+    state: present
+    backup: yes
+  loop:
+    - clear-on-reload
+    - log-queries
+    - dns-loop-detect
+    - stop-dns-rebind
+    - rebind-localhost-ok
+    - domain-needed
+    - no-negcache
+    - dnssec
+    - dnssec-check-unsigned
+    - conf-file=/usr/share/dnsmasq/trust-anchors.conf
+- name: Make sure DNSMASQ is running
   systemd:
-    name: named
+    name: dnsmasq
     daemon_reload: yes
     enabled: yes
     state: restarted
-- name: Reload DNS cache
-  command: rndc reload
 - name: Create resolved.conf.d directory
   file:
     path: /etc/systemd/resolved.conf.d
@@ -24,25 +42,6 @@
     owner: root
     group: root
     mode: u=rwX,og=rX
-- name: Create named log directory
-  file:
-    path: /var/log/named
-    state: directory
-    owner: named
-    group: named
-    mode: u=rwX,og=rX
-- name: Set up logging for fail2ban
-  lineinfile:
-    path: /etc/named.conf
-    insertafter: 'logging {'
-    line: '        channel security_file {file "/var/log/named/security.log" versions 3 size 30m;severity dynamic;print-time yes;};category security {security_file;};'
-    regex: 'security_file'
-    mode: u=rw,g=r
-    owner: root
-    group: named
-    state: present
-    backup: yes
-    create: yes
 - name: Enable local DNS caching
   blockinfile:
     path: /etc/systemd/resolved.conf.d/LocalDNSCache.conf
