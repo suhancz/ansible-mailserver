@@ -24,7 +24,7 @@
     mode: u=rwX
 - name: Configure OS
   include: os.yml
-- name: Configure DNS caching
+- name: Configure DNS
   include: dns.yml
 - name: Configure MariaDB
   include: mariadb.yml
