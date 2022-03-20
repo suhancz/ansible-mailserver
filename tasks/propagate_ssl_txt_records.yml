@@ -40,4 +40,4 @@
         mode: equals
     always_ask_default_resolver: no
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: "{{ (item.value['dns-01'].resource ~ '.' ~ domain_item) == item.value['dns-01'].record }}"
+  when: "{{ (item.value['dns-01'].resource ~ '.' ~ domain_item) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
