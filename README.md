@@ -39,6 +39,10 @@ Role Variables
     opendmarc_backup_path # path to the tarball containing OpenDMARC backups
     vsftpd_backup_path # path to the tarball containing backups of user home FTP directory contents
     ssl_backup_path # path to the tarball containing SSL-related backups
+    horde_backup_path # path to the tarball containing Horde backups
+    dovecot_backup_path # path to the tarball containing Dovecot backups
+    postfix_backup_path # path to the tarball containing Postfix backups
+    dnsmasq_backup_path # path to the tarball containing DNSMASQ backups
 
 Example Playbook
 ----------------
