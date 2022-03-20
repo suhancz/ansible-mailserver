@@ -5,6 +5,7 @@ authorized_submit_users:
 undeliverable_exceptions:
   - mailserver_domain
 dkim_selector: 20220222
+public_dns: no
 reset: no
 forgotten_mariadb_root_password: no
 helo_access:

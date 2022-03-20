@@ -30,6 +30,7 @@ Role Variables
       - domain.com
       - otherdomain.org
     production: yes # boolean if we use production Let's Encrypt certificates
+    public_dns: yes # boolean if the server also should act as a public DNS serving all the relevant records
     reset: no # boolean if mail data found on the server should be overwritten
     forgotten_mariadb_root_password: yes # boolean if MariaDB root password should be reset
     mariadb_backup_path # path to the MariaDB backups

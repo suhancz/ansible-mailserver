@@ -1,6 +1,6 @@
 - name: Configure local DNS cache
   nmcli:
-    conn_name: ens192
+    conn_name: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
     ip4: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
     ip6: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
     dns4:
@@ -29,6 +29,25 @@
     - dnssec
     - dnssec-check-unsigned
     - conf-file=/usr/share/dnsmasq/trust-anchors.conf
+    - bogus-priv
+    - no-resolv
+- name: Configure DNSMASQ for all domains
+  include: configure_dnsmasq.yml
+  vars:
+    current_domain: "{{ item }}"
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: 'public_dns == "yes"'
+- name: Set up domain aliases
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    line: "cname={{ item }},{{mailserver_domain }}"
+    mode: u=rw,og=r
+    owner: root
+    group: dnsmasq
+    state: present
+    backup: yes
+  loop: "{{ custom_domains }}"
+  when: 'public_dns == "yes"'
 - name: Make sure DNSMASQ is running
   systemd:
     name: dnsmasq
@@ -52,6 +71,7 @@
       # CacheFromLocalhost=yes
       Domains={% for custom_domain in [mailserver_domain] + custom_domains %}{{ custom_domain }} {% if loop.index != loop.length %} {% endif %}{% endfor %}
       DNS=127.0.0.1 8.8.8.8 1.1.1.1
+      DNSStubListener=No
     mode: u=rw,og=r
     owner: root
     group: root
