@@ -5,27 +5,27 @@
   set_fact:
     desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
     current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
-- name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record"
-  lineinfile:
-    path: /etc/dnsmasq.conf
-    regex: "txt-record={{ dkim_selector }}._domainkey.{{ domain_item }}"
-    line: 'txt-record={{ dkim_selector }}._domainkey.{{ domain_item }},"{{ desired_dkim_record }}"'
-    mode: u=rw,og=r
-    owner: root
-    group: dnsmasq
-    state: present
-    backup: yes
-  when: 'public_dns == "yes"'
-- name: Reload DNSMASQ config
-  systemd:
-    name: dnsmasq
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
-  when: 'public_dns == "yes"'
-- name: Wait for DNS to listen
-  wait_for:
-    port: 53
+# - name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record"
+#   lineinfile:
+#     path: /etc/dnsmasq.conf
+#     regex: "txt-record={{ dkim_selector }}._domainkey.{{ domain_item }}"
+#     line: 'txt-record={{ dkim_selector }}._domainkey.{{ domain_item }},"{{ desired_dkim_record }}"'
+#     mode: u=rw,og=r
+#     owner: root
+#     group: dnsmasq
+#     state: present
+#     backup: yes
+#   when: 'public_dns == "yes"'
+# - name: Reload DNSMASQ config
+#   systemd:
+#     name: dnsmasq
+#     daemon_reload: yes
+#     enabled: yes
+#     state: restarted
+#   when: 'public_dns == "yes"'
+# - name: Wait for DNS to listen
+#   wait_for:
+#     port: 53
 - name: "Warn user to set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record with the DKIM keys"
   debug:
     msg:

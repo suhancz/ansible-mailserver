@@ -9,51 +9,113 @@
       - 1.1.1.1
     state: present
     type: ethernet
-- name: Configure DNSMASQ
+- name: Create PowerDNS DB
+  include_tasks: create_mariadb_schema.yml
+  vars:
+    mariadb_database: powerdnsdb
+    mariadb_state: "{{ ('import' if reset)|default('present') }}"
+  register: powerdns_db_state
+- name: Set up PowerDNS DB privileges
+  mysql_user:
+    name: powerdns
+    password: '{{ powerdns_db_password }}'
+    priv: 'powerdnsdb.*:ALL'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+# - name: Fill PowerDNS DB with data
+#   include_tasks: fill_mariadb_data.yml
+#   vars:
+#     mariadb_database:
+#       db: powerdnsdb
+#       user: powerdns
+#       password: "{{ powerdns_db_password }}"
+#   when: powerdns_db_state.changed
+- name: Configure PowerDNS
   lineinfile:
-    path: /etc/dnsmasq.conf
-    line: "{{ item }}"
-    mode: u=rw,og=r
-    owner: root
-    group: dnsmasq
+    path: /etc/pdns/pdns.conf
+    line: "{{ item.key }}={{ item.value }}"
+    regex: "^{{ item.key }}"
     state: present
     backup: yes
   loop:
-    - clear-on-reload
-    - log-queries
-    - dns-loop-detect
-    - stop-dns-rebind
-    - rebind-localhost-ok
-    - domain-needed
-    - no-negcache
-    - dnssec
-    - dnssec-check-unsigned
-    - conf-file=/usr/share/dnsmasq/trust-anchors.conf
-    - bogus-priv
-    - no-resolv
-- name: Configure DNSMASQ for all domains
-  include: configure_dnsmasq.yml
-  vars:
-    current_domain: "{{ item }}"
-  loop: "{{ [mailserver_domain] + custom_domains }}"
-  when: 'public_dns == "yes"'
-- name: Set up domain aliases
-  lineinfile:
-    path: /etc/dnsmasq.conf
-    line: "cname={{ item }},{{mailserver_domain }}"
-    mode: u=rw,og=r
-    owner: root
-    group: dnsmasq
-    state: present
-    backup: yes
-  loop: "{{ custom_domains }}"
-  when: 'public_dns == "yes"'
-- name: Make sure DNSMASQ is running
+    - { key: "launch", value: "gmysql" }
+    - { key: "gmysql-host", value: "localhost" }
+    - { key: "gmysql-user", value: "powerdns" }
+    - { key: "gmysql-password", value: "{{ powerdns_db_password }}" }
+    - { key: "gmysql-dbname", value: "powerdnsdb" }
+  no_log: yes
+# - name: Configure DNSMASQ
+#   lineinfile:
+#     path: /etc/dnsmasq.conf
+#     line: "{{ item }}"
+#     mode: u=rw,og=r
+#     owner: root
+#     group: dnsmasq
+#     state: present
+#     backup: yes
+#   loop:
+#     - clear-on-reload
+#     - log-queries
+#     - dns-loop-detect
+#     - stop-dns-rebind
+#     - rebind-localhost-ok
+#     - domain-needed
+#     - no-negcache
+#     - dnssec
+#     - dnssec-check-unsigned
+#     - conf-file=/usr/share/dnsmasq/trust-anchors.conf
+#     - bogus-priv
+#     - no-resolv
+# - name: Configure DNSMASQ for all domains
+#   include: configure_dnsmasq.yml
+#   vars:
+#     current_domain: "{{ item }}"
+#   loop: "{{ [mailserver_domain] + custom_domains }}"
+#   when: 'public_dns == "yes"'
+# - name: Set up domain aliases
+#   lineinfile:
+#     path: /etc/dnsmasq.conf
+#     line: "cname={{ item }},{{mailserver_domain }}"
+#     mode: u=rw,og=r
+#     owner: root
+#     group: dnsmasq
+#     state: present
+#     backup: yes
+#   loop: "{{ custom_domains }}"
+#   when: 'public_dns == "yes"'
+- name: Make sure PowerDNS is running
   systemd:
-    name: dnsmasq
+    name: pdns
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Get latest PowerAdmin version
+  block:
+    - name: Get URL for latest release
+      uri:
+        url: https://github.com/poweradmin/poweradmin/releases/latest
+      register: poweradmin_download_site
+    - name: Parse version
+      set_fact:
+        poweradmin_version: "{{ poweradmin_download_site.url | replace('https://github.com/poweradmin/poweradmin/releases/tag/v','') }}"
+- name: Unpack postfixadmin
+  unarchive:
+    src: "https://github.com/poweradmin/poweradmin/archive/v{{ poweradmin_version }}.tar.gz"
+    dest: /var/www/
+    remote_src: yes
+- name: Rename PowerAdmin directory
+  command: "mv /var/www/poweradmin-{{ poweradmin_version }} /var/www/poweradmin"
+  args:
+    creates: /var/www/poweradmin
+- name: Set up PowerAdmin permissions
+  file:
+    path: /var/www/poweradmin
+    state: directory
+    owner: apache
+    group: apache
+    recurse: yes
 - name: Create resolved.conf.d directory
   file:
     path: /etc/systemd/resolved.conf.d

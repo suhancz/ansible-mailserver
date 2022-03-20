@@ -45,9 +45,11 @@
       user: postfixadmin
       password: "{{ postfixadmin_db_password }}"
   when: postfixadmin_db_state.changed
+  no_log: yes
 - name: Generate PostfixAdmin PHP password
   command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password
+  no_log: yes
 - name: Create PostfixAdmin directories
   file:
     path: "{{ item }}"

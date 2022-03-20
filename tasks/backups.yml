@@ -17,7 +17,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    # - dnsmasq
 - name: Create systemd tarball backup services
   template:
     src: "systemd/tarball-backup.service.j2"
@@ -33,7 +33,7 @@
     - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
-    - { name: "dnsmasq", paths: ["/etc/dnsmasq"] }
+    # - { name: "dnsmasq", paths: ["/etc/dnsmasq"] }
 - name: Create systemd backup services
   template:
     src: "systemd/{{ item }}-backup.service.j2"
@@ -64,7 +64,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    # - dnsmasq
 - name: Ensure systemd is aware of the backup services
   systemd:
     name: "{{ item }}-backup"
@@ -81,7 +81,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    # - dnsmasq
 - name: Enable the backup timers
   systemd:
     name: "{{ item }}-backup.timer"
@@ -98,7 +98,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    # - dnsmasq
 - name: Restore backups
   when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or horde_backup_path is defined or dovecot_backup_path is defined or postfix_backup_path is defined or dnsmasq_backup_path is defined
   block:
@@ -168,7 +168,7 @@
         - vsftpd
         - dovecot
         - postfix
-        - dnsmasq
+        # - dnsmasq
     - name: Restore non-service tarball backups
       when: "{{ item + '_backup_path'  is defined }}"
       unarchive:

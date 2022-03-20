@@ -217,10 +217,16 @@
       - clamav-unofficial-sigs
       - clamav-milter
       - clamav-update
-      - dnsmasq
-      - dnsmasq-utils
       - iptables-services
       - conntrack-tools
+      - php
+      - php-ldap
+      - php-mysql
+      - php-odbc
+      - php-mcrypt
+      - php-mhash
+      - pdns
+      - pdns-backend-mysql
     state: latest
 - name: Install Remi packages
   dnf:
