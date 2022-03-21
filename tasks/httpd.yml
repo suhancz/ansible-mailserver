@@ -31,11 +31,11 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.conf" }
+    - { src: "httpd/domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}.conf" }
     - { src: "httpd/postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
     - { src: "httpd/horde.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}.conf" }
     - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/domain-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}-le-ssl.conf" }
+    - { src: "httpd/domain-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }

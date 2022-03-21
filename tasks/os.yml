@@ -1,8 +1,8 @@
 - name: Check SELinux status
   shell: getenforce
   register: getenforce
-- name: "Set hostname to {{ mailserver_hostname}}"
-  command: "hostnamectl set-hostname {{ mailserver_hostname }}"
+- name: "Set hostname to {{ mailserver_hostname }}.{{ mailserver_domain}}"
+  command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
 - name: Install requiremets
   block:
     - name: Install packages

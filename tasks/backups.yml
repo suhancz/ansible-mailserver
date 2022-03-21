@@ -141,7 +141,7 @@
         state: started
     - name: Stop LDAP server
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} stop"
+      command: "dsctl {{ mailserver_hostname }} stop"
     - name: Prepare LDAP backup
       when: ldap_backup_path is defined
       unarchive:
@@ -152,10 +152,10 @@
       register: ldap_backup_files
     - name: Restore LDAP backup
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} bak2db /{{ ldap_backup_files.files[0] }}"
+      command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
     - name: Start LDAP server
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} start"
+      command: "dsctl {{ mailserver_hostname }} start"
     - name: Restore service tarball backups
       include: restore_service_tarball_backup.yml
       vars:

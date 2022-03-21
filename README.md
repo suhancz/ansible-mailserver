@@ -6,7 +6,7 @@ Mailserver suite on RPM-based distros
 Role Variables
 --------------
 
-    mailserver_hostname # FQDN for the mail server
+    mailserver_hostname # hostname for the mail server
     mailserver_domain # primary domain name
     mailserver_admin_user # user to administer the mail server
     users:

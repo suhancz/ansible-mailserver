@@ -73,7 +73,7 @@
     - mariadb
     - "{{ 'pdns' if public_dns }}"
     - pdns-recursor
-    - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
+    - "dirsrv@{{ mailserver_hostname }}.{{ mailserver_domain.split('.')[0] }}"
     # - elasticsearch
     - vsftpd
     - httpd

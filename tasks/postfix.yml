@@ -46,7 +46,7 @@
   command: 'postconf -e "{{ item }}"'
   loop:
     - "inet_interfaces = all"
-    - "myhostname = {{ mailserver_hostname }}"
+    - "myhostname = {{ mailserver_hostname }}.{{ mailserver_domain }}"
     - "mydomain = {{ mailserver_domain }}"
     - "myorigin = {{ mailserver_domain }}"
     - "mydestination = {{ mailserver_domain }}, $myhostname, localhost.$mydomain, localhost"
