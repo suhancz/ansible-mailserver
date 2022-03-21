@@ -1,22 +1,19 @@
-# - name: "Set up ACME challenge TXT records for {{ domain_item }}"
-#   lineinfile:
-#     path: /etc/dnsmasq.conf
-#     regex: "txt-record={{ item.value['dns-01'].record }}"
-#     line: "txt-record={{ item.value['dns-01'].record }},\"{{ item.value['dns-01'].resource_value }}\""
-#     mode: u=rw,og=r
-#     owner: root
-#     group: dnsmasq
-#     state: present
-#     backup: yes
-#   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-#   when: 'public_dns == "yes"'
-# - name: Reload DNSMASQ config
-#   systemd:
-#     name: dnsmasq
-#     daemon_reload: yes
-#     enabled: yes
-#     state: restarted
-#   when: 'public_dns == "yes"'
+- name: "Set up ACME challenge TXT records for {{ domain_item }}"
+  include_tasks: set_acme_txt_value.yml
+  vars:
+    current_challenge: "{{ item }}"
+  when: 'public_dns == "yes"'
+  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
+- name: Reload PowerDNS config
+  systemd:
+    name: pdns
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  when: 'public_dns == "yes"'
+- name: Wait for DNS to listen
+  wait_for:
+    port: 53
 - name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ domain_item }}"
   debug:
     msg:

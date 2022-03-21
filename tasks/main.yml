@@ -71,7 +71,8 @@
     - firewalld
     - NetworkManager
     - mariadb
-    - pdns
+    - "{{ 'pdns' if public_dns }}"
+    - pdns-recursor
     - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
     # - elasticsearch
     - vsftpd

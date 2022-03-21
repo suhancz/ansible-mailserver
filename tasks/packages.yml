@@ -228,6 +228,12 @@
       - pdns
       - pdns-backend-mysql
       - pdns-recursor
+      - libedit-devel
+      - boost-devel
+      - lua-devel
+      - libsodium-devel
+      - systemd-devel
+      - ragel
     state: latest
 - name: Install Remi packages
   dnf:

@@ -1,0 +1,13 @@
+- name: "Render {{ domain_item }} zone file with TXT record"
+  template:
+    src: pdns/dns-acme.zone.j2
+    dest: "/tmp/ansible-mailserver.dns-acme-{{ domain_item }}.zone"
+    owner: pdns
+    group: pdns
+    backup: yes
+  when: 'public_dns == "yes"'
+- name: "Set up ACME challenge TXT records for {{ domain_item }}"
+  command: "pdnsutil load-zone {{ domain_item }} /tmp/ansible-mailserver.dns-acme-{{ domain_item }}.zone"
+  become: yes
+  become_user: pdns
+  when: 'public_dns == "yes"'

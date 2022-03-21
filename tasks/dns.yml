@@ -32,7 +32,7 @@
 #       user: powerdns
 #       password: "{{ powerdns_db_password }}"
 #   when: powerdns_db_state.changed
-- name: Configure PowerDNS
+- name: Configure PowerDNS authoritative server
   lineinfile:
     path: /etc/pdns/pdns.conf
     line: "{{ item.key }}={{ item.value }}"
@@ -46,53 +46,136 @@
     - { key: "gmysql-password", value: "{{ powerdns_db_password }}" }
     - { key: "gmysql-dbname", value: "powerdnsdb" }
     - { key: "dnsupdate", value: "yes" }
-    - { key: "recursor", value: "8.8.8.8" }
+    - { key: "local-address", value: "127.0.0.1" }
+    - { key: "local-port", value: "5300" }
   no_log: yes
-# - name: Configure DNSMASQ
-#   lineinfile:
-#     path: /etc/dnsmasq.conf
-#     line: "{{ item }}"
-#     mode: u=rw,og=r
-#     owner: root
-#     group: dnsmasq
-#     state: present
-#     backup: yes
-#   loop:
-#     - clear-on-reload
-#     - log-queries
-#     - dns-loop-detect
-#     - stop-dns-rebind
-#     - rebind-localhost-ok
-#     - domain-needed
-#     - no-negcache
-#     - dnssec
-#     - dnssec-check-unsigned
-#     - conf-file=/usr/share/dnsmasq/trust-anchors.conf
-#     - bogus-priv
-#     - no-resolv
-# - name: Configure DNSMASQ for all domains
-#   include: configure_dnsmasq.yml
-#   vars:
-#     current_domain: "{{ item }}"
-#   loop: "{{ [mailserver_domain] + custom_domains }}"
-#   when: 'public_dns == "yes"'
-# - name: Set up domain aliases
-#   lineinfile:
-#     path: /etc/dnsmasq.conf
-#     line: "cname={{ item }},{{mailserver_domain }}"
-#     mode: u=rw,og=r
-#     owner: root
-#     group: dnsmasq
-#     state: present
-#     backup: yes
-#   loop: "{{ custom_domains }}"
-#   when: 'public_dns == "yes"'
+  when: 'public_dns == "yes"'
+- name: Fetch already existing DNS zones
+  command: "pdnsutil list-all-zones"
+  become: yes
+  become_user: pdns
+  when: 'public_dns == "yes"'
+  register: all_dns_zones
+- name: Create DNS zones
+  command: "pdnsutil create-zone {{ item }} ns.{{ item }}"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: 'public_dns == "yes" and item not in all_dns_zones.stdout_lines'
+- name: Render DNS zone file
+  template:
+    src: pdns/dns-domain.zone.j2
+    dest: "/tmp/ansible-mailserver.dns-{{ item }}.zone"
+    owner: pdns
+    group: pdns
+    backup: yes
+  when: 'public_dns == "yes"'
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Fill DNS zone
+  command: "pdnsutil load-zone {{ item }} /tmp/ansible-mailserver.dns-{{ item }}.zone"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: 'public_dns == "yes"'
+- name: Configure PowerDNS recursor
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "{{ item.key }}={{ item.value }}"
+    regex: "^{{ item.key }}"
+    state: present
+    backup: yes
+  loop:
+    - { key: "local-address", value: "127.0.0.1" }
+    - { key: "local-port", value: "5300" }
+    - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
+  no_log: yes
+  when: 'public_dns == "yes"'
+- name: Configure PowerDNS recursor to forward custom domains
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "forward-zones+={{ item }}=127.0.0.1:5300"
+    state: present
+    backup: yes
+  loop: "{{ custom_domains }}"
+  no_log: yes
+  when: 'public_dns == "yes"'
+- name: Clone the PowerDNS github repository
+  git:
+    repo: https://github.com/PowerDNS/pdns.git
+    dest: /usr/src/pdns
+    clone: yes
+    update: yes
+  when: 'public_dns == "yes"'
+- name: Add dnsdist group
+  group:
+    name: dnsdist
+    system: yes
+  when: 'public_dns == "yes"'
+- name: Add dnsdist user
+  user:
+    name: dnsdist
+    group: dnsdist
+    system: yes
+    shell: /sbin/nologin
+  when: 'public_dns == "yes"'
+- name: Autoreconf DNSDist
+  command: autoreconf -vi
+  args:
+    chdir: /usr/src/pdns/pdns/dnsdistdist
+  when: 'public_dns == "yes"'
+- name: Configure DNSDist build
+  command: ./configure --enable-dnscrypt --enable-dns-over-tls --enable-systemd
+  args:
+    chdir: /usr/src/pdns/pdns/dnsdistdist
+  when: 'public_dns == "yes"'
+- name: Build DNSDist
+  command: make
+  args:
+    chdir: /usr/src/pdns/pdns/dnsdistdist
+  when: 'public_dns == "yes"'
+- name: Install DNSDist
+  command: make install
+  args:
+    chdir: /usr/src/pdns/pdns/dnsdistdist
+  when: 'public_dns == "yes"'
+- name: Create DNSDist config directory
+  file:
+    path: /etc/dnsdist
+    state: direcory
+    mode: ug=rw,o=r
+    owner: dnsdist
+    group: dnsdist
+  when: 'public_dns == "yes"'
+- name: Configure DNSDist
+  template:
+    src: dnsdist/dnsdist.conf.j2
+    dest: /etc/dnsdist/dnsdist.conf
+    mode: ug=rw,o=r
+    owner: dnsdist
+    group: dnsdist
+    backup: yes
+  no_log: yes
+  when: 'public_dns == "yes"'
 - name: Make sure PowerDNS is running
   systemd:
     name: pdns
     daemon_reload: yes
     enabled: yes
     state: restarted
+  when: 'public_dns == "yes"'
+- name: Make sure PowerDNS recursor is running
+  systemd:
+    name: pdns-recursor
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Make DNSDist is running
+  systemd:
+    name: dnsdist
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  when: 'public_dns == "yes"'
 - name: Get latest PowerAdmin version
   block:
     - name: Get URL for latest release
@@ -102,15 +185,18 @@
     - name: Parse version
       set_fact:
         poweradmin_version: "{{ poweradmin_download_site.url | replace('https://github.com/poweradmin/poweradmin/releases/tag/v','') }}"
+  when: 'public_dns == "yes"'
 - name: Unpack PowerAdmin
   unarchive:
     src: "https://github.com/poweradmin/poweradmin/archive/v{{ poweradmin_version }}.tar.gz"
     dest: /var/www/
     remote_src: yes
+  when: 'public_dns == "yes"'
 - name: Rename PowerAdmin directory
   command: "mv /var/www/poweradmin-{{ poweradmin_version }} /var/www/poweradmin"
   args:
     creates: /var/www/poweradmin
+  when: 'public_dns == "yes"'
 - name: Set up PowerAdmin permissions
   file:
     path: /var/www/poweradmin
@@ -118,10 +204,12 @@
     owner: apache
     group: apache
     recurse: yes
+  when: 'public_dns == "yes"'
 - name: Generate PowerAdmin session key
   set_fact:
     poweradmin_session_key: "{{ poweradmin_session_key | default(lookup('password', '/tmp/ansible-mailserver-install.poweradmin_session_key chars=ascii_lowercase,ascii_uppercase,digits,@,#,$,%,^,*,(,),_,-,! length=46')) }}"
   no_log: yes
+  when: 'public_dns == "yes"'
 - name: "Add PowerAdmin user"
   mysql_user:
     name: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
@@ -131,6 +219,7 @@
     login_user: root
     login_password: '{{ mysql_root_password }}'
   no_log: yes
+  when: 'public_dns == "yes"'
 - name: Set up DynDNS .htaccess
   copy:
     src: /var/www/poweradmin/install/htaccess.dist
@@ -139,6 +228,7 @@
     owner: apache
     group: apache
     mode: ug=rw,o=r
+  when: 'public_dns == "yes"'
 - name: Render PowerAdmin config
   template:
     src: poweradmin/config.inc.php.j2
@@ -148,10 +238,12 @@
     group: apache
     backup: yes
   no_log: yes
+  when: 'public_dns == "yes"'
 - name: Remove install directory
   file:
     path: /var/www/poweradmin/install/
     state: absent
+  when: 'public_dns == "yes"'
 - name: Create resolved.conf.d directory
   file:
     path: /etc/systemd/resolved.conf.d
