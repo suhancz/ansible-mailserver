@@ -227,6 +227,7 @@
       - php-mhash
       - pdns
       - pdns-backend-mysql
+      - pdns-recursor
     state: latest
 - name: Install Remi packages
   dnf:
