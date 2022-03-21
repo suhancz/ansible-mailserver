@@ -46,6 +46,7 @@
     - { key: "gmysql-password", value: "{{ powerdns_db_password }}" }
     - { key: "gmysql-dbname", value: "powerdnsdb" }
     - { key: "dnsupdate", value: "yes" }
+    - { key: "recursor", value: "8.8.8.8" }
   no_log: yes
 # - name: Configure DNSMASQ
 #   lineinfile:
