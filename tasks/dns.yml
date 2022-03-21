@@ -124,7 +124,7 @@
   mysql_user:
     name: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
     password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
-    priv: 'poweradmin.*:SELECT,INSERT,UPDATE,DELETE'
+    priv: 'powerdnsdb.*:SELECT,INSERT,UPDATE,DELETE'
     host: localhost
     login_user: root
     login_password: '{{ mysql_root_password }}'
