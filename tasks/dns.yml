@@ -99,13 +99,6 @@
   loop: "{{ custom_domains }}"
   no_log: yes
   when: 'public_dns == "yes"'
-- name: Clone the PowerDNS github repository
-  git:
-    repo: https://github.com/PowerDNS/pdns.git
-    dest: /usr/src/pdns
-    clone: yes
-    update: yes
-  when: 'public_dns == "yes"'
 - name: Add dnsdist group
   group:
     name: dnsdist
@@ -118,26 +111,38 @@
     system: yes
     shell: /sbin/nologin
   when: 'public_dns == "yes"'
-- name: Autoreconf DNSDist
-  command: autoreconf -vi
-  args:
-    chdir: /usr/src/pdns/pdns/dnsdistdist
-  when: 'public_dns == "yes"'
-- name: Configure DNSDist build
-  command: ./configure --enable-dnscrypt --enable-dns-over-tls --enable-systemd
-  args:
-    chdir: /usr/src/pdns/pdns/dnsdistdist
-  when: 'public_dns == "yes"'
-- name: Build DNSDist
-  command: make
-  args:
-    chdir: /usr/src/pdns/pdns/dnsdistdist
-  when: 'public_dns == "yes"'
-- name: Install DNSDist
-  command: make install
-  args:
-    chdir: /usr/src/pdns/pdns/dnsdistdist
-  when: 'public_dns == "yes"'
+- name: DNSDist setup
+  block:
+    - name: Check if DNSDist command exists
+      command: dnsdist -V
+  rescue:
+    - name: Clone the PowerDNS github repository
+      git:
+        repo: https://github.com/PowerDNS/pdns.git
+        dest: /usr/src/pdns
+        clone: yes
+        update: yes
+      when: 'public_dns == "yes"'
+    - name: Autoreconf DNSDist
+      command: autoreconf -vi
+      args:
+        chdir: /usr/src/pdns/pdns/dnsdistdist
+      when: 'public_dns == "yes"'
+    - name: Configure DNSDist build
+      command: ./configure --enable-dnscrypt --enable-dns-over-tls --enable-systemd
+      args:
+        chdir: /usr/src/pdns/pdns/dnsdistdist
+      when: 'public_dns == "yes"'
+    - name: Build DNSDist
+      command: make
+      args:
+        chdir: /usr/src/pdns/pdns/dnsdistdist
+      when: 'public_dns == "yes"'
+    - name: Install DNSDist
+      command: make install
+      args:
+        chdir: /usr/src/pdns/pdns/dnsdistdist
+      when: 'public_dns == "yes"'
 - name: Create DNSDist config directory
   file:
     path: /etc/dnsdist
