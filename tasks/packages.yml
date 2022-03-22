@@ -87,7 +87,7 @@
       priority=90
       includepkg=dnsdist*
 
-      [dnsdist-auth-master-debuginfo]
+      [dnsdist-auth-17-debuginfo]
       name=PowerDNS repository for DNSDist – 1.7 branch debug symbols
       baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/dnsdist-17/debug
       gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
