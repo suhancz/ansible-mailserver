@@ -299,6 +299,7 @@
       - libsodium-devel
       - systemd-devel
       - ragel
+      - dnsdist
     state: latest
 - name: Install Remi packages
   dnf:
