@@ -48,6 +48,7 @@
     - { key: "dnsupdate", value: "yes" }
     - { key: "local-address", value: "127.0.0.1" }
     - { key: "local-port", value: "5300" }
+    - { key: "gmysql-dnssec", value: "yes" }
   no_log: yes
   when: 'public_dns == "yes"'
 - name: Fetch already existing DNS zones
@@ -56,12 +57,21 @@
   become_user: pdns
   when: 'public_dns == "yes"'
   register: all_dns_zones
-- name: Create DNS zones
-  command: "pdnsutil create-zone {{ item }} ns.{{ item }}"
-  become: yes
-  become_user: pdns
-  loop: "{{ [mailserver_domain] + custom_domains }}"
-  when: 'public_dns == "yes" and item not in all_dns_zones.stdout_lines'
+- name: Create zones
+  block:
+    - name: Create DNS zones
+      command: "pdnsutil create-zone {{ item }} ns.{{ item }}"
+      become: yes
+      become_user: pdns
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      when: 'public_dns == "yes"'
+  rescue:
+    - name: Create DNS zones
+      command: "pdnsutil --force create-zone {{ item }} ns.{{ item }}"
+      become: yes
+      become_user: pdns
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      when: 'reset and public_dns == "yes"'
 - name: Render DNS zone file
   template:
     src: pdns/dns-domain.zone.j2
@@ -71,12 +81,15 @@
     backup: yes
   when: 'public_dns == "yes"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Save current DNS zone to the result file
+  shell: 'pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ item }}/g" | sort | uniq >> /tmp/ansible-mailserver.dns-{{ item }}.zone'
+  loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Fill DNS zone
   command: "pdnsutil load-zone {{ item }} /tmp/ansible-mailserver.dns-{{ item }}.zone"
   become: yes
   become_user: pdns
   loop: "{{ [mailserver_domain] + custom_domains }}"
-  when: 'public_dns == "yes"'
+  when: '{{ public_dns == "yes" and (reset or item not in all_dns_zones) }}'
 - name: Configure PowerDNS recursor
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
@@ -86,7 +99,7 @@
     backup: yes
   loop:
     - { key: "local-address", value: "127.0.0.1" }
-    - { key: "local-port", value: "5300" }
+    - { key: "local-port", value: "5301" }
     - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
   no_log: yes
   when: 'public_dns == "yes"'
@@ -99,67 +112,11 @@
   loop: "{{ custom_domains }}"
   no_log: yes
   when: 'public_dns == "yes"'
-- name: Add dnsdist group
-  group:
-    name: dnsdist
-    system: yes
-  when: 'public_dns == "yes"'
-- name: Add dnsdist user
-  user:
-    name: dnsdist
-    group: dnsdist
-    system: yes
-    shell: /sbin/nologin
-  when: 'public_dns == "yes"'
-- name: DNSDist setup
-  block:
-    - name: Check if DNSDist command exists
-      command: dnsdist -V
-  rescue:
-    - name: Clone the PowerDNS github repository
-      git:
-        repo: https://github.com/PowerDNS/pdns.git
-        dest: /usr/src/pdns
-        clone: yes
-        update: yes
-      when: 'public_dns == "yes"'
-    - name: Autoreconf DNSDist
-      command: autoreconf -vi
-      args:
-        chdir: /usr/src/pdns/pdns/dnsdistdist
-      when: 'public_dns == "yes"'
-    - name: Configure DNSDist build
-      command: ./configure --enable-dnscrypt --enable-dns-over-tls --enable-systemd
-      args:
-        chdir: /usr/src/pdns/pdns/dnsdistdist
-      when: 'public_dns == "yes"'
-    - name: Build DNSDist
-      command: make
-      args:
-        chdir: /usr/src/pdns/pdns/dnsdistdist
-      when: 'public_dns == "yes"'
-    - name: Install DNSDist
-      command: make install
-      args:
-        chdir: /usr/src/pdns/pdns/dnsdistdist
-      when: 'public_dns == "yes"'
-- name: Create DNSDist config directory
-  file:
-    path: /etc/dnsdist
-    state: directory
-    mode: ug=rw,o=r
-    owner: dnsdist
-    group: dnsdist
-  when: 'public_dns == "yes"'
 - name: Configure DNSDist
   template:
     src: dnsdist/dnsdist.conf.j2
     dest: /etc/dnsdist/dnsdist.conf
-    mode: ug=rw,o=r
-    owner: dnsdist
-    group: dnsdist
     backup: yes
-  no_log: yes
   when: 'public_dns == "yes"'
 - name: Make sure PowerDNS is running
   systemd:
@@ -225,6 +182,10 @@
     login_password: '{{ mysql_root_password }}'
   no_log: yes
   when: 'public_dns == "yes"'
+- name: Check if DynDNS .htaccess exists
+  stat:
+    path: /var/www/poweradmin/.htaccess
+  register: htaccess_exists
 - name: Set up DynDNS .htaccess
   copy:
     src: /var/www/poweradmin/install/htaccess.dist
@@ -233,7 +194,7 @@
     owner: apache
     group: apache
     mode: ug=rw,o=r
-  when: 'public_dns == "yes"'
+  when: 'public_dns == "yes" and not htaccess_exists.stat.exists'
 - name: Render PowerAdmin config
   template:
     src: poweradmin/config.inc.php.j2

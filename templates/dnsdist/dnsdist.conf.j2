@@ -1,4 +1,7 @@
-setLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:53')
+setLocal('127.0.0.1:53')
+addLocal('::1')
+addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}')
+addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}')
 setACL({'0.0.0.0/0', '::/0'}) -- Allow all IPs access
 
 newServer({address='127.0.0.1:5300', pool='auth'})
