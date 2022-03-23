@@ -22,11 +22,22 @@
   when: '{{ public_dns == "yes" and ((reset == "yes") or (domain_item not in all_dns_zones.stdout_lines)) }}'
 - name: Reload PowerDNS config
   systemd:
-    name: pdns
+    name: "{{ item }}"
     daemon_reload: yes
     enabled: yes
     state: restarted
+  loop:
+    - pdns
+    - pdns-recursor
+    - dnsdist
   when: 'public_dns == "yes"'
+- name: Wait for DNS server to come up
+  wait_for:
+    port: "{{ item }}"
+  loop:
+    - 5300
+    - 5301
+    - 53
 - name: "Warn user to set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record with the DKIM keys"
   debug:
     msg:
