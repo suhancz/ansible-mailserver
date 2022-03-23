@@ -91,7 +91,7 @@
   become: yes
   become_user: pdns
   loop: "{{ [mailserver_domain] + custom_domains }}"
-  when: '{{ public_dns == "yes" and (reset or item not in all_dns_zones.stdout_lines) }}'
+  when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
 - name: Configure PowerDNS recursor
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
