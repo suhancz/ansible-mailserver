@@ -99,7 +99,12 @@
   loop: "{{ [mailserver_domain] + custom_domains }}"
   when: public_dns == "yes"
   register: enable_dnssec
-  changed_when: '"already secure, remove keys with pdnsutil remove-zone-key if needed" in enable_dnssec.stderr'
+  ignore_errors: yes
+- name: Fail if the issue is not about DNSSEC being already enabled
+  fail:
+    msg: "{{ item.stderr }}"
+  loop: "{{ enable_dnssec.results }}"
+  when: '{{ (item.rc != 0) and ("already secure, remove keys with pdnsutil remove-zone-key if needed" not in item.stderr) }}'
 - name: Configure PowerDNS recursor
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
