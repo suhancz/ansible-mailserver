@@ -33,7 +33,7 @@
     - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
-    - { name: "pdns", paths: ["/etc/pdns"], service: True }
+    - { name: "pdns", paths: ["/etc/pdns", "/etc/pdns-recursor", "/etc/dnsdist"], service: True }
 - name: Create systemd backup services
   template:
     src: "systemd/{{ item }}-backup.service.j2"
