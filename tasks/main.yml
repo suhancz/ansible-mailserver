@@ -15,14 +15,6 @@
     authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
   loop: "{{ users }}"
   no_log: yes
-- name: Create backup directory
-  file:
-    path: /backup
-    state: directory
-    recurse: yes
-    owner: root
-    group: root
-    mode: u=rwX
 - name: Configure OS
   include: os.yml
 - name: Configure MariaDB

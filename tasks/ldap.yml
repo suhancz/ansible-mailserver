@@ -45,13 +45,16 @@
       when: reset == "yes"
     - name: Create backup directory
       file:
-        path: /backup/ldap
+        path: "/backup/{{ item }}"
         state: directory
         recurse: yes
         owner: root
         group: root
         mode: u=rwX
       when: reset == "yes"
+      loop:
+        - ''
+        - ldap
     - name: Save last LDAP backup
       archive:
         path: "{{ (ldap_backups.stdout_lines|last).split(' ')[1] }}"
