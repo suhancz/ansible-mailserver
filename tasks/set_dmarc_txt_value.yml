@@ -12,4 +12,4 @@
   command: "pdnsutil load-zone {{ current_domain }} /tmp/ansible-mailserver.dns-dmarc-{{ current_domain }}.zone"
   become: yes
   become_user: pdns
-  when: '{{ public_dns == "yes" and ((reset == "yes") or (current_domain not in all_dns_zones.stdout_lines)) }}'
+  when: 'public_dns == "yes"'
