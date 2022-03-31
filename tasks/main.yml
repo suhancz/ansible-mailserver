@@ -4,6 +4,7 @@
   set_fact:
     postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"
     horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.horde_db_password chars=ascii_letters,digits')) }}"
+    powerdns_db_password: "{{ powerdns_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_db_password chars=ascii_letters,digits')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/ansible-mailserver-install.mysql_root_password chars=ascii_letters,digits')) }}"
     ldap_admin_password: "{{ ldap_admin_password | default(lookup('password', '/tmp/ansible-mailserver-install.ldap_admin_password chars=ascii_letters,digits')) }}"
     mariabackup_password: "{{ mariabackup_password | default(lookup('password', '/tmp/ansible-mailserver-install.mariabackup_password chars=ascii_letters,digits')) }}"
@@ -14,20 +15,12 @@
     authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
   loop: "{{ users }}"
   no_log: yes
-- name: Create backup directory
-  file:
-    path: /backup
-    state: directory
-    recurse: yes
-    owner: root
-    group: root
-    mode: u=rwX
 - name: Configure OS
   include: os.yml
-- name: Configure DNS
-  include: dns.yml
 - name: Configure MariaDB
   include: mariadb.yml
+- name: Configure DNS
+  include: dns.yml
 - name: Configure PostfixAdmin
   include: postfixadmin.yml
 - name: Set up SSL
@@ -68,10 +61,11 @@
     state: restarted
   loop:
     - firewalld
-    - dnsmasq
     - NetworkManager
     - mariadb
-    - "dirsrv@{{ mailserver_hostname.split('.')[0] }}"
+    - "{{ 'pdns' if public_dns }}"
+    - pdns-recursor
+    - "dirsrv@{{ mailserver_hostname }}"
     # - elasticsearch
     - vsftpd
     - httpd

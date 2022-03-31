@@ -34,47 +34,50 @@
       register: dscreate_status
   rescue:
     - name: Start LDAP server
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} start"
-      when: reset
+      command: "dsctl {{ mailserver_hostname }} start"
+      when: reset == "yes"
     - name: Create backup before taking destructive actions
-      command: "dsconf {{ mailserver_hostname.split('.')[0] }} backup create"
-      when: reset
+      command: "dsconf {{ mailserver_hostname }} backup create"
+      when: reset == "yes"
     - name: List LDAP server backups
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} backups"
+      command: "dsctl {{ mailserver_hostname }} backups"
       register: ldap_backups
-      when: reset
+      when: reset == "yes"
     - name: Create backup directory
       file:
-        path: /backup/ldap
+        path: "/backup/{{ item }}"
         state: directory
         recurse: yes
         owner: root
         group: root
         mode: u=rwX
-      when: reset
+      when: reset == "yes"
+      loop:
+        - ''
+        - ldap
     - name: Save last LDAP backup
       archive:
         path: "{{ (ldap_backups.stdout_lines|last).split(' ')[1] }}"
         dest: "/backup/ldap/LDAP_backup.{{ (ldap_backups.stdout_lines|last).split(' ')[1].split('/')|last }}.tar.bz2"
         format: bz2
         force_archive: yes
-      when: reset
+      when: reset == "yes"
     - name: Uninstall LDAP server
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} remove --do-it"
-      when: reset
+      command: "dsctl {{ mailserver_hostname }} remove --do-it"
+      when: reset == "yes"
     - name: Configure LDAP server
       command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
-      when: reset
+      when: reset == "yes"
       register: dscreate_status
 - name: Start LDAP server
-  command: "dsctl {{ mailserver_hostname.split('.')[0] }} start"
+  command: "dsctl {{ mailserver_hostname }} start"
 - name: Import TLS certificate for LDAP
-  command: "dsctl {{ mailserver_hostname.split('.')[0] }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
+  command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
 - name: Enable LDAP plugins
-  command: "dsconf {{ mailserver_hostname.split('.')[0] }} plugin {{ item }} enable"
+  command: "dsconf {{ mailserver_hostname }} plugin {{ item }} enable"
   loop:
     - memberof
     - automember
 - name: Configure the memberof plugin to search all entries
-  command: "dsconf {{ mailserver_hostname.split('.')[0] }} plugin memberof set --scope dc={{ mailserver_domain.split('.')|join(',dc=') }}"
+  command: "dsconf {{ mailserver_hostname }} plugin memberof set --scope dc={{ mailserver_domain.split('.')|join(',dc=') }}"
   when: "dscreate_status is defined and dscreate_status.rc is defined and dscreate_status.rc == 0"

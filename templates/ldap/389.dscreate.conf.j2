@@ -22,7 +22,7 @@ defaults = 999999999
 # full_machine_name (str)
 # Description: Sets the fully qualified hostname (FQDN) of this system. When installing this instance with GSSAPI authentication behind a load balancer, set this parameter to the FQDN of the load balancer and, additionally, set "strict_host_checking" to "false".
 # Default value: balla.cloud
-full_machine_name = {{ mailserver_hostname }}
+full_machine_name = {{ mailserver_hostname }}.{{ mailserver_domain }}
 
 # start (bool)
 # Description: Starts the instance after the install completes. If false, the instance is created but started.
@@ -39,7 +39,7 @@ start = True
 # instance_name (str)
 # Description: Sets the name of the instance. You can refer to this value in other parameters of this INF file using the "{instance_name}" variable. Note that this name cannot be changed after the installation!
 # Default value: localhost
-instance_name = {{ mailserver_hostname.split('.')[0] }}
+instance_name = {{ mailserver_hostname }}
 
 # ldapi (str)
 # Description: Sets the location of socket interface of the Directory Server.

@@ -1,18 +1,12 @@
 - name: "Set up ACME challenge TXT records for {{ domain_item }}"
-  lineinfile:
-    path: /etc/dnsmasq.conf
-    regex: "txt-record={{ item.value['dns-01'].record }}"
-    line: "txt-record={{ item.value['dns-01'].record }},\"{{ item.value['dns-01'].resource_value }}\""
-    mode: u=rw,og=r
-    owner: root
-    group: dnsmasq
-    state: present
-    backup: yes
+  include_tasks: set_acme_txt_value.yml
+  vars:
+    current_challenge: "{{ item }}"
+  when: '{{ (public_dns == "yes") and ((item.value["dns-01"].resource ~ "." ~ domain_item) == item.value["dns-01"].record) }}'
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: 'public_dns == "yes"'
-- name: Reload DNSMASQ config
+- name: Reload PowerDNS config
   systemd:
-    name: dnsmasq
+    name: pdns
     daemon_reload: yes
     enabled: yes
     state: restarted
