@@ -23,3 +23,19 @@
     - { key: "RequiredHeaders", value: "true", comment: false }
     - { key: "SPFIgnoreResults", value: "false", comment: false }
     - { key: "SPFSelfValidate", value: "true", comment: false }
+- name: Set up DMARC TXT records
+  include_tasks: set_dmarc_txt_value.yml
+  vars:
+    current_domain: "{{ item }}"
+  when: 'public_dns == "yes"'
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Reload PowerDNS config
+  systemd:
+    name: pdns
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  when: 'public_dns == "yes"'
+- name: Wait for DNS to listen
+  wait_for:
+    port: 53

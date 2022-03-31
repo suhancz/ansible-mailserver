@@ -1,0 +1,15 @@
+- name: "Render {{ domain_item }} zone file with TXT record"
+  template:
+    src: pdns/dns-acme.zone.j2
+    dest: "/tmp/ansible-mailserver.dns-acme-{{ domain_item }}.zone"
+    owner: pdns
+    group: pdns
+    backup: yes
+  when: 'public_dns == "yes"'
+- name: Save current DNS zone to the result file
+  shell: 'pdnsutil list-zone {{ domain_item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ domain_item }}/g" | sort | uniq >> /tmp/ansible-mailserver.dns-acme-{{ domain_item }}.zone'
+- name: "Set up ACME challenge TXT records for {{ domain_item }}"
+  command: "pdnsutil load-zone {{ domain_item }} /tmp/ansible-mailserver.dns-acme-{{ domain_item }}.zone"
+  become: yes
+  become_user: pdns
+  when: '{{ public_dns == "yes" and ((reset == "yes") or (domain_item not in all_dns_zones.stdout_lines)) }}'

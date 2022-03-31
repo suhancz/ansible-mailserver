@@ -4,7 +4,7 @@
     dest: "/etc/fail2ban/filter.d/{{ item }}"
   loop:
     - postfixadmin.conf
-    - dnsmasq.conf
+    # - dnsmasq.conf
 - name: Enable fail2ban jails
   blockinfile:
     path: /etc/fail2ban/jail.d/ansible-mailserver.local
@@ -97,15 +97,15 @@
       maxretry = 3
       bantime  = 120
 
-      [dnsmasq]
-      enabled = true
-      port     = 53
-      action   = %(banaction)s[name=%(__name__)s-tcp, port="%(port)s", protocol="tcp", chain="%(chain)s", actname=%(banaction)s-tcp]
-                 %(banaction)s[name=%(__name__)s-udp, port="%(port)s", protocol="udp", chain="%(chain)s", actname=%(banaction)s-udp]
-      logpath = /var/log/messages
-      findtime = 60
-      maxretry = 42
-      bantime = 3600
+      # [dnsmasq]
+      # enabled = true
+      # port     = 53
+      # action   = %(banaction)s[name=%(__name__)s-tcp, port="%(port)s", protocol="tcp", chain="%(chain)s", actname=%(banaction)s-tcp]
+      #            %(banaction)s[name=%(__name__)s-udp, port="%(port)s", protocol="udp", chain="%(chain)s", actname=%(banaction)s-udp]
+      # logpath = /var/log/messages
+      # findtime = 60
+      # maxretry = 42
+      # bantime = 3600
     mode: u=rw,og=r
     owner: root
     group: root
