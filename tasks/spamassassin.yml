@@ -1,4 +1,4 @@
-- name: Create razor hopme directory
+- name: Create razor home directory
   file:
     path: /var/lib/razor/
     state: directory

@@ -25,17 +25,17 @@
           no_log: yes
       rescue:
         - name: Stop MariaDB
-          when: reset or forgotten_mariadb_root_password
+          when: reset == "yes" or forgotten_mariadb_root_password
           systemd:
             name: mariadb
             daemon-reload: yes
             enabled: yes
             state: stopped
         - name: Start MariaDB in safe mode
-          when: reset or forgotten_mariadb_root_password
+          when: reset == "yes" or forgotten_mariadb_root_password
           shell: "mysqld_safe --skip-grant-tables --skip-networking &"
         - name: "Generate MariaDB root password reset SQL"
-          when: reset or forgotten_mariadb_root_password
+          when: reset == "yes" or forgotten_mariadb_root_password
           template:
             src: mariadb/reset_mariadb_root_password.sql.j2
             dest: /tmp/ansible-mailserver-install.reset_mariadb_root_password.sql
@@ -44,7 +44,7 @@
             group: root
             backup: yes
         - name: Force-reset the MariaDB root password
-          when: reset or forgotten_mariadb_root_password
+          when: reset == "yes" or forgotten_mariadb_root_password
           mysql_db:
             name: all
             state: import
@@ -52,14 +52,14 @@
             target: /tmp/ansible-mailserver-install.reset_mariadb_root_password.sql
           no_log: yes
         - name: Read MariaDB PID
-          when: reset or forgotten_mariadb_root_password
+          when: reset == "yes" or forgotten_mariadb_root_password
           command: cat /var/run/mariadb/mariadb.pid
           register: mariadb_pid
         - name: Stop MariaDB
-          when: reset or forgotten_mariadb_root_password
+          when: reset == "yes" or forgotten_mariadb_root_password
           command: "kill {{ mariadb_pid.stdout }}"
         - name: Make sure MariaDB is running
-          when: reset or forgotten_mariadb_root_password
+          when: reset == "yes" or forgotten_mariadb_root_password
           systemd:
             name: mariadb
             daemon_reload: yes

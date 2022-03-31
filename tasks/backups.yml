@@ -17,7 +17,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    - pdns
 - name: Create systemd tarball backup services
   template:
     src: "systemd/tarball-backup.service.j2"
@@ -33,7 +33,7 @@
     - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
-    - { name: "dnsmasq", paths: ["/etc/dnsmasq"] }
+    - { name: "pdns", paths: ["/etc/pdns", "/etc/pdns-recursor", "/etc/dnsdist"], service: True }
 - name: Create systemd backup services
   template:
     src: "systemd/{{ item }}-backup.service.j2"
@@ -64,7 +64,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    - pdns
 - name: Ensure systemd is aware of the backup services
   systemd:
     name: "{{ item }}-backup"
@@ -81,7 +81,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    - pdns
 - name: Enable the backup timers
   systemd:
     name: "{{ item }}-backup.timer"
@@ -98,7 +98,7 @@
     - horde
     - dovecot
     - postfix
-    - dnsmasq
+    - pdns
 - name: Restore backups
   when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or horde_backup_path is defined or dovecot_backup_path is defined or postfix_backup_path is defined or dnsmasq_backup_path is defined
   block:
@@ -141,7 +141,7 @@
         state: started
     - name: Stop LDAP server
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} stop"
+      command: "dsctl {{ mailserver_hostname }} stop"
     - name: Prepare LDAP backup
       when: ldap_backup_path is defined
       unarchive:
@@ -152,10 +152,10 @@
       register: ldap_backup_files
     - name: Restore LDAP backup
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} bak2db /{{ ldap_backup_files.files[0] }}"
+      command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
     - name: Start LDAP server
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname.split('.')[0] }} start"
+      command: "dsctl {{ mailserver_hostname }} start"
     - name: Restore service tarball backups
       include: restore_service_tarball_backup.yml
       vars:
@@ -168,7 +168,7 @@
         - vsftpd
         - dovecot
         - postfix
-        - dnsmasq
+        - pdns
     - name: Restore non-service tarball backups
       when: "{{ item + '_backup_path'  is defined }}"
       unarchive:

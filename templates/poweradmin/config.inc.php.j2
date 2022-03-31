@@ -1,0 +1,14 @@
+<?php
+$db_host = 'localhost';
+$db_name = 'powerdnsdb';
+$db_user = '{{ mailserver_admin_user }}@{{ mailserver_domain }}';
+$db_pass = '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}';
+$db_type = 'mysql';
+
+$session_key = '{{ poweradmin_session_key }}';
+
+$iface_lang = 'en_EN';
+
+$dns_hostmaster = 'hostmaster.{{ mailserver_domain }}';
+$dns_ns1 = 'ns1.{{ mailserver_domain }}';
+$dns_ns2 = 'ns2.{{ mailserver_domain }}';

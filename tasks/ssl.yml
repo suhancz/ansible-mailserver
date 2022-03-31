@@ -86,7 +86,6 @@
   file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/{{ item }}.pem"
     src: "../../archive/{{ mailserver_domain }}/{{ item }}1.pem"
-    backup: yes
     state: link
   loop:
     - privkey

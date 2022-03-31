@@ -2,11 +2,22 @@
   copy:
     src: "mariadb/{{ mariadb_database }}_schema.sql"
     dest: "/tmp/ansible-mailserver-install.{{ mariadb_database }}_schema.sql"
+
+- name: "Check if {{ mariadb_database }} DB exists"
+  mysql_db:
+    name: "{{ mariadb_database }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+  register: mariadb_database_exists
+
 - name: "Create {{ mariadb_database }} DB schema"
   mysql_db:
     name: "{{ mariadb_database }}"
-    state: "{{ mariadb_state|default('present') }}"
+    state: import
     login_user: root
     login_password: "{{ mysql_root_password }}"
-    target: "{{ '/tmp/ansible-mailserver-install.' ~ mariadb_database ~ '_schema.sql' if mariadb_state is defined and mariadb_state == 'import' }}"
+    target: "{{ '/tmp/ansible-mailserver-install.' ~ mariadb_database ~ '_schema.sql' }}"
   no_log: yes
+  when: "mariadb_database_exists.changed or (mariadb_state is defined and mariadb_state == 'import')"
