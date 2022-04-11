@@ -204,6 +204,15 @@
     login_password: '{{ mysql_root_password }}'
   no_log: yes
   when: 'public_dns == "yes"'
+- name: Fill PowerDNS DB with PowerAdmin data
+  mysql_query:
+    login_db: powerdnsdb
+    login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+    query:
+      - INSERT INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
+      - INSERT INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
+      - INSERT INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, '{{ mailserver_admin_user }}@{{ mailserver_domain }}', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}', 'Administrator', '{{ mailserver_admin_user }}@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
 - name: Check if DynDNS .htaccess exists
   stat:
     path: /var/www/poweradmin/.htaccess
