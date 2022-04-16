@@ -79,6 +79,12 @@
       become_user: pdns
       loop: "{{ [mailserver_domain] + custom_domains }}"
       when: 'reset and public_dns == "yes"'
+- name: Make sure local zones are master zones
+  command: "pdnsutil set-kind {{ item }} primary"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: 'public_dns == "yes"'
 - name: Render DNS zone file
   template:
     src: pdns/dns-domain.zone.j2
