@@ -5,11 +5,118 @@
     port: dns
   when: 'public_dns == "yes"'
 - name: Configure local DNS cache
-  import_tasks: local_dns_cache.yml
-- name: Configure PowerDNS
-  import_tasks: pdns.yml
-- name: Set up DNS records
-  import_tasks: dns_records.yml
+  nmcli:
+    conn_name: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"
+    ip4: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    ip6: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
+    dns4:
+      - 127.0.0.1
+      - 8.8.8.8
+      - 1.1.1.1
+    state: present
+    type: ethernet
+- name: Create PowerDNS DB
+  include_tasks: create_mariadb_schema.yml
+  vars:
+    mariadb_database: powerdnsdb
+    mariadb_state: "{{ ('import' if reset)|default('present') }}"
+  register: powerdns_db_state
+- name: Set up PowerDNS DB privileges
+  mysql_user:
+    name: powerdns
+    password: '{{ powerdns_db_password }}'
+    priv: 'powerdnsdb.*:ALL'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+# - name: Fill PowerDNS DB with data
+#   include_tasks: fill_mariadb_data.yml
+#   vars:
+#     mariadb_database:
+#       db: powerdnsdb
+#       user: powerdns
+#       password: "{{ powerdns_db_password }}"
+#   when: powerdns_db_state.changed
+- name: Configure PowerDNS authoritative server
+  lineinfile:
+    path: /etc/pdns/pdns.conf
+    line: "{{ item.key }}={{ item.value }}"
+    regex: "^{{ item.key }}"
+    state: present
+    owner: pdns
+    group: pdns
+    backup: yes
+  loop:
+    - { key: "launch", value: "gmysql" }
+    - { key: "gmysql-host", value: "localhost" }
+    - { key: "gmysql-user", value: "powerdns" }
+    - { key: "gmysql-password", value: "{{ powerdns_db_password }}" }
+    - { key: "gmysql-dbname", value: "powerdnsdb" }
+    - { key: "dnsupdate", value: "yes" }
+    - { key: "local-address", value: "127.0.0.1" }
+    - { key: "local-port", value: "5300" }
+    - { key: "gmysql-dnssec", value: "yes" }
+  no_log: yes
+  when: 'public_dns == "yes"'
+- name: Fetch already existing DNS zones
+  command: "pdnsutil list-all-zones"
+  become: yes
+  become_user: pdns
+  when: 'public_dns == "yes"'
+  register: all_dns_zones
+- name: Create zones
+  block:
+    - name: Create DNS zones
+      command: "pdnsutil create-zone {{ item }} ns.{{ item }}"
+      become: yes
+      become_user: pdns
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      when: 'public_dns == "yes"'
+  rescue:
+    - name: Create DNS zones
+      command: "pdnsutil --force create-zone {{ item }} ns.{{ item }}"
+      become: yes
+      become_user: pdns
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      when: 'reset and public_dns == "yes"'
+- name: Make sure local zones are master zones
+  command: "pdnsutil set-kind {{ item }} primary"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: 'public_dns == "yes"'
+- name: Render DNS zone file
+  template:
+    src: pdns/dns-domain.zone.j2
+    dest: "/tmp/ansible-mailserver.dns-{{ item }}.zone"
+    owner: pdns
+    group: pdns
+    backup: yes
+  when: 'public_dns == "yes"'
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Save current DNS zone to the result file
+  shell: 'pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ item }}/g" | sort | uniq >> /tmp/ansible-mailserver.dns-{{ item }}.zone'
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Fill DNS zone
+  command: "pdnsutil load-zone {{ item }} /tmp/ansible-mailserver.dns-{{ item }}.zone"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
+- name: Set up DNSSEC
+  command: "pdnsutil secure-zone {{ item }}"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: public_dns == "yes"
+  register: enable_dnssec
+  ignore_errors: yes
+- name: Fail if the issue is not about DNSSEC being already enabled
+  fail:
+    msg: "{{ item.stderr }}"
+  loop: "{{ enable_dnssec.results }}"
+  when: '{{ (item.rc != 0) and ("already secure, remove keys with pdnsutil remove-zone-key if needed" not in item.stderr) }}'
 - name: Configure PowerDNS recursor
   import_tasks: pdns_recursor.yml
 - name: Configure DNSDist
