@@ -57,6 +57,8 @@
     - { key: "local-port", value: "5300" }
     - { key: "gmysql-dnssec", value: "yes" }
     - { key: "secondary-do-renotify", value: "yes" }
+    - { key: "autosecondary", value: "yes" }
+    - { key: "allow-unsigned-autoprimary", value: "yes" }
   no_log: yes
   when: 'public_dns == "yes"'
 - name: Fetch already existing DNS zones
