@@ -3,7 +3,7 @@
 {{ item }}.	IN	TXT	"v=spf1 mx ~all"
 {{ item }}.	IN	AAAA	{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}
 *.{{ item }}.	IN	CNAME	{{ item }}.
-dyndns.{{ item }}.	IN	NS	ns.{{ item }}.
+dyndns.{{ item }}.	IN	NS	ns.{{ mailserver_domain }}.
 mail.{{ item }}.	IN	MX	1 {{ mailserver_hostname }}.{{ mailserver_domain }}.
 mail2.{{ item }}.	IN	MX	5 {{ mailserver_hostname }}.{{ mailserver_domain }}.
 {% if item == mailserver_domain %}

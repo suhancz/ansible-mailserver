@@ -72,14 +72,14 @@
 - name: Create zones
   block:
     - name: Create DNS zones
-      command: "pdnsutil create-zone {{ item }} ns.{{ item }}"
+      command: "pdnsutil create-zone {{ item }} ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
       loop: "{{ [mailserver_domain] + custom_domains }}"
       when: 'public_dns == "yes"'
   rescue:
     - name: Create DNS zones
-      command: "pdnsutil --force create-zone {{ item }} ns.{{ item }}"
+      command: "pdnsutil --force create-zone {{ item }} ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
       loop: "{{ [mailserver_domain] + custom_domains }}"
@@ -100,7 +100,7 @@
   when: 'public_dns == "yes"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Save current DNS zone to the result file
-  shell: '(pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ item }}/g" && cat /tmp/ansible-mailserver.dns-{{ item }}.zone) | sort | uniq > /tmp/ansible-mailserver.dns-{{ item }}.zone'
+  shell: '(pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ mailserver_domain }}/g" && cat /tmp/ansible-mailserver.dns-{{ item }}.zone) | sort | uniq > /tmp/ansible-mailserver.dns-{{ item }}.zone'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Fill DNS zone
   command: "pdnsutil load-zone {{ item }} /tmp/ansible-mailserver.dns-{{ item }}.zone"
