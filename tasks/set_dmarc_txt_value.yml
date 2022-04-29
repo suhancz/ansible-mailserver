@@ -7,7 +7,7 @@
     backup: yes
   when: 'public_dns == "yes"'
 - name: Save current DNS zone to the result file
-  shell: 'pdnsutil list-zone {{ current_domain }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ current_domain }}/g" | sort | uniq >> /tmp/ansible-mailserver.dns-dmarc-{{ current_domain }}.zone'
+  shell: '(pdnsutil list-zone {{ current_domain }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ current_domain }}/g" && cat /tmp/ansible-mailserver.dns-dmarc-{{ current_domain }}.zone)| sort | uniq > /tmp/ansible-mailserver.dns-dmarc-{{ current_domain }}.zone'
 - name: "Set up the _dmarc.{{ current_domain }} TXT record"
   command: "pdnsutil load-zone {{ current_domain }} /tmp/ansible-mailserver.dns-dmarc-{{ current_domain }}.zone"
   become: yes
