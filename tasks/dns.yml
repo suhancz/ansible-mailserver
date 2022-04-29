@@ -101,7 +101,7 @@
   when: 'public_dns == "yes"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Save current DNS zone to the result file
-  shell: 'pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ item }}/g" | sort | uniq >> /tmp/ansible-mailserver.dns-{{ item }}.zone'
+  shell: '(pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ item }}/g" && cat /tmp/ansible-mailserver.dns-{{ item }}.zone) | sort | uniq > /tmp/ansible-mailserver.dns-{{ item }}.zone'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Fill DNS zone
   command: "pdnsutil load-zone {{ item }} /tmp/ansible-mailserver.dns-{{ item }}.zone"
@@ -138,7 +138,7 @@
     name: pdns-recursor
     daemon_reload: yes
     enabled: yes
-    state: started
+    state: restarted
 - name: Make sure DNSDist is running
   systemd:
     name: dnsdist
@@ -191,17 +191,32 @@
   no_log: yes
   when: 'public_dns == "yes"'
 - name: Fill PowerDNS DB with PowerAdmin data
-  mysql_query:
-    login_db: powerdnsdb
-    login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-    login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
-    query:
-      - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41,	'zone_master_add',	'User is allowed to add new master zones.'), (42,	'zone_slave_add',	'User is allowed to add new slave zones.'), (43,	'zone_content_view_own',	'User is allowed to see the content and meta data of zones he owns.'), (44,	'zone_content_edit_own',	'User is allowed to edit the content of zones he owns.'), (45,	'zone_meta_edit_own',	'User is allowed to edit the meta data of zones he owns.'), (46,	'zone_content_view_others',	'User is allowed to see the content and meta data of zones he does not own.'), (47,	'zone_content_edit_others',	'User is allowed to edit the content of zones he does not own.'), (48,	'zone_meta_edit_others',	'User is allowed to edit the meta data of zones he does not own.'), (49,	'search',	'User is allowed to perform searches.'), (50,	'supermaster_view',	'User is allowed to view supermasters.'), (51,	'supermaster_add',	'User is allowed to add new supermasters.'), (52,	'supermaster_edit',	'User is allowed to edit supermasters.'), (53,	'user_is_ueberuser',	'User has full access. God-like. Redeemer.'), (54,	'user_view_others',	'User is allowed to see other users and their details.'), (55,	'user_add_new',	'User is allowed to add new users.'), (56,	'user_edit_own',	'User is allowed to edit their own details.'), (57,	'user_edit_others',	'User is allowed to edit other users.'), (58,	'user_passwd_edit_others',	'User is allowed to edit the password of other users.'), (59,	'user_edit_templ_perm',	'User is allowed to change the permission template that is assigned to a user.'), (60,	'templ_perm_add',	'User is allowed to add new permission templates.'), (61,	'templ_perm_edit',	'User is allowed to edit existing permission templates.'), (62,	'zone_content_edit_own_as_client',	'User is allowed to edit record, but not SOA and NS.');
-      - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
-      - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
-      - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("bcrypt", ident="2y") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
-  no_log: yes
-  when: 'public_dns == "yes"'
+  block:
+    - name: Fill PowerDNS DB with PowerAdmin data using Blowfish 2y ident
+      mysql_query:
+        login_db: powerdnsdb
+        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+        login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+        query:
+          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41,	'zone_master_add',	'User is allowed to add new master zones.'), (42,	'zone_slave_add',	'User is allowed to add new slave zones.'), (43,	'zone_content_view_own',	'User is allowed to see the content and meta data of zones he owns.'), (44,	'zone_content_edit_own',	'User is allowed to edit the content of zones he owns.'), (45,	'zone_meta_edit_own',	'User is allowed to edit the meta data of zones he owns.'), (46,	'zone_content_view_others',	'User is allowed to see the content and meta data of zones he does not own.'), (47,	'zone_content_edit_others',	'User is allowed to edit the content of zones he does not own.'), (48,	'zone_meta_edit_others',	'User is allowed to edit the meta data of zones he does not own.'), (49,	'search',	'User is allowed to perform searches.'), (50,	'supermaster_view',	'User is allowed to view supermasters.'), (51,	'supermaster_add',	'User is allowed to add new supermasters.'), (52,	'supermaster_edit',	'User is allowed to edit supermasters.'), (53,	'user_is_ueberuser',	'User has full access. God-like. Redeemer.'), (54,	'user_view_others',	'User is allowed to see other users and their details.'), (55,	'user_add_new',	'User is allowed to add new users.'), (56,	'user_edit_own',	'User is allowed to edit their own details.'), (57,	'user_edit_others',	'User is allowed to edit other users.'), (58,	'user_passwd_edit_others',	'User is allowed to edit the password of other users.'), (59,	'user_edit_templ_perm',	'User is allowed to change the permission template that is assigned to a user.'), (60,	'templ_perm_add',	'User is allowed to add new permission templates.'), (61,	'templ_perm_edit',	'User is allowed to edit existing permission templates.'), (62,	'zone_content_edit_own_as_client',	'User is allowed to edit record, but not SOA and NS.');
+          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish", ident="2y") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
+      no_log: yes
+      when: 'public_dns == "yes"'
+  rescue:
+    - name: Fill PowerDNS DB with PowerAdmin data replacing Blowfish 2b ident with 2y
+      mysql_query:
+        login_db: powerdnsdb
+        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+        login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+        query:
+          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41,	'zone_master_add',	'User is allowed to add new master zones.'), (42,	'zone_slave_add',	'User is allowed to add new slave zones.'), (43,	'zone_content_view_own',	'User is allowed to see the content and meta data of zones he owns.'), (44,	'zone_content_edit_own',	'User is allowed to edit the content of zones he owns.'), (45,	'zone_meta_edit_own',	'User is allowed to edit the meta data of zones he owns.'), (46,	'zone_content_view_others',	'User is allowed to see the content and meta data of zones he does not own.'), (47,	'zone_content_edit_others',	'User is allowed to edit the content of zones he does not own.'), (48,	'zone_meta_edit_others',	'User is allowed to edit the meta data of zones he does not own.'), (49,	'search',	'User is allowed to perform searches.'), (50,	'supermaster_view',	'User is allowed to view supermasters.'), (51,	'supermaster_add',	'User is allowed to add new supermasters.'), (52,	'supermaster_edit',	'User is allowed to edit supermasters.'), (53,	'user_is_ueberuser',	'User has full access. God-like. Redeemer.'), (54,	'user_view_others',	'User is allowed to see other users and their details.'), (55,	'user_add_new',	'User is allowed to add new users.'), (56,	'user_edit_own',	'User is allowed to edit their own details.'), (57,	'user_edit_others',	'User is allowed to edit other users.'), (58,	'user_passwd_edit_others',	'User is allowed to edit the password of other users.'), (59,	'user_edit_templ_perm',	'User is allowed to change the permission template that is assigned to a user.'), (60,	'templ_perm_add',	'User is allowed to add new permission templates.'), (61,	'templ_perm_edit',	'User is allowed to edit existing permission templates.'), (62,	'zone_content_edit_own_as_client',	'User is allowed to edit record, but not SOA and NS.');
+          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
+      no_log: yes
+      when: 'public_dns == "yes"'
 - name: Check if DynDNS .htaccess exists
   stat:
     path: /var/www/poweradmin/.htaccess
