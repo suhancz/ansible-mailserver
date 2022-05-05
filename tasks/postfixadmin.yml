@@ -26,7 +26,7 @@
   include_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: postfixadmin
-    mariadb_state: "{{ ('import' if reset)|default('present') }}"
+    mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   register: postfixadmin_db_state
 - name: Set up postfixadmin DB privileges
   mysql_user:
