@@ -19,7 +19,7 @@
   include_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: powerdnsdb
-    mariadb_state: "{{ ('import' if reset)|default('present') }}"
+    mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   register: powerdns_db_state
 - name: Set up PowerDNS DB privileges
   mysql_user:
