@@ -1,0 +1,7 @@
+- name: Update or add DNS record
+  block:
+    - name: Update DNS record
+      command: 'pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.ttl }} IN {{ record.type }} {{ record.content }}'
+  rescue:
+    - name: Add DNS record
+      command: 'pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.ttl }} IN {{ record.type }} {{ record.content }}'
