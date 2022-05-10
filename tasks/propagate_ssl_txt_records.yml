@@ -6,8 +6,6 @@
       name: "{{ item.value["dns-01"].record }}."
       type: TXT
       content: "{{ item.value['dns-01'].resource_value }}"
-  become: yes
-  become_user: pdns
   when: '{{ (public_dns == "yes") and ((item.value["dns-01"].resource ~ "." ~ domain_item) == item.value["dns-01"].record) }}'
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 - name: Reload PowerDNS config

@@ -32,8 +32,6 @@
       ttl: "3600"
       type: TXT
       content: "v=DMARC1; p=none; pct=100; rua=mailto:dmarc-reports@{{ item }}; ruf=mailto:dmarc-reports@{{ item }}"
-  become: yes
-  become_user: pdns
   when: 'public_dns == "yes"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Reload PowerDNS config

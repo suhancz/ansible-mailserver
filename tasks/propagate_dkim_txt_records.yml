@@ -14,8 +14,6 @@
       ttl: "3600"
       type: TXT
       content: "v=DKIM1; k=rsa; p={{ desired_dkim_record }}"
-  become: yes
-  become_user: pdns
   when: 'public_dns == "yes"'
 - name: Reload PowerDNS config
   systemd:
