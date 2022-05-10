@@ -5,14 +5,6 @@
   set_fact:
     desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
     current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
-- name: "Render {{ domain_item }} zone file with TXT record"
-  template:
-    src: pdns/dns-dkim.zone.j2
-    dest: "/tmp/ansible-mailserver.dns-dkim-{{ domain_item }}.zone"
-    owner: pdns
-    group: pdns
-    backup: yes
-  when: 'public_dns == "yes"'
 - name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record"
   include_tasks: add_dns_record.yml
   vars:
