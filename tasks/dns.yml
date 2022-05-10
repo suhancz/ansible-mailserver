@@ -91,20 +91,28 @@
   become_user: pdns
   loop: "{{ [mailserver_domain] + custom_domains }}"
   when: 'public_dns == "yes"'
-- name: Render DNS zone file
-  template:
-    src: pdns/dns-domain.zone.j2
-    dest: "/tmp/ansible-mailserver.dns-{{ item }}.zone"
-    owner: pdns
-    group: pdns
-    backup: yes
-  when: 'public_dns == "yes"'
-  loop: "{{ [mailserver_domain] + custom_domains }}"
-- name: Save current DNS zone to the result file
-  shell: '(pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ mailserver_domain }}/g" && cat /tmp/ansible-mailserver.dns-{{ item }}.zone) | sort | uniq > /tmp/ansible-mailserver.dns-{{ item }}.zone'
-  loop: "{{ [mailserver_domain] + custom_domains }}"
+# - name: Render DNS zone file
+#   template:
+#     src: pdns/dns-domain.zone.j2
+#     dest: "/tmp/ansible-mailserver.dns-{{ item }}.zone"
+#     owner: pdns
+#     group: pdns
+#     backup: yes
+#   when: 'public_dns == "yes"'
+#   loop: "{{ [mailserver_domain] + custom_domains }}"
+# - name: Save current DNS zone to the result file
+#   shell: '(pdnsutil list-zone {{ item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ mailserver_domain }}/g" && cat /tmp/ansible-mailserver.dns-{{ item }}.zone) | uniq > /tmp/ansible-mailserver.dns-{{ item }}.filled.zone'
+#   loop: "{{ [mailserver_domain] + custom_domains }}"
+# - name: Fill DNS zone
+#   command: "pdnsutil load-zone {{ item }} /tmp/ansible-mailserver.dns-{{ item }}.filled.zone"
+#   become: yes
+#   become_user: pdns
+#   loop: "{{ [mailserver_domain] + custom_domains }}"
+#   when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
 - name: Fill DNS zone
-  command: "pdnsutil load-zone {{ item }} /tmp/ansible-mailserver.dns-{{ item }}.zone"
+  include_tasks: fill_default_dns_records.yml
+  vars:
+    zone: "{{ item }}"
   become: yes
   become_user: pdns
   loop: "{{ [mailserver_domain] + custom_domains }}"
