@@ -7,7 +7,7 @@
       ttl: "{{ item.ttl|default('3600') }}"
       type: "{{ item.type }}"
       content: "{{ item.content }}"
-  loop: "{{ default_dns_records + [{ name: mailserver_hostname ~ '.',	type: 'CNAME', content: zone ~ '.'}] if if zone == mailserver_domain }}"
+  loop: "{{ default_dns_records + [{ name: mailserver_hostname ~ '.',	type: 'CNAME', content: zone ~ '.'}] if zone == mailserver_domain }}"
 - name: Fill default CNAME records
   include_tasks: add_dns_record.yml
   vars:
