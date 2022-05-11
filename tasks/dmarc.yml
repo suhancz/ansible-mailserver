@@ -30,7 +30,7 @@
   vars:
     record:
       zone: "{{ item }}"
-      name: "_dmarc.{{ item }}."
+      name: "_dmarc.{{ item }}.{{ zone }}."
       ttl: "3600"
       type: TXT
       content: "v=DMARC1; p=none; pct=100; rua=mailto:dmarc-reports@{{ item }}; ruf=mailto:dmarc-reports@{{ item }}"
