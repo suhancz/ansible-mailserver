@@ -9,7 +9,7 @@
   include_tasks: add_dns_record.yml
   vars:
     record:
-      zone: "{{ zone }}"
+      zone: "{{ domain_item }}"
       name: "{{ dkim_selector }}._domainkey.{{ domain_item }}."
       ttl: "3600"
       type: TXT

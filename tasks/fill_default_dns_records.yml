@@ -3,20 +3,30 @@
   vars:
     record:
       zone: "{{ zone }}"
-      name: "{{ item.name|default('') ~ zone ~ '.' }}"
+      name: "{{ item.name|default('') ~ zone }}."
       ttl: "{{ item.ttl|default('3600') }}"
       type: "{{ item.type }}"
       content: "{{ item.content }}"
-  loop: "{{ default_dns_records + [{ name: mailserver_hostname ~ '.',	type: 'CNAME', content: zone ~ '.'}] if zone == mailserver_domain }}"
+  loop: "{{ default_dns_records }}"
+- name: "Add CNAME for {{ mailserver_domain }}"
+  include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{{ zone }}"
+      name: "{{ item.name }}.{{ zone }}."
+      ttl: "3600"
+      type: "{{ item.type }}"
+      content: "{{ item.content }}"
 - name: Fill default CNAME records
   include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ zone }}"
-      name: "{{ item.name ~ '.' ~ zone ~ '.' }}"
+      name: "{{ item.name }}.{{ zone }}."
       ttl: "3600"
       type: "{{ item.type }}"
       content: "{{ item.content }}"
   loop:
-    - { name: "*.", type: "CNAME", content: "{{ zone }}"}
-    - { name: "ns.", type: "CNAME", content: "{{ zone }}"}
+    - { name: "{{ mailserver_hostname }}",	type: 'CNAME', content: "{{ zone }}" }
+    - { name: "*", type: "CNAME", content: "{{ zone }}" }
+    - { name: "ns", type: "CNAME", content: "{{ zone }}" }
