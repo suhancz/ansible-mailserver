@@ -26,11 +26,11 @@
     - { key: "SPFSelfValidate", value: "true", comment: false }
   notify: Restart opendmarc
 - name: Set up DMARC TXT records
-  include_tasks: add_dns_record.yml
+  include: add_dns_record.yml
   vars:
     record:
       zone: "{{ item }}"
-      name: "_dmarc.{{ item }}.{{ zone }}."
+      name: "_dmarc.{{ item }}."
       ttl: "3600"
       type: TXT
       content: "v=DMARC1; p=none; pct=100; rua=mailto:dmarc-reports@{{ item }}; ruf=mailto:dmarc-reports@{{ item }}"
