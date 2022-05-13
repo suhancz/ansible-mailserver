@@ -1,9 +1,9 @@
 - name: "Set up ACME challenge TXT records for {{ domain_item }}"
-  include_tasks: add_dns_record.yml
+  include: add_dns_record.yml
   vars:
     record:
       zone: "{{ domain_item }}"
-      name: "{{ item.value["dns-01"].record }}.{{ domain_item }}."
+      name: "{{ item.value["dns-01"].record }}"
       type: TXT
       content: "{{ item.value['dns-01'].resource_value }}"
   when: '{{ (public_dns == "yes") and ((item.value["dns-01"].resource ~ "." ~ domain_item) == item.value["dns-01"].record) }}'

@@ -1,32 +1,27 @@
 - name: Fill default DNS records
-  include_tasks: add_dns_record.yml
+  include: add_dns_record.yml
   vars:
     record:
-      zone: "{{ zone }}"
-      name: "{{ item.name|default('') ~ zone }}."
-      ttl: "{{ item.ttl|default('3600') }}"
-      type: "{{ item.type }}"
-      content: "{{ item.content }}"
+      zone: "{{ dns_zone }}"
+      name: "{{ dns_record.name|default('@') }}"
+      ttl: "{{ dns_record.ttl|default('3600') }}"
+      type: "{{ dns_record.type }}"
+      content: "{{ dns_record.content }}"
   loop: "{{ default_dns_records }}"
-- name: "Add CNAME for {{ mailserver_domain }}"
-  include_tasks: add_dns_record.yml
-  vars:
-    record:
-      zone: "{{ zone }}"
-      name: "{{ item.name }}.{{ zone }}."
-      ttl: "3600"
-      type: "{{ item.type }}"
-      content: "{{ item.content }}"
+  loop_control:
+    loop_var: dns_record
 - name: Fill default CNAME records
-  include_tasks: add_dns_record.yml
+  include: add_dns_record.yml
   vars:
     record:
-      zone: "{{ zone }}"
-      name: "{{ item.name }}.{{ zone }}."
+      zone: "{{ dns_zone }}"
+      name: "{{ dns_record.name }}"
       ttl: "3600"
-      type: "{{ item.type }}"
-      content: "{{ item.content }}"
+      type: "{{ dns_record.type }}"
+      content: "{{ dns_record.content }}"
   loop:
-    - { name: "{{ mailserver_hostname }}",	type: 'CNAME', content: "{{ zone }}" }
-    - { name: "*", type: "CNAME", content: "{{ zone }}" }
-    - { name: "ns", type: "CNAME", content: "{{ zone }}" }
+    - { name: "{{ mailserver_hostname }}",	type: 'CNAME', content: "{{ dns_zone }}" }
+    - { name: "*", type: "CNAME", content: "{{ dns_zone }}" }
+    - { name: "ns", type: "CNAME", content: "{{ dns_zone }}" }
+  loop_control:
+    loop_var: dns_record

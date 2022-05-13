@@ -109,7 +109,7 @@ default_dns_records:
   - { type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { type: "MX", content: "1 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
   - { type: "TXT", content: "v=spf1 mx ~all" }
-  - { name: "dyndns.", ttl: "60", type: "NS", content: "ns.{{ mailserver_domain }}." }
-  - { name: "mail.", type: "MX", content: "1 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
-  - { name: "mail2.", type: "MX", content: "5 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
-  - { name: "smtp.", type: "MX", content: "10 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
+  - { name: "dyndns", ttl: "60", type: "NS", content: "ns.{{ mailserver_domain }}" }
+  - { name: "mail", type: "MX", content: "1 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
+  - { name: "mail2", type: "MX", content: "5 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
+  - { name: "smtp", type: "MX", content: "10 {{ mailserver_hostname }}.{{ mailserver_domain }}" }

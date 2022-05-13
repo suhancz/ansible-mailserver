@@ -91,9 +91,9 @@
   loop: "{{ [mailserver_domain] + custom_domains }}"
   when: 'public_dns == "yes"'
 - name: Fill DNS zone
-  include_tasks: fill_default_dns_records.yml
+  include: fill_default_dns_records.yml
   vars:
-    zone: "{{ item }}"
+    dns_zone: "{{ item }}"
   loop: "{{ [mailserver_domain] + custom_domains }}"
   when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
 - name: Set up DNSSEC
@@ -110,7 +110,7 @@
   loop: "{{ enable_dnssec.results }}"
   when: '{{ (item.rc != 0) and ("already secure, remove keys with pdnsutil remove-zone-key if needed" not in item.stderr) }}'
 - name: Correct SOA record for all domains
-  command: 'pdnsutil replace-rrset {{ item }} {{ item }} 3600 IN SOA ns.{{ item }} hostmaster.{{ item }} 0 10800 3600 604800 3600'
+  command: 'pdnsutil replace-rrset {{ item }} {{ item }} SOA 3600 "ns.{{ item }} hostmaster.{{ item }} 0 10800 3600 604800 3600"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Configure PowerDNS recursor
   lineinfile:
