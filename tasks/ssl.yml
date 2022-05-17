@@ -60,12 +60,17 @@
     challenge: dns-01
     remaining_days: 60
   register: letsencrypt_challenge
+- debug:
+    var: domain_item
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  loop_control:
+    loop_var: domain_item
 - name: Check Let's Encrypt TXT records
   when: letsencrypt_challenge.changed is true
   include_tasks: propagate_ssl_txt_records.yml
   vars:
-    current_domain: "{{ domain_item }}"
-  loop: "{{ [mailserver_domain] + custom_domains }}"
+    current_domain: '{{ domain_item }}'
+  loop: '{{ [mailserver_domain] + custom_domains }}'
   loop_control:
     loop_var: domain_item
 - name: Let the challenge be validated and retrieve the cert and immediate certificate

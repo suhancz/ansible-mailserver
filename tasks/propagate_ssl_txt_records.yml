@@ -1,12 +1,14 @@
-- name: "Set up ACME challenge TXT records for {{ domain_item }}"
+- debug:
+    var: letsencrypt_challenge.challenge_data
+- name: "Set up ACME challenge TXT records for {{ current_domain }}"
   include: add_dns_record.yml
   vars:
     record:
-      zone: "{{ domain_item }}"
+      zone: "{{ current_domain }}"
       name: "{{ item.value["dns-01"].record }}"
       type: TXT
       content: "{{ item.value['dns-01'].resource_value }}"
-  when: '{{ (public_dns == "yes") and ((item.value["dns-01"].resource ~ "." ~ domain_item) == item.value["dns-01"].record) }}'
+  when: '{{ (public_dns == "yes") and ((item.value["dns-01"].resource ~ "." ~ current_domain) == item.value["dns-01"].record) }}'
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 - name: Reload PowerDNS config
   systemd:
@@ -15,7 +17,7 @@
     enabled: yes
     state: restarted
   when: 'public_dns == "yes"'
-- name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ domain_item }}"
+- name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ current_domain }}"
   debug:
     msg:
       - ""
@@ -29,7 +31,7 @@
       - "value: {{ item.value['dns-01'].resource_value }}"
       - ""
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: "{{ (item.value['dns-01'].resource ~ '.' ~ domain_item) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
+  when: "{{ (item.value['dns-01'].resource ~ '.' ~ current_domain) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
 - name: "Wait for TXT record to get propagated"
   community.dns.wait_for_txt:
     records:
@@ -38,4 +40,4 @@
         mode: equals
     always_ask_default_resolver: no
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: "{{ (item.value['dns-01'].resource ~ '.' ~ domain_item) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
+  when: "{{ (item.value['dns-01'].resource ~ '.' ~ current_domain) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
