@@ -49,6 +49,12 @@
   include: dmarc.yml
 # - name: Set up MongoDB
 #   include: mongodb.yml
+- name: Create default CNAME records
+  include: create_default_cname_records.yml
+  vars:
+    dns_zone: "{{ item }}"
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
 - name: Set up backups
   include: backups.yml
 - name: Configure fail2ban
