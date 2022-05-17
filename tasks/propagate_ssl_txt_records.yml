@@ -1,11 +1,9 @@
-- debug:
-    var: letsencrypt_challenge.challenge_data
 - name: "Set up ACME challenge TXT records for {{ current_domain }}"
   include: add_dns_record.yml
   vars:
     record:
       zone: "{{ current_domain }}"
-      name: "{{ item.value["dns-01"].record }}"
+      name: "{{ item.value['dns-01'].record }}"
       type: TXT
       content: "{{ item.value['dns-01'].resource_value }}"
   when: '{{ (public_dns == "yes") and ((item.value["dns-01"].resource ~ "." ~ current_domain) == item.value["dns-01"].record) }}'
