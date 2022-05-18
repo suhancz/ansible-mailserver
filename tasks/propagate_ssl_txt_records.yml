@@ -3,7 +3,7 @@
   vars:
     record:
       zone: "{{ current_domain }}"
-      name: "{{ item.value['dns-01'].record }}"
+      name: "{{ item.value['dns-01'].resource }}"
       type: TXT
       content: "{{ item.value['dns-01'].resource_value }}"
   when: '{{ (public_dns == "yes") and ((item.value["dns-01"].resource ~ "." ~ current_domain) == item.value["dns-01"].record) }}'
