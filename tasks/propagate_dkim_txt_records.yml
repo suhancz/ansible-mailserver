@@ -13,7 +13,7 @@
       name: "{{ dkim_selector }}._domainkey"
       ttl: "3600"
       type: TXT
-      content: "v=DKIM1; k=rsa; p={{ desired_dkim_record }}"
+      content: "{{ desired_dkim_record }}"
   when: 'public_dns == "yes"'
 - name: Reload PowerDNS config
   systemd:
