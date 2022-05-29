@@ -96,6 +96,12 @@
     dns_zone: "{{ item }}"
   loop: "{{ [mailserver_domain] + custom_domains }}"
   when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
+- name: Create default CNAME records
+  include: create_default_cname_records.yml
+  vars:
+    dns_zone: "{{ item }}"
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
 - name: Set up DNSSEC
   command: "pdnsutil secure-zone {{ item }}"
   become: yes
