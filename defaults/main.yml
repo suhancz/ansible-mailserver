@@ -107,6 +107,8 @@ spamassassin_rules:
 default_dns_records:
   - { type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
   - { type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
+  - { name: "{{ mailserver_hostname }}", type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
+  - { name: "{{ mailserver_hostname }}", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { type: "MX", content: "1 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
   - { type: "TXT", content: "v=spf1 mx ~all" }
   - { name: "dyndns", ttl: "60", type: "NS", content: "ns.{{ mailserver_domain }}" }
