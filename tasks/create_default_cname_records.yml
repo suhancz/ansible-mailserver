@@ -8,7 +8,6 @@
       type: "{{ dns_record.type }}"
       content: "{{ dns_record.content }}"
   loop:
-    - { name: "{{ mailserver_hostname }}",	type: 'CNAME', content: "{{ dns_zone }}" }
     - { name: "*", type: "CNAME", content: "{{ dns_zone }}" }
     - { name: "ns", type: "CNAME", content: "{{ dns_zone }}" }
   loop_control:
