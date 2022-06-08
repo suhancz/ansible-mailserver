@@ -9,6 +9,5 @@
       content: "{{ dns_record.content }}"
   loop:
     - { name: "*", type: "CNAME", content: "{{ dns_zone }}" }
-    - { name: "ns", type: "CNAME", content: "{{ dns_zone }}" }
   loop_control:
     loop_var: dns_record
