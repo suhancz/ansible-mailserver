@@ -34,7 +34,7 @@
   openssl_csr:
     path: /etc/letsencrypt/csr/0000_csr-certbot.pem
     privatekey_path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
-    subject_alt_name: '{% for custom_domain in [mailserver_domain] + custom_domains %}DNS:*.{{ custom_domain }}{% if loop.index != loop.length %},{% endif %}{% endfor %}'
+    subject_alt_name: '{% for custom_domain in [mailserver_domain] + custom_domains %}DNS:{{ custom_domain }},DNS:*.{{ custom_domain }}{% if loop.index != loop.length %},{% endif %}{% endfor %}'
     backup: yes
     mode: u=rw,go=r
     owner: root
