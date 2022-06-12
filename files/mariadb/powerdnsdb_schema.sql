@@ -52,7 +52,7 @@ CREATE TABLE `cryptokeys` (
   `content` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `domainidindex` (`domain_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -89,7 +89,65 @@ CREATE TABLE `domains` (
   `account` varchar(40) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_index` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `migrations`
+--
+
+DROP TABLE IF EXISTS `migrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `migrations` (
+  `version` varchar(255) NOT NULL,
+  `apply_time` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `perm_items`
+--
+
+DROP TABLE IF EXISTS `perm_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `perm_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  `descr` varchar(1024) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `perm_templ`
+--
+
+DROP TABLE IF EXISTS `perm_templ`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `perm_templ` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `descr` varchar(1024) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `perm_templ_items`
+--
+
+DROP TABLE IF EXISTS `perm_templ_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `perm_templ_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `templ_id` int(11) NOT NULL,
+  `perm_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -114,7 +172,21 @@ CREATE TABLE `records` (
   KEY `nametype_index` (`name`,`type`),
   KEY `domain_id` (`domain_id`),
   KEY `ordername` (`ordername`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `records_zone_templ`
+--
+
+DROP TABLE IF EXISTS `records_zone_templ`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `records_zone_templ` (
+  `domain_id` int(11) NOT NULL,
+  `record_id` int(11) NOT NULL,
+  `zone_templ_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -148,6 +220,79 @@ CREATE TABLE `tsigkeys` (
   UNIQUE KEY `namealgoindex` (`name`,`algorithm`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(64) NOT NULL,
+  `password` varchar(128) NOT NULL,
+  `fullname` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `description` varchar(1024) NOT NULL,
+  `perm_templ` int(11) NOT NULL,
+  `active` int(1) NOT NULL,
+  `use_ldap` int(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `zone_templ`
+--
+
+DROP TABLE IF EXISTS `zone_templ`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `zone_templ` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `descr` varchar(1024) NOT NULL,
+  `owner` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `zone_templ_records`
+--
+
+DROP TABLE IF EXISTS `zone_templ_records`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `zone_templ_records` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `zone_templ_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` varchar(6) NOT NULL,
+  `content` varchar(255) NOT NULL,
+  `ttl` int(11) NOT NULL,
+  `prio` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `zones`
+--
+
+DROP TABLE IF EXISTS `zones`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `zones` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain_id` int(11) NOT NULL,
+  `owner` int(11) NOT NULL,
+  `comment` varchar(1024) DEFAULT NULL,
+  `zone_templ_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -158,4 +303,4 @@ CREATE TABLE `tsigkeys` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-03-23  2:16:45
+-- Dump completed on 2022-04-11 22:49:18

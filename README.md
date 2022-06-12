@@ -42,7 +42,7 @@ Role Variables
     horde_backup_path # path to the tarball containing Horde backups
     dovecot_backup_path # path to the tarball containing Dovecot backups
     postfix_backup_path # path to the tarball containing Postfix backups
-    dnsmasq_backup_path # path to the tarball containing DNSMASQ backups
+    pdns_backup_path # path to the tarball containing DNSMASQ backups
 
 Example Playbook
 ----------------
