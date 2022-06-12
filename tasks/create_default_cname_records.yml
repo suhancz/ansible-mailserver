@@ -1,0 +1,13 @@
+- name: Fill default CNAME records
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "{{ dns_zone }}"
+      name: "{{ dns_record.name }}"
+      ttl: "3600"
+      type: "{{ dns_record.type }}"
+      content: "{{ dns_record.content }}"
+  loop:
+    - { name: "*", type: "CNAME", content: "{{ dns_zone }}" }
+  loop_control:
+    loop_var: dns_record

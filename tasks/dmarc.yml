@@ -24,9 +24,14 @@
     - { key: "SPFIgnoreResults", value: "false", comment: false }
     - { key: "SPFSelfValidate", value: "true", comment: false }
 - name: Set up DMARC TXT records
-  include_tasks: set_dmarc_txt_value.yml
+  include: add_dns_record.yml
   vars:
-    current_domain: "{{ item }}"
+    record:
+      zone: "{{ item }}"
+      name: "_dmarc.{{ item }}."
+      ttl: "3600"
+      type: TXT
+      content: "v=DMARC1; p=none; pct=100; rua=mailto:dmarc-reports@{{ item }}; ruf=mailto:dmarc-reports@{{ item }}"
   when: 'public_dns == "yes"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Reload PowerDNS config

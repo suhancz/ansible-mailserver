@@ -5,20 +5,15 @@
   set_fact:
     desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
     current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
-- name: "Render {{ domain_item }} zone file with TXT record"
-  template:
-    src: pdns/dns-dkim.zone.j2
-    dest: "/tmp/ansible-mailserver.dns-dkim-{{ domain_item }}.zone"
-    owner: pdns
-    group: pdns
-    backup: yes
-  when: 'public_dns == "yes"'
-- name: Save current DNS zone to the result file
-  shell: 'pdnsutil list-zone {{ domain_item }} | sed -e "s/a.misconfigured.dns.server.invalid/ns.{{ domain_item }}/g" | sort | uniq >> /tmp/ansible-mailserver.dns-dkim-{{ domain_item }}.zone'
 - name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record"
-  command: "pdnsutil load-zone {{ domain_item }} /tmp/ansible-mailserver.dns-dkim-{{ domain_item }}.zone"
-  become: yes
-  become_user: pdns
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "{{ domain_item }}"
+      name: "{{ dkim_selector }}._domainkey"
+      ttl: "3600"
+      type: TXT
+      content: "{{ desired_dkim_record }}"
   when: 'public_dns == "yes"'
 - name: Reload PowerDNS config
   systemd:
