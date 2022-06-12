@@ -300,6 +300,7 @@
       - systemd-devel
       - ragel
       - dnsdist
+      - python3-netaddr
     state: latest
 - name: Install Remi packages
   dnf:

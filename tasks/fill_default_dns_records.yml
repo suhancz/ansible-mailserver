@@ -1,0 +1,12 @@
+- name: Fill default DNS records
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "{{ dns_zone }}"
+      name: "{{ dns_record.name|default('@') }}"
+      ttl: "{{ dns_record.ttl|default('3600') }}"
+      type: "{{ dns_record.type }}"
+      content: "{{ dns_record.content }}"
+  loop: "{{ default_dns_records }}"
+  loop_control:
+    loop_var: dns_record

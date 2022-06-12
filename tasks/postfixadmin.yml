@@ -26,7 +26,7 @@
   include_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: postfixadmin
-    mariadb_state: "{{ ('import' if reset)|default('present') }}"
+    mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   register: postfixadmin_db_state
 - name: Set up postfixadmin DB privileges
   mysql_user:
@@ -44,7 +44,7 @@
       db: postfixadmin
       user: postfixadmin
       password: "{{ postfixadmin_db_password }}"
-  when: postfixadmin_db_state.changed
+  when: mariadb_schema_created.changed
   no_log: yes
 - name: Generate PostfixAdmin PHP password
   command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
