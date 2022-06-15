@@ -75,6 +75,8 @@
     - { key: "smtputf8_enable", value: "no" }
     - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
     - { key: "content_filter", value: "amavisfeed:[127.0.0.1]:10024" }
+    - { key: "recipient_delimiter", value: "+" }
+    - { key: "propagate_unmatched_extensions", value: "" }
 - name: Render Postfix SQL templates
   template:
     src: "postfix/sql/{{ item }}.j2"
