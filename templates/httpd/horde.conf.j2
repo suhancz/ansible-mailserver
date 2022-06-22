@@ -77,12 +77,3 @@ RewriteCond %{SERVER_NAME} =horde.{{ custom_domain }}
 
 RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
-
-<VirtualHost *:80>
-    ServerName autodiscover.{{ mailserver_domain }}
-    ServerAlias {% for custom_domain in custom_domains %}autodiscover.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
-    DocumentRoot /var/www/html
-
-    Alias /Microsoft-Server-ActiveSync /usr/share/horde/rpc.php
-    RedirectMatch 302 (?i)/autodiscover/autodiscover.xml https://horde.{{ mailserver_domain }}/autodiscover/autodiscover.xml
-</VirtualHost>
