@@ -1,6 +1,6 @@
 <VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}horde.{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
   ServerName horde.{{ mailserver_domain }}
-  ServerAlias {% for custom_domain in custom_domains %}horde.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+  ServerAlias autodiscover.{{ mailserver_domain }} {% for custom_domain in custom_domains %}horde.{{ custom_domain }} autodiscover.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 
   DocumentRoot                      /usr/share/horde
 
@@ -60,6 +60,14 @@
       RewriteRule   ^(.*)$ index.php/$1 [QSA,L]
   </Directory>
 
+    # ActiveSync
+    Alias /rpc.php /usr/share/horde/rpc.php
+    Alias /Microsoft-Server-ActiveSync /usr/share/horde/rpc.php
+    Alias /autodiscover/autodiscover.xml /usr/share/horde/rpc.php
+    Alias /Autodiscover/Autodiscover.xml /usr/share/horde/rpc.php
+    Alias /AutoDiscover/AutoDiscover.xml /usr/share/horde/rpc.php
+    ProxyTimeout 5400
+
 {% for custom_domain in [mailserver_domain] + custom_domains %}
 RewriteCond %{SERVER_NAME} =horde.{{ custom_domain }}
 {%- if loop.index != loop.length %}
@@ -68,13 +76,4 @@ RewriteCond %{SERVER_NAME} =horde.{{ custom_domain }}
 {% endfor %}
 
 RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
-</VirtualHost>
-
-<VirtualHost *:80>
-    ServerName autodiscover.{{ mailserver_domain }}
-    ServerAlias {% for custom_domain in custom_domains %}autodiscover.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
-    DocumentRoot /var/www/html
-
-    Alias /Microsoft-Server-ActiveSync /usr/share/horde/rpc.php
-    RedirectMatch 302 (?i)/autodiscover/autodiscover.xml https://horde.{{ mailserver_domain }}/autodiscover/autodiscover.xml
 </VirtualHost>

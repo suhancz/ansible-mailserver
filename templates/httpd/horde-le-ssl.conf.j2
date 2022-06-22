@@ -2,7 +2,7 @@
 SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
 <VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}horde.{{ custom_domain }}:443{% if loop.index != loop.length %} {% endif %}{% endfor %}>
   ServerName horde.{{ mailserver_domain }}
-  ServerAlias {% for custom_domain in custom_domains %}horde.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+  ServerAlias autodiscover.{{ mailserver_domain }} {% for custom_domain in custom_domains %}horde.{{ custom_domain }} autodiscover.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 
   DocumentRoot                      /usr/share/horde
 
@@ -60,10 +60,12 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
       RewriteRule   ^(.*)$ index.php/$1 [QSA,L]
   </Directory>
 
+  # ActiveSync
   Alias /Microsoft-Server-ActiveSync /usr/share/horde/rpc.php
   Alias /autodiscover/autodiscover.xml /usr/share/horde/rpc.php
   Alias /Autodiscover/Autodiscover.xml /usr/share/horde/rpc.php
   Alias /AutoDiscover/AutoDiscover.xml /usr/share/horde/rpc.php
+  ProxyTimeout 5400
 
 SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
 SSLCertificateKeyFile /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem
