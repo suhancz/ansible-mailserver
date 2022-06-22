@@ -384,3 +384,7 @@
       - getmail
     enablerepo: epel-el7
     state: latest
+- name: Install PEAR packages
+  pear:
+    name: pear.horde.org/Horde_ActiveSync
+    state: latest
