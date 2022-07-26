@@ -1,13 +1,23 @@
-- name: Increase upload size to 50MiB
+- name: Increase upload size and execution time
   lineinfile:
-    path: /etc/php.ini
-    regexp: '^upload_max_filesize ='
-    line: 'upload_max_filesize = 50M'
+    path: '{{ item.file }}'
+    regexp: '^{{ item.key }} ='
+    line: '{{ item.key }} = {{ item.value }}'
     mode: u=rw,og=r
     owner: root
     group: root
     state: present
     backup: yes
+  loop:
+    - { file: '/etc/php.ini', key: 'upload_max_filesize', value: '50M' }
+    - { file: '/etc/opt/remi/php56/php.ini', key: 'upload_max_filesize', value: '50M' }
+    - { file: '/etc/opt/remi/php74/php.ini', key: 'upload_max_filesize', value: '50M' }
+    - { file: '/etc/php.ini', key: 'post_max_size', value: '50M' }
+    - { file: '/etc/opt/remi/php56/php.ini', key: 'post_max_size', value: '50M' }
+    - { file: '/etc/opt/remi/php74/php.ini', key: 'post_max_size', value: '50M' }
+    - { file: '/etc/php.ini', key: 'max_execution_time', value: '300' }
+    - { file: '/etc/opt/remi/php56/php.ini', key: 'max_execution_time', value: '300' }
+    - { file: '/etc/opt/remi/php74/php.ini', key: 'max_execution_time', value: '300' }
 - name: Upload complex Horde configs
   copy:
     dest: "/etc/horde/{{ item }}/conf.php"
