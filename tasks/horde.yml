@@ -1,3 +1,13 @@
+- name: Increase upload size to 50MiB
+  lineinfile:
+    path: /etc/php.ini
+    regexp: '^upload_max_filesize ='
+    line: 'upload_max_filesize = 50M'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
 - name: Upload complex Horde configs
   copy:
     dest: "/etc/horde/{{ item }}/conf.php"
