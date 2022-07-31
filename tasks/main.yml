@@ -39,6 +39,8 @@
   include: spamassassin.yml
 - name: Configure Antivirus
   include: antivirus.yml
+- name: Configure Redis
+  include: redis.yml
 - name: Configure Postfix
   include: postfix.yml
 - name: Configure Dovecot
