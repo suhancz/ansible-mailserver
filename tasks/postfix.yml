@@ -217,12 +217,12 @@
         backup: yes
         create: yes
       loop: "{{ helo_access }}"
+      notify: Restart systemd service
+      vars:
+        service_to_restart: postfix
     - name: Generate HELO access database
       command: postmap /etc/postfix/helo_access
   when: helo_access is defined
-  notify: Restart systemd service
-  vars:
-    service_to_restart: postfix
 - name: Set up RBL whitelist
   block:
     - name: Create RBL whitelist
@@ -237,12 +237,12 @@
         backup: yes
         create: yes
       loop: "{{ rbl_override }}"
+      notify: Restart systemd service
+      vars:
+        service_to_restart: postfix
     - name: Generate RBL database
       command: postmap /etc/postfix/rbl_override
   when: rbl_override is defined
-  notify: Restart systemd service
-  vars:
-    service_to_restart: postfix
 - name: Set Postgrey whitelist
   lineinfile:
     line: '{{ item }}'

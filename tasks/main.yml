@@ -17,24 +17,24 @@
   no_log: yes
 - name: Configure OS
   include: os.yml
-- name: Configure MariaDB
-  include: mariadb.yml
-- name: Configure DNS
-  include: dns.yml
-- name: Configure PostfixAdmin
-  include: postfixadmin.yml
-- name: Set up SSL
-  include: ssl.yml
-- name: Configure LDAP
-  include: ldap.yml
-- name: Set up Horde
-  include: horde.yml
-# - name: Set up ElasticSearch
-#   include: elasticsearch.yml
-- name: Set up FTP
-  include: ftp.yml
-- name: Configure Apache
-  include: httpd.yml
+# - name: Configure MariaDB
+#   include: mariadb.yml
+# - name: Configure DNS
+#   include: dns.yml
+# - name: Configure PostfixAdmin
+#   include: postfixadmin.yml
+# - name: Set up SSL
+#   include: ssl.yml
+# - name: Configure LDAP
+#   include: ldap.yml
+# - name: Set up Horde
+#   include: horde.yml
+# # - name: Set up ElasticSearch
+# #   include: elasticsearch.yml
+# - name: Set up FTP
+#   include: ftp.yml
+# - name: Configure Apache
+#   include: httpd.yml
 - name: Set up SPAMAssassin
   include: spamassassin.yml
 - name: Configure Antivirus
@@ -45,13 +45,13 @@
   include: postfix.yml
 - name: Configure Dovecot
   include: dovecot.yml
-- name: Set up DKIM
-  include: dkim.yml
-- name: Set up DMARC
-  include: dmarc.yml
-# - name: Set up MongoDB
-#   include: mongodb.yml
-- name: Set up backups
-  include: backups.yml
-- name: Configure fail2ban
-  include: fail2ban.yml
+# - name: Set up DKIM
+#   include: dkim.yml
+# - name: Set up DMARC
+#   include: dmarc.yml
+# # - name: Set up MongoDB
+# #   include: mongodb.yml
+# - name: Set up backups
+#   include: backups.yml
+# - name: Configure fail2ban
+#   include: fail2ban.yml
