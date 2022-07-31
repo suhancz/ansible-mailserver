@@ -114,8 +114,13 @@ $sa_local_tests_only = 0;    # only tests which do not require internet access?
 #   ( ['DBI:mysql:database=mail;host=127.0.0.1;port=3306', 'user1', 'passwd1'],
 #     ['DBI:mysql:database=mail;host=host2', 'username2', 'password2'],
 #     ["DBI:SQLite:dbname=$MYHOME/sql/mail_prefs.sqlite", '', ''] );
-# @storage_sql_dsn = @lookup_sql_dsn;  # none, same, or separate database
+#@lookup_sql_dsn =
+#  ( ['DBI:mysql:database=postfixadmin;host=127.0.0.1;port=3306', 'postfixadmin', '{{ postfixadmin_db_password }}'],
+#    ["DBI:SQLite:dbname=$MYHOME/sql/mail_prefs.sqlite", '', ''] );
+@storage_sql_dsn = @lookup_sql_dsn;  # none, same, or separate database
 # @storage_redis_dsn = ( {server=>'127.0.0.1:6379', db_id=>1} );
+@storage_redis_dsn = ( {server=>'127.0.0.1:6379'} );
+$storage_redis_ttl = 30*24*60*60;
 # $redis_logging_key = 'amavis-log';
 # $redis_logging_queue_size_limit = 300000;  # about 250 MB / 100000
 

@@ -14,12 +14,18 @@
       - 1.1.1.1
     state: present
     type: ethernet
+  notify: Restart systemd service
+  vars:
+    service_to_restart: NetworkManager
 - name: Create PowerDNS DB
   include_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: powerdnsdb
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   register: powerdns_db_state
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns
 - name: Set up PowerDNS DB privileges
   mysql_user:
     name: powerdns
@@ -63,6 +69,9 @@
     - { key: "allow-unsigned-supermaster", value: "yes" }
   no_log: yes
   when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns
 - name: Fetch already existing DNS zones
   command: "pdnsutil list-all-zones"
   become: yes
@@ -133,6 +142,9 @@
     - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
   no_log: yes
   when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns-recursor
 - name: Configure PowerDNS recursor to forward custom domains
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
@@ -142,12 +154,18 @@
   loop: "{{ custom_domains }}"
   no_log: yes
   when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns-recursor
 - name: Configure DNSDist
   template:
     src: dnsdist/dnsdist.conf.j2
     dest: /etc/dnsdist/dnsdist.conf
     backup: yes
   when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: dnsdist
 - name: Make sure PowerDNS is running
   systemd:
     name: pdns
@@ -291,6 +309,9 @@
     state: present
     backup: yes
     create: yes
+  notify: Restart systemd service
+  vars:
+    service_to_restart: systemd-resolved
 - name: Make sure resolved is running
   systemd:
     name: systemd-resolved

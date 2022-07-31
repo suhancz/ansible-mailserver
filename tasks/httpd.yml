@@ -41,6 +41,9 @@
     - { src: "httpd/wildcard-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart systemd service
+  vars:
+    service_to_restart: httpd
 - name: Deploy default index.html
   copy:
     src: httpd/wildcard_index.html
@@ -57,6 +60,9 @@
     backup: yes
     owner: root
     group: root
+  notify: Restart systemd service
+  vars:
+    service_to_restart: httpd
 - name: Deploy Horde default config
   copy:
     src: httpd/php-horde-horde.conf
@@ -65,6 +71,9 @@
     backup: yes
     owner: root
     group: root
+  notify: Restart systemd service
+  vars:
+    service_to_restart: httpd
 - name: Set postfixadmin ACLs
   acl:
     path: /var/www/postfixadmin/templates_c
@@ -73,9 +82,3 @@
     permissions: rwX
     state: present
     recursive: yes
-- name: Make sure Apache is running
-  systemd:
-    name: httpd
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
