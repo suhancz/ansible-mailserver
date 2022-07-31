@@ -1,0 +1,7 @@
+---
+- name: Restart systemd service
+  systemd:
+    name: "{{ service_to_restart }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
