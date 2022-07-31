@@ -202,6 +202,9 @@
     - name: Generate HELO access database
       command: postmap /etc/postfix/helo_access
   when: helo_access is defined
+  notify: Restart systemd service
+  vars:
+    service_to_restart: postfix
 - name: Set up RBL whitelist
   block:
     - name: Create RBL whitelist
@@ -220,6 +223,9 @@
     - name: Generate RBL database
       command: postmap /etc/postfix/rbl_override
   when: rbl_override is defined
+  notify: Restart systemd service
+  vars:
+    service_to_restart: postfix
 - name: Set Postgrey whitelist
   lineinfile:
     line: '{{ item }}'

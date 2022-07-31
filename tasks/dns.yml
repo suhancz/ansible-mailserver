@@ -15,12 +15,18 @@
       - 1.1.1.1
     state: present
     type: ethernet
+  notify: Restart systemd service
+  vars:
+    service_to_restart: NetworkManager
 - name: Create PowerDNS DB
   include_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: powerdnsdb
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   register: powerdns_db_state
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns
 - name: Set up PowerDNS DB privileges
   mysql_user:
     name: powerdns
@@ -64,6 +70,9 @@
     - { key: "allow-unsigned-supermaster", value: "yes" }
   no_log: yes
   when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns
 - name: Fetch already existing DNS zones
   command: "pdnsutil list-all-zones"
   become: yes
@@ -266,6 +275,9 @@
     state: present
     backup: yes
     create: yes
+  notify: Restart systemd service
+  vars:
+    service_to_restart: systemd-resolved
 - name: Make sure resolved is running
   systemd:
     name: systemd-resolved
