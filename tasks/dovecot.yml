@@ -21,6 +21,9 @@
     group: root
     state: present
     backup: yes
+  notify: Restart systemd service
+  vars:
+    service_to_restart: dovecot
 - name: Configure Dovecot Authentication Mechanism
   lineinfile:
     path: /etc/dovecot/conf.d/10-auth.conf
@@ -37,6 +40,9 @@
     - { key: "disable_plaintext_auth", value: "yes" }
     - { key: "auth_username_format", value: "%u" }
     - { key: "auth_mechanisms", value: "plain login" }
+  notify: Restart systemd service
+  vars:
+    service_to_restart: dovecot
 - name: Configure Dovecot SSL
   lineinfile:
     path: /etc/dovecot/conf.d/10-ssl.conf
@@ -54,6 +60,9 @@
     - { key: "ssl_dh", value: "</etc/letsencrypt/dh.pem" }
     - { key: "ssl_min_protocol", value: "TLSv1.2" }
     - { key: "ssl_prefer_server_ciphers", value: "yes" }
+  notify: Restart systemd service
+  vars:
+    service_to_restart: dovecot
 - name: Add Dovecot user to the mail and apache groups
   user:
     name: dovecot
@@ -75,6 +84,9 @@
     - 20-imap.conf
     - 20-lmtp.conf
     - 90-sieve.conf
+  notify: Restart systemd service
+  vars:
+    service_to_restart: dovecot
 - name: Render Dovecot config templates
   template:
     src: "dovecot/{{ item }}.j2"
@@ -87,6 +99,9 @@
     - dovecot-sql.conf.ext
     - report-ham.sieve
     - report-spam.sieve
+  notify: Restart systemd service
+  vars:
+    service_to_restart: dovecot
 - name: Configure Dovecot auth extensions
   lineinfile:
     regexp: '{{ item.line }}'
@@ -100,6 +115,9 @@
   loop:
     - { comment: false, line: "!include auth-sql.conf.ext"}
     - { comment: true, line: "!include auth-system.conf.ext"}
+  notify: Restart systemd service
+  vars:
+    service_to_restart: dovecot
 - name: Make sure Dovecot is running
   systemd:
     name: dovecot

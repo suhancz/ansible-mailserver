@@ -18,6 +18,9 @@
     - { file: '/etc/php.ini', key: 'max_execution_time', value: '300' }
     - { file: '/etc/opt/remi/php56/php.ini', key: 'max_execution_time', value: '300' }
     - { file: '/etc/opt/remi/php74/php.ini', key: 'max_execution_time', value: '300' }
+  notify: Restart systemd service
+  vars:
+    service_to_restart: php-fpm
 - name: Upload complex Horde configs
   copy:
     dest: "/etc/horde/{{ item }}/conf.php"

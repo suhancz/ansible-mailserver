@@ -301,6 +301,7 @@
       - ragel
       - dnsdist
       - python3-netaddr
+      - redis
     state: latest
 - name: Install Remi packages
   dnf:

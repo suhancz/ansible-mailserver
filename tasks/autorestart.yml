@@ -13,3 +13,6 @@
     backup: yes
     owner: root
     group: root
+  notify: Restart systemd service
+  vars:
+    service_to_restart: "{{ service }}"
