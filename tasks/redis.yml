@@ -1,0 +1,6 @@
+- name: Make sure Redis is running
+  systemd:
+    name: redis
+    daemon_reload: yes
+    enabled: yes
+    state: started
