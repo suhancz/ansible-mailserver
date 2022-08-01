@@ -1,0 +1,55 @@
+- name: Fetch already existing DNS zones
+  command: "pdnsutil list-all-zones"
+  become: yes
+  become_user: pdns
+  when: 'public_dns == "yes"'
+  register: all_dns_zones
+- name: Create zones
+  block:
+    - name: Create DNS zones
+      command: "pdnsutil create-zone {{ item }} ns.{{ mailserver_domain }}"
+      become: yes
+      become_user: pdns
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      when: 'public_dns == "yes"'
+  rescue:
+    - name: Create DNS zones
+      command: "pdnsutil --force create-zone {{ item }} ns.{{ mailserver_domain }}"
+      become: yes
+      become_user: pdns
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      when: 'reset and public_dns == "yes"'
+- name: Make sure local zones are master zones
+  command: "pdnsutil set-kind {{ item }} primary"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: 'public_dns == "yes"'
+- name: Fill DNS zone
+  include: fill_default_dns_records.yml
+  vars:
+    dns_zone: "{{ item }}"
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
+- name: Create default CNAME records
+  include: create_default_cname_records.yml
+  vars:
+    dns_zone: "{{ item }}"
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: '{{ public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines)) }}'
+- name: Set up DNSSEC
+  command: "pdnsutil secure-zone {{ item }}"
+  become: yes
+  become_user: pdns
+  loop: "{{ [mailserver_domain] + custom_domains }}"
+  when: public_dns == "yes"
+  register: enable_dnssec
+  ignore_errors: yes
+- name: Fail if the issue is not about DNSSEC being already enabled
+  fail:
+    msg: "{{ item.stderr }}"
+  loop: "{{ enable_dnssec.results }}"
+  when: '{{ (item.rc != 0) and ("already secure, remove keys with pdnsutil remove-zone-key if needed" not in item.stderr) }}'
+- name: Correct SOA record for all domains
+  command: 'pdnsutil replace-rrset {{ item }} @ SOA 3600 "ns.{{ item }} hostmaster.{{ item }} 0 10800 3600 604800 3600"'
+  loop: "{{ [mailserver_domain] + custom_domains }}"

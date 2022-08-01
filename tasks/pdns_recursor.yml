@@ -1,0 +1,47 @@
+- name: Render RPZ file for local addresses
+  template:
+    src: pdns-recursor.rpz.j2
+    dest: /etc/pdns-recursor/pdns-recursor.rpz
+    owner: pdns-recursor
+    group: pdns-recursor
+    backup: yes
+  when: 'public_dns == "yes"'
+- name: Create LUA config
+  copy:
+    content: 'rpzFile("basic.rpz", {})'
+    dest: /etc/pdns-recursor/recursorconf.lua
+    owner: pdns-recursor
+    group: pdns-recursor
+    backup: yes
+  when: 'public_dns == "yes"'
+- name: Configure PowerDNS recursor
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "{{ item.key }}={{ item.value }}"
+    regex: "^{{ item.key }}"
+    state: present
+    owner: pdns-recursor
+    group: pdns-recursor
+    backup: yes
+  loop:
+    - { key: "local-address", value: "127.0.0.1" }
+    - { key: "local-port", value: "5301" }
+    - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
+    - { key: "lua-config-file", value: "/etc/pdns-recursor/recursorconf.lua" }
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns-recursor
+- name: Configure PowerDNS recursor to forward custom domains
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "forward-zones+={{ item }}=127.0.0.1:5300"
+    state: present
+    backup: yes
+  loop: "{{ custom_domains }}"
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns-recursor

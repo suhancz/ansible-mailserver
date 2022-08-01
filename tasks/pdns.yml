@@ -1,0 +1,57 @@
+- name: Create PowerDNS DB
+  include_tasks: create_mariadb_schema.yml
+  vars:
+    mariadb_database: powerdnsdb
+    mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
+  register: powerdns_db_state
+  notify: Restart systemd service
+  when: 'public_dns == "yes"'
+  vars:
+    service_to_restart: pdns
+- name: Set up PowerDNS DB privileges
+  mysql_user:
+    name: powerdns
+    password: '{{ powerdns_db_password }}'
+    priv: 'powerdnsdb.*:ALL'
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+  when: 'public_dns == "yes"'
+# - name: Fill PowerDNS DB with data
+#   include_tasks: fill_mariadb_data.yml
+#   vars:
+#     mariadb_database:
+#       db: powerdnsdb
+#       user: powerdns
+#       password: "{{ powerdns_db_password }}"
+#   when: powerdns_db_state.changed
+- name: Configure PowerDNS authoritative server
+  lineinfile:
+    path: /etc/pdns/pdns.conf
+    line: "{{ item.key }}={{ item.value }}"
+    regex: "^{{ item.key }}"
+    state: present
+    owner: pdns
+    group: pdns
+    backup: yes
+  loop:
+    - { key: "launch", value: "gmysql" }
+    - { key: "gmysql-host", value: "localhost" }
+    - { key: "gmysql-user", value: "powerdns" }
+    - { key: "gmysql-password", value: "{{ powerdns_db_password }}" }
+    - { key: "gmysql-dbname", value: "powerdnsdb" }
+    - { key: "dnsupdate", value: "yes" }
+    - { key: "local-address", value: "127.0.0.1" }
+    - { key: "local-port", value: "5300" }
+    - { key: "gmysql-dnssec", value: "yes" }
+    - { key: "secondary-do-renotify", value: "yes" }
+    - { key: "autosecondary", value: "yes" }
+    - { key: "allow-unsigned-autoprimary", value: "yes" }
+    - { key: "superslave", value: "yes" }
+    - { key: "allow-unsigned-supermaster", value: "yes" }
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Restart systemd service
+  vars:
+    service_to_restart: pdns
