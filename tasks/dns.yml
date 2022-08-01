@@ -131,6 +131,20 @@
 - name: Correct SOA record for all domains
   command: 'pdnsutil replace-rrset {{ item }} @ SOA 3600 "ns.{{ item }} hostmaster.{{ item }} 0 10800 3600 604800 3600"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
+- name: Render RPZ file for local addresses
+  template:
+    src: pdns-recursor.rpz.j2
+    dest: /etc/pdns-recursor/pdns-recursor.rpz
+    owner: pdns-recursor
+    group: pdns-recursor
+    backup: yes
+- name: Create LUA config
+  copy:
+    content: 'rpzFile("basic.rpz", {})'
+    dest: /etc/pdns-recursor/recursorconf.lua
+    owner: pdns-recursor
+    group: pdns-recursor
+    backup: yes
 - name: Configure PowerDNS recursor
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
@@ -144,6 +158,7 @@
     - { key: "local-address", value: "127.0.0.1" }
     - { key: "local-port", value: "5301" }
     - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
+    - { key: "lua-config-file", value: "/etc/pdns-recursor/recursorconf.lua" }
   no_log: yes
   when: 'public_dns == "yes"'
   notify: Restart systemd service
