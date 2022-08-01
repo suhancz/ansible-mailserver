@@ -13,6 +13,10 @@
       - 127.0.0.1
       - 8.8.8.8
       - 1.1.1.1
+    dns6:
+      - ::1
+      - 2001:4860:4860::8888
+      - 2606:4700:4700::1111
     state: present
     type: ethernet
   notify: Restart systemd service
@@ -267,7 +271,8 @@
       Cache=yes
       # CacheFromLocalhost=yes
       Domains={% for custom_domain in [mailserver_domain] + custom_domains %}{{ custom_domain }} {% if loop.index != loop.length %} {% endif %}{% endfor %}
-      DNS=127.0.0.1 8.8.8.8 1.1.1.1
+
+      DNS=127.0.0.1 ::1 8.8.8.8 2001:4860:4860::8888 1.1.1.1 2606:4700:4700::1111
       DNSStubListener=No
     mode: u=rw,og=r
     owner: root
