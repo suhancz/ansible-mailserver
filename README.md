@@ -43,6 +43,19 @@ Role Variables
     dovecot_backup_path # path to the tarball containing Dovecot backups
     postfix_backup_path # path to the tarball containing Postfix backups
     pdns_backup_path # path to the tarball containing DNSMASQ backups
+    wireguard: # wireguard configuration for admin access
+      server:
+        mtu # server-side MTU
+        cidr # VPN range in CIDR notation
+        address # server listen address
+        lport # listening port
+        dns_ip # DNS to provide for the clients
+      clients: # config for the clients
+        client1:
+          cidr # client address on the VPN in CIDR notation
+          keepalive # connection keepalive in seconds
+          lport # listening port
+          mtu # client-side MTU
 
 Example Playbook
 ----------------

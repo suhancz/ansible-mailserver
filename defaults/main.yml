@@ -122,3 +122,21 @@ default_dns_records:
   - { name: "mail", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { name: "mail2", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { name: "smtp", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
+wireguard:
+  server:
+    mtu: 1412
+    cidr: 10.42.42.1/24
+    address: "vpn.{{ mailserver_domain }}"
+    lport: 25472
+    dns_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+  clients:
+    phone:
+      cidr: 10.42.42.2/32
+      keepalive: 15
+      lport: 25472
+      mtu: 1412
+    notebook:
+      cidr: 10.42.42.3/32
+      keepalive: 15
+      lport: 25472
+      mtu: 1412
