@@ -84,25 +84,23 @@
   notify: Restart httpd
 - name: Set home directory permissions
   file:
-    path: "{{ ansible_env.HOME }}"
+    path: "~{{ item.name }}"
     state: directory
-    owner: "{{ ansible_env.USER }}"
-    group: "{{ ansible_env.USER }}"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
     mode: u=rwX,go=X
   loop: "{{ users }}"
-  become: yes
-  become_user: "{{ item }}"
+  no_log: true
 - name: Set public_html directory permissions
   file:
-    path: "{{ ansible_env.HOME }}/public_html"
+    path: "~{{ item.name }}/public_html"
     state: directory
-    owner: "{{ ansible_env.USER }}"
-    group: "{{ ansible_env.USER }}"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
     mode: u=rwX,go=rX
     recurse: yes
   loop: "{{ users }}"
-  become: yes
-  become_user: "{{ item }}"
+  no_log: true
 - name: Set postfixadmin ACLs
   acl:
     path: /var/www/postfixadmin/templates_c

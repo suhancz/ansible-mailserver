@@ -17,10 +17,9 @@
       AuthType Basic
       AuthName WebDAV
       AuthUserFile /etc/httpd/conf/.htpasswd
-      <RequireAny>
-          Require method GET POST OPTIONS
+      <LimitExcept GET HEAD OPTIONS PROPFIND>
           Require valid-user
-      </RequireAny>
+      </LimitExcept>
   </Directory>
 
 RewriteEngine on

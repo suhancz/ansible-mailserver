@@ -21,7 +21,7 @@
   copy:
     src: pam/httpd-auth
     dest: /etc/pam.d/httpd-auth
-    user: root
+    owner: root
     group: root
     mode: u=rw,go=r
     backup: yes
