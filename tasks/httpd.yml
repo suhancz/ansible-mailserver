@@ -75,6 +75,17 @@
   notify: Restart systemd service
   vars:
     service_to_restart: httpd
+- name: Serve user ~/public_html directories
+  copy:
+    src: httpd/userdir.conf
+    dest: /etc/httpd/conf.d/userdir.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  notify: Restart systemd service
+  vars:
+    service_to_restart: httpd
 - name: Set postfixadmin ACLs
   acl:
     path: /var/www/postfixadmin/templates_c
