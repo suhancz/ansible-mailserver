@@ -31,9 +31,7 @@
     - { key: "lua-config-file", value: "/etc/pdns-recursor/recursorconf.lua" }
   no_log: yes
   when: 'public_dns == "yes"'
-  notify: Restart systemd service
-  vars:
-    service_to_restart: pdns-recursor
+  notify: Restart pdns-recursor
 - name: Configure PowerDNS recursor to forward custom domains
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
@@ -43,6 +41,4 @@
   loop: "{{ custom_domains }}"
   no_log: yes
   when: 'public_dns == "yes"'
-  notify: Restart systemd service
-  vars:
-    service_to_restart: pdns-recursor
+  notify: Restart pdns-recursor

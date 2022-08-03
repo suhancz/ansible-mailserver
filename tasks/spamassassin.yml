@@ -19,9 +19,7 @@
     group: root
     state: present
     backup: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: spamassassin
+  notify: Restart spamassassin
 - name: Configure SPAMAssassin milter flags
   lineinfile:
     regexp: 'EXTRA_FLAGS'
@@ -32,9 +30,7 @@
     group: root
     state: present
     backup: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: spamass-milter
+  notify: Restart spamass-milter
 - name: Add Postfix user to the sa-milt group
   user:
     name: postfix
@@ -51,9 +47,7 @@
     state: present
     backup: yes
   loop: "{{ spamassassin_rules }}"
-  notify: Restart systemd service
-  vars:
-    service_to_restart: spamassassin
+  notify: Restart spamassassin
 - name: Upload sieve config
   copy:
     dest: /var/mail/SpamToJunk.sieve
@@ -62,9 +56,7 @@
     backup: yes
     owner: root
     group: root
-  notify: Restart systemd service
-  vars:
-    service_to_restart: spamassassin
+  notify: Restart spamassassin
 - name: Enable sieve config
   command: sievec /var/mail/SpamToJunk.sieve
   args:

@@ -6,9 +6,7 @@
   loop:
     - postfixadmin.conf
     # - dnsmasq.conf
-  notify: Restart systemd service
-  vars:
-    service_to_restart: fail2ban
+  notify: Restart fail2ban
 - name: Enable fail2ban jails
   blockinfile:
     path: /etc/fail2ban/jail.d/ansible-mailserver.local
@@ -116,6 +114,4 @@
     state: present
     backup: yes
     create: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: fail2ban
+  notify: Restart fail2ban

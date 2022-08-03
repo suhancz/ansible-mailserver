@@ -52,9 +52,7 @@
     - { key: "debug_ssl", value: "YES" }
     - { key: "syslog_enable", value: "YES"}
     - { key: "dual_log_enable", value: "YES"}
-  notify: Restart systemd service
-  vars:
-    service_to_restart: vsftpd
+  notify: Restart vsftpd
 - name: Set up VSFTPD user list
   lineinfile:
     line: "{{ item.name }}"
@@ -67,9 +65,7 @@
     create: yes
   loop: "{{ users }}"
   no_log: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: vsftpd
+  notify: Restart vsftpd
 - name: Set SELinux booleans
   when: "{{ getenforce.stdout != 'Disabled' }}"
   seboolean:

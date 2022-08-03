@@ -28,9 +28,7 @@
     owner: root
     group: root
     backup: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: "dirsrv@{{ mailserver_hostname }}"
+  notify: "Restart dirsrv@{{ mailserver_hostname }}"
 - name: Apply LDAP server configuration
   block:
     - name: Configure LDAP server

@@ -7,9 +7,7 @@
         permanent: yes
         state: enabled
         immediate: yes
-      notify: Restart systemd service
-      vars:
-        service_to_restart: firewalld
+      notify: Restart firewalld
   rescue:
     - name: "Open firewall for service {{ port }}"
       firewalld:
@@ -17,6 +15,4 @@
         permanent: yes
         state: enabled
         immediate: yes
-      notify: Restart systemd service
-      vars:
-        service_to_restart: firewalld
+      notify: Restart firewalld

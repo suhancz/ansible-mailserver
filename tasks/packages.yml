@@ -303,6 +303,7 @@
       - dnsdist
       - python3-netaddr
       - redis
+      - mod_authnz_pam
     state: latest
 - name: Install Remi packages
   dnf:

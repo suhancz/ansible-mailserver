@@ -14,9 +14,7 @@
       - 2606:4700:4700::1111
     state: present
     type: ethernet
-  notify: Restart systemd service
-  vars:
-    service_to_restart: NetworkManager
+  notify: Restart NetworkManager
 - name: Create resolved.conf.d directory
   file:
     path: /etc/systemd/resolved.conf.d
@@ -42,9 +40,7 @@
     state: present
     backup: yes
     create: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: systemd-resolved
+  notify: Restart systemd-resolved
 - name: Make sure resolved is running
   systemd:
     name: systemd-resolved

@@ -13,21 +13,15 @@
     owner: root
     group: root
     backup: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: amavisd
+  notify: Restart amavisd
 - name: Refresh ClamAV database
   command: freshclam
-  notify: Restart systemd service
-  vars:
-    service_to_restart: clamav-freshclam
+  notify: Restart clamav-freshclam
 - name: Update SPAMAssassin's signatures
   command: sa-update -D
   register: sa_update
   failed_when: "{{ sa_update.rc >= 4 }}"
-  notify: Restart systemd service
-  vars:
-    service_to_restart: spamassassin
+  notify: Restart spamassassin
 - name: Enable systemd services
   systemd:
     name: "{{ item }}"
