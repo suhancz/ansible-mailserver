@@ -51,6 +51,8 @@
   include: dmarc.yml
 # - name: Set up MongoDB
 #   include: mongodb.yml
+- name: Set up WebDav
+  include: webdav.yml
 - name: Set up WireGuard
   include: wireguard.yml
 - name: Set up backups

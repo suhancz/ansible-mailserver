@@ -1,0 +1,24 @@
+<VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}webdav.{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
+  ServerName webdav.{{ mailserver_domain }}
+  ServerAlias {% for custom_domain in custom_domains %}webdav.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+
+  DocumentRoot /var/www/html/
+
+  ErrorLog /var/log/httpd/webdav_error.log
+  CustomLog /var/log/httpd/webdav_access.log combined
+
+  <Directory />
+    Options FollowSymLinks
+    AllowOverride All
+  </Directory>
+
+RewriteEngine on
+{% for custom_domain in [mailserver_domain] + custom_domains %}
+RewriteCond %{SERVER_NAME} =webdav.{{ custom_domain }}
+{%- if loop.index != loop.length %}
+ [OR]
+{% endif %}
+{% endfor %}
+
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+</VirtualHost>
