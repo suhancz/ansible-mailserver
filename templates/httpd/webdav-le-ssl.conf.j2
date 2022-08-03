@@ -4,14 +4,38 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   ServerName webdav.{{ mailserver_domain }}
   ServerAlias {% for custom_domain in custom_domains %}webdav.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 
-  DocumentRoot /var/www/html/
+  DocumentRoot /var/www/html/webdav/
 
   ErrorLog /var/log/httpd/webdav_error.log
   CustomLog /var/log/httpd/webdav_access.log combined
 
+  <IfModule mod_dav_fs.c>
+      DAVLockDB /var/lib/dav/lockdb
+  </IfModule>
+   <Location />
+    DAV On
+    Options +Indexes
+    AuthType Basic
+    AuthName "private area"
+    AuthBasicProvider PAM
+    AuthPAMService webapp
+    Require valid-user
+  </Location>
+
   <Directory />
-    Options FollowSymLinks
-    AllowOverride All
+      DAV On
+      SSLRequireSSL
+      Options +Indexes
+      AuthType Basic
+      AuthName "PAM Authentication"
+      AuthBasicProvider PAM
+      AuthPAMService httpd-auth
+#      AuthBasicProvider external
+#      AuthExternal pwauth
+      <RequireAny>
+          Require method GET POST OPTIONS
+          Require valid-user
+      </RequireAny>
   </Directory>
 
 

@@ -10,16 +10,30 @@
   <IfModule mod_dav_fs.c>
       DAVLockDB /var/lib/dav/lockdb
   </IfModule>
+  <Location />
+    DAV On
+    Options +Indexes
+    AuthType Basic
+    AuthName "private area"
+    AuthBasicProvider PAM
+    AuthPAMService webapp
+    Require valid-user
+  </Location>
+
   <Directory />
       DAV On
       SSLRequireSSL
-      Options None
+      Options +Indexes
       AuthType Basic
-      AuthName WebDAV
-      AuthUserFile /etc/httpd/conf/.htpasswd
-      <LimitExcept GET HEAD OPTIONS PROPFIND>
+      AuthName "PAM Authentication"
+      AuthBasicProvider PAM
+      AuthPAMService httpd-auth
+#      AuthBasicProvider external
+#      AuthExternal pwauth
+      <RequireAny>
+          Require method GET POST OPTIONS
           Require valid-user
-      </LimitExcept>
+      </RequireAny>
   </Directory>
 
 RewriteEngine on

@@ -304,6 +304,8 @@
       - python3-netaddr
       - redis
       - mod_authnz_pam
+      - mod_authnz_external
+      - pwauth
     state: latest
 - name: Install Remi packages
   dnf:
