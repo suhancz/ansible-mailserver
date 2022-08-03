@@ -1,3 +1,4 @@
+---
 - name: Create razor home directory
   file:
     path: /var/lib/razor/

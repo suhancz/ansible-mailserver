@@ -1,3 +1,4 @@
+---
 - name: Get latest postfixadmin version
   block:
     - name: Get URL for latest release

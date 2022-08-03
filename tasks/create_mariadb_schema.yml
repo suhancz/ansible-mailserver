@@ -1,3 +1,4 @@
+---
 - name: "Upload {{ mariadb_database }} DB schema"
   copy:
     src: "mariadb/{{ mariadb_database }}_schema.sql"

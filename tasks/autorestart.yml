@@ -1,3 +1,4 @@
+---
 - name: "Create restart directories for {{ service }}"
   file:
     state: directory

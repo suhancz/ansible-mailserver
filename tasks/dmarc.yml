@@ -1,3 +1,4 @@
+---
 - name: Configure OpenDMARC
   lineinfile:
     regexp: '\b{{ item.key }}\b'

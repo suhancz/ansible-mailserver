@@ -1,3 +1,4 @@
+---
 - name: Render RPZ file for local addresses
   template:
     src: pdns-recursor.rpz.j2

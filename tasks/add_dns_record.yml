@@ -1,3 +1,4 @@
+---
 - name: 'Quote and escape record content "{{ record.content }}"'
   set_fact:
     record_content: '"{{ record.content }}"'

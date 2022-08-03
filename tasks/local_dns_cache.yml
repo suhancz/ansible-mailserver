@@ -1,3 +1,4 @@
+---
 - name: Configure local DNS cache
   nmcli:
     conn_name: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['interface'] }}"

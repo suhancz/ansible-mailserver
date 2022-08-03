@@ -1,3 +1,4 @@
+---
 - name: Fill default DNS records
   include: add_dns_record.yml
   vars:

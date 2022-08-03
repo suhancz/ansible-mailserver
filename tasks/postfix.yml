@@ -1,3 +1,4 @@
+---
 - name: Add vmail group
   group:
     name: vmail

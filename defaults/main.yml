@@ -1,3 +1,4 @@
+---
 authorized_submit_users:
   - root
   - www-data

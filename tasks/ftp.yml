@@ -1,3 +1,4 @@
+---
 - name: Open firewall
   include: firewall.yml
   vars:

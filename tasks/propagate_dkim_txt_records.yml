@@ -1,3 +1,4 @@
+---
 - name: "Read DKIM keys for {{ domain_item }}"
   command: "cat /etc/opendkim/keys/{{ domain_item }}/{{ dkim_selector }}.txt"
   register: dkim_keys

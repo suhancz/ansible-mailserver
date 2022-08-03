@@ -1,3 +1,4 @@
+---
 - name: Check SELinux status
   shell: getenforce
   register: getenforce

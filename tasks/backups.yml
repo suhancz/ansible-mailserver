@@ -1,3 +1,4 @@
+---
 - name: Create backup directories
   file:
     path: "/backup/{{ item }}"

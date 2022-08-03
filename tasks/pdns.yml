@@ -1,3 +1,4 @@
+---
 - name: Create PowerDNS DB
   include_tasks: create_mariadb_schema.yml
   vars:

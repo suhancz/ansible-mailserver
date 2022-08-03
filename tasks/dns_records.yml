@@ -1,3 +1,4 @@
+---
 - name: Fetch already existing DNS zones
   command: "pdnsutil list-all-zones"
   become: yes

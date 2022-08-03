@@ -1,3 +1,4 @@
+---
 - name: Create custom fail2ban filters
   copy:
     src: "fail2ban/{{ item }}"

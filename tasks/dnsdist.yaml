@@ -1,3 +1,4 @@
+---
 - name: Configure DNSDist
   template:
     src: dnsdist/dnsdist.conf.j2
