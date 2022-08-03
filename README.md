@@ -56,6 +56,7 @@ Role Variables
           keepalive # connection keepalive in seconds
           lport # listening port
           mtu # client-side MTU
+    httpd_pam_deny_users: # list of users who shouldn't authenticate against HTTPD using PAM
 
 Example Playbook
 ----------------

@@ -123,6 +123,8 @@ default_dns_records:
   - { name: "mail", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { name: "mail2", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { name: "smtp", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
+httpd_pam_deny_users:
+  - root
 wireguard:
   server:
     mtu: 1412

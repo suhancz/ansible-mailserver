@@ -18,6 +18,7 @@
         - httpd_can_network_connect
         - httpd_execmem
         - httpd_read_user_content
+        - httpd_mod_auth_pam
     - name: Generate SELinux policy
       shell: |
         sepolicy generate --init /usr/sbin/httpd

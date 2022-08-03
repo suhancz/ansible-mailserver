@@ -7,3 +7,48 @@
     owner: apache
     group: apache
     mode: u=rwX,og=rX
+- name: Set up SELinux rules for WebDAV
+  when: "{{ getenforce.stdout != 'Disabled' }}"
+  block:
+    - name: Set SELinux context on WebDAV directory
+      sefcontext:
+        target: '/var/www/html/webdav(/.*)?'
+        setype: httpd_sys_rw_content_t
+        state: present
+    - name: Apply SELinux file context on WebDAV directory
+      command: restorecon -irv /var/www/html/webdav
+- name: Create PAM module for HTTPD auth
+  copy:
+    src: pam/httpd-auth
+    dest: /etc/pam.d/httpd-auth
+    user: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  notify: Restart httpd
+- name: Deny blacklisted users from PAM authentication
+  lineinfile:
+    path: /etc/httpd/conf.d/denyusers
+    line: "{{ item }}"
+    owner: apache
+    group: apache
+    mode: u=rw,g=r
+    create: yes
+    backup: yes
+  loop: "{{ httpd_pam_deny_users }}"
+  notify: Restart httpd
+- name: Allow Apache read /etc/shadow
+  file:
+    path: /etc/shadow
+    state: file
+    group: apache
+    mode: ug=r
+- name: Enable HTTPD PAM auth
+  copy:
+    src: httpd/55-authnz_pam.conf
+    dest: /etc/httpd/conf.modules.d/55-authnz_pam.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  notify: Restart httpd
