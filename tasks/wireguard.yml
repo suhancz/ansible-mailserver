@@ -30,11 +30,22 @@
 - name: Make sure output directory exists
   file:
     state: directory
-    name: "{{ wireguard.config_dir }}"
+    name: "{{ item }}"
+  loop:
+    - /etc/wireguard
+    - "{{ wireguard.config_dir }}"
+- name: Make sure Apache can actually read the config dir
+  mount:
+    src: /etc/wireguard
+    path: "{{ wireguard.config_dir }}"
+    state: mounted
+    fstype: bindfs
+    opts: force-user=apache,force-group=apache
 - name: Generate server config
   template:
     src: wireguard/server.conf.j2
-    dest: "{{ wireguard.config_dir }}/wg_server.conf"
+    dest: "{{ wireguard.config_dir }}/wgserver0.conf"
+    backup: true
 - name: Create client config dirs
   file:
     state: directory
@@ -45,5 +56,6 @@
   template:
     src: wireguard/client.conf.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
+    backup: true
   loop: "{{ wg_configs|dict2items }}"
   when: item.key != "server"

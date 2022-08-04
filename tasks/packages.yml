@@ -308,6 +308,7 @@
       - pwauth
       - kmod-wireguard
       - wireguard-tools
+      - bindfs
     state: latest
 - name: Install Remi packages
   dnf:
