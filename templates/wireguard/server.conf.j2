@@ -1,12 +1,12 @@
 [Interface]
-{% if 'mtu' in configs.server %}
-MTU={{ configs.server.mtu }}
+{% if 'mtu' in wg_configs.server %}
+MTU={{ wg_configs.server.mtu }}
 {% endif %}
-PrivateKey = {{ configs.server.privatekey }}
-ListenPort = {{ configs.server.lport }}
-Address = {{ configs.server.cidr }}
+PrivateKey = {{ wg_configs.server.privatekey }}
+ListenPort = {{ wg_configs.server.lport }}
+Address = {{ wg_configs.server.cidr }}
 
-{% for client in configs|dict2items %}
+{% for client in wg_configs|dict2items %}
 {% if client.key != "server" %}
 [Peer]
 # {{ client.key }}
