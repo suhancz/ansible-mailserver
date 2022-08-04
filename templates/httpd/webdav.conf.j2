@@ -7,6 +7,9 @@
   ErrorLog /var/log/httpd/webdav_error.log
   CustomLog /var/log/httpd/webdav_access.log combined
 
+  AddExternalAuth pwauth /usr/bin/pwauth
+  SetExternalAuthMethod pwauth pipe
+
   <IfModule mod_dav_fs.c>
       DAVLockDB /var/lib/dav/lockdb
   </IfModule>
@@ -15,26 +18,24 @@
     Options +Indexes
     AuthType Basic
     AuthName "private area"
-    AuthBasicProvider PAM
-    AuthPAMService webapp
+    AuthBasicProvider external
+    AuthExternal pwauth
     Require valid-user
   </Location>
 
-  <Directory />
-      DAV On
-      SSLRequireSSL
-      Options +Indexes
-      AuthType Basic
-      AuthName "PAM Authentication"
-      AuthBasicProvider PAM
-      AuthPAMService httpd-auth
+#  <Directory />
+#      DAV On
+#      SSLRequireSSL
+#      Options +Indexes
+#      AuthType Basic
+#      AuthName "PAM Authentication"
 #      AuthBasicProvider external
 #      AuthExternal pwauth
-      <RequireAny>
-          Require method GET POST OPTIONS
-          Require valid-user
-      </RequireAny>
-  </Directory>
+#      <RequireAny>
+#          Require method GET POST OPTIONS
+#          Require valid-user
+#      </RequireAny>
+#  </Directory>
 
 RewriteEngine on
 {% for custom_domain in [mailserver_domain] + custom_domains %}
