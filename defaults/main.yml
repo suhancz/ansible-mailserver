@@ -126,20 +126,4 @@ default_dns_records:
 httpd_pam_deny_users:
   - root
 wireguard:
-  server:
-    mtu: 1412
-    cidr: 10.42.42.1/24
-    address: "vpn.{{ mailserver_domain }}"
-    lport: 25472
-    dns_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-  clients:
-    phone:
-      cidr: 10.42.42.2/32
-      keepalive: 15
-      lport: 25472
-      mtu: 1412
-    notebook:
-      cidr: 10.42.42.3/32
-      keepalive: 15
-      lport: 25472
-      mtu: 1412
+  config_dir: /var/www/html/webdav/.wireguard

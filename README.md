@@ -44,6 +44,7 @@ Role Variables
     postfix_backup_path # path to the tarball containing Postfix backups
     pdns_backup_path # path to the tarball containing DNSMASQ backups
     wireguard: # wireguard configuration for admin access
+      config_dir: # directory on the server to deploy WireGuard configuration to
       server:
         mtu # server-side MTU
         cidr # VPN range in CIDR notation

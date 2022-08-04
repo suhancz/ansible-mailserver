@@ -306,6 +306,8 @@
       - mod_authnz_pam
       - mod_authnz_external
       - pwauth
+      - kmod-wireguard
+      - wireguard-tools
     state: latest
 - name: Install Remi packages
   dnf:
