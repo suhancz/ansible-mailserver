@@ -15,7 +15,7 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   <IfModule mod_dav_fs.c>
       DAVLockDB /var/lib/dav/lockdb
   </IfModule>
-   <Location />
+  <Location />
     DAV On
     Options +Indexes
     AuthType Basic
@@ -23,22 +23,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthBasicProvider external
     AuthExternal pwauth
     Require valid-user
+    DirectoryIndex disabled
   </Location>
-
-#  <Directory />
-#      DAV On
-#      SSLRequireSSL
-#      Options +Indexes
-#      AuthType Basic
-#      AuthName "PAM Authentication"
-#      AuthBasicProvider external
-#      AuthExternal pwauth
-#      <RequireAny>
-#          Require method GET POST OPTIONS
-#          Require valid-user
-#      </RequireAny>
-#  </Directory>
-
 
 SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
 SSLCertificateKeyFile /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem

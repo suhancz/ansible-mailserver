@@ -21,21 +21,8 @@
     AuthBasicProvider external
     AuthExternal pwauth
     Require valid-user
+    DirectoryIndex disabled
   </Location>
-
-#  <Directory />
-#      DAV On
-#      SSLRequireSSL
-#      Options +Indexes
-#      AuthType Basic
-#      AuthName "PAM Authentication"
-#      AuthBasicProvider external
-#      AuthExternal pwauth
-#      <RequireAny>
-#          Require method GET POST OPTIONS
-#          Require valid-user
-#      </RequireAny>
-#  </Directory>
 
 RewriteEngine on
 {% for custom_domain in [mailserver_domain] + custom_domains %}
