@@ -1,0 +1,26 @@
+version: "3.3"
+services:
+  subspace:
+    image: subspacecommunity/subspace:latest
+    container_name: subspace
+    volumes:
+        - "{{ wireguard.config_dir }}:/data"
+        - /opt/docker/dnsmasq:/etc/dnsmasq.d
+    restart: always
+    environment:
+        - "SUBSPACE_HTTP_HOST=vpn.{{ mailserver_domain }}"
+        - SUBSPACE_LETSENCRYPT=false
+        - SUBSPACE_HTTP_INSECURE=true
+        - "SUBSPACE_HTTP_ADDR=:{{ wireguard.http_port }}"
+        - "SUBSPACE_NAMESERVERS={{ wireguard.nameservers|join(',) }}"
+        - "SUBSPACE_ALLOWED_IPS={{ wireguard.allowed_ips|join(',) }}"
+        - "SUBSPACE_LISTENPORT={{ wireguard.listen_port }}"
+        - "SUBSPACE_IPV4_POOL={{ wireguard.ipv4_pool }}"
+        - "SUBSPACE_IPV6_POOL={{ wireguard.ipv6_pool }}"
+        - SUBSPACE_IPV4_NAT_ENABLED=1
+        - SUBSPACE_IPV6_NAT_ENABLED=1
+        - SUBSPACE_DISABLE_DNS=0
+        - "SUBSPACE_PERSISTENT_KEEPALIVE={{ wireguard.keepalive }}"
+    cap_add:
+        - NET_ADMIN
+    network_mode: "host"
