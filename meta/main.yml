@@ -56,3 +56,4 @@ collections:
   - community.general
   - community.dns
   - community.mysql
+  - community.docker

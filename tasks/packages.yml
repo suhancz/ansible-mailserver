@@ -310,6 +310,11 @@
       - wireguard-tools
       - bindfs
       - golang
+      - podman-docker
+      - podman-compose
+      - python3-docker
+      - python3-dockerpty
+      - python3-pyyaml
     state: latest
 - name: Install Remi packages
   dnf:
@@ -397,6 +402,3 @@
   pear:
     name: pear.horde.org/Horde_ActiveSync
     state: latest
-- name: Install Go packages
-  command: go get -u github.com/subspacecommunity/subspace
-  
