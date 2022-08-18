@@ -42,6 +42,8 @@
     - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
     - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
+    - { src: "httpd/vpn.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/vpn-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/webdav.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf" }
     - { src: "httpd/webdav-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/wildcard.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf" }

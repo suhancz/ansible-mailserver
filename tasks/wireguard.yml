@@ -1,61 +1,71 @@
 ---
-- name: Merge server with defaults
-  set_fact:
-    wireguard.server: "{{ wireguard.server|default({}) }}"
-    wireguard.clients: "{{ wireguard.clients|default({}) }}"
-- name: Generate WireGuard server keys
-  include_tasks: generate_keys.yml
+- name: Open firewall
+  include: firewall.yml
   vars:
-    wg_name: "server"
-    wg_privatekey: "{{ wireguard.server.privatekey|default('') }}"
-    wg_publickey: "{{ wireguard.server.publickey|default('') }}"
-  tags: wg_server
-  register: server_keys
-- name: Generate WireGuard client keys
-  include_tasks: generate_wireguard_keys.yml
-  vars:
-    wg_name: "{{ item.key }}"
-    wg_privatekey: "{{ item.value.privatekey|default('') }}"
-    wg_publickey: "{{ item.value.publickey|default('') }}"
-    wg_psk: "{{ item.value.psk|default('') }}"
-  tags: client
-  loop: "{{ wireguard.clients|dict2items }}"
-  register: client_keys
-- name: Merge initial server config with generated keys
-  set_fact:
-    wg_configs: "{{ wg_configs|default({})|combine({'server': wireguard.server}, recursive=True) }}"
-- name: Merge initial client config with generated keys
-  set_fact:
-    wg_configs: "{{ wg_configs|default({})|combine(wireguard.clients, recursive=True) }}"
-- name: Make sure output directory exists
-  file:
-    state: directory
-    name: "{{ item }}"
-  loop:
-    - /etc/wireguard
-    - "{{ wireguard.config_dir }}"
-- name: Make sure Apache can actually read the config dir
-  mount:
-    src: /etc/wireguard
-    path: "{{ wireguard.config_dir }}"
-    state: mounted
-    fstype: bindfs
-    opts: force-user=apache,force-group=apache
-- name: Generate server config
+    port: "{{ wireguard.listen_port }}/udp"
+- name: Generate Subspace systemd unit
   template:
-    src: wireguard/server.conf.j2
-    dest: "{{ wireguard.config_dir }}/wgserver0.conf"
-    backup: true
-- name: Create client config dirs
-  file:
-    state: directory
-    name: "{{ wireguard.config_dir }}/clients/{{ item.key }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
-- name: Generate client wg_configs
-  template:
-    src: wireguard/client.conf.j2
-    dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
-    backup: true
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
+    src: wireguard/subspace.service.j2
+    dest: /etc/systemd/system/subspace.service
+    backup: yes
+  notify: Restart subspace
+# - name: Merge server with defaults
+#   set_fact:
+#     wireguard.server: "{{ wireguard.server|default({}) }}"
+#     wireguard.clients: "{{ wireguard.clients|default({}) }}"
+# - name: Generate WireGuard server keys
+#   include_tasks: generate_keys.yml
+#   vars:
+#     wg_name: "server"
+#     wg_privatekey: "{{ wireguard.server.privatekey|default('') }}"
+#     wg_publickey: "{{ wireguard.server.publickey|default('') }}"
+#   tags: wg_server
+#   register: server_keys
+# - name: Generate WireGuard client keys
+#   include_tasks: generate_wireguard_keys.yml
+#   vars:
+#     wg_name: "{{ item.key }}"
+#     wg_privatekey: "{{ item.value.privatekey|default('') }}"
+#     wg_publickey: "{{ item.value.publickey|default('') }}"
+#     wg_psk: "{{ item.value.psk|default('') }}"
+#   tags: client
+#   loop: "{{ wireguard.clients|dict2items }}"
+#   register: client_keys
+# - name: Merge initial server config with generated keys
+#   set_fact:
+#     wg_configs: "{{ wg_configs|default({})|combine({'server': wireguard.server}, recursive=True) }}"
+# - name: Merge initial client config with generated keys
+#   set_fact:
+#     wg_configs: "{{ wg_configs|default({})|combine(wireguard.clients, recursive=True) }}"
+# - name: Make sure output directory exists
+#   file:
+#     state: directory
+#     name: "{{ item }}"
+#   loop:
+#     - /etc/wireguard
+#     - "{{ wireguard.config_dir }}"
+# - name: Make sure Apache can actually read the config dir
+#   mount:
+#     src: /etc/wireguard
+#     path: "{{ wireguard.config_dir }}"
+#     state: mounted
+#     fstype: bindfs
+#     opts: force-user=apache,force-group=apache
+# - name: Generate server config
+#   template:
+#     src: wireguard/server.conf.j2
+#     dest: "{{ wireguard.config_dir }}/wgserver0.conf"
+#     backup: true
+# - name: Create client config dirs
+#   file:
+#     state: directory
+#     name: "{{ wireguard.config_dir }}/clients/{{ item.key }}"
+#   loop: "{{ wg_configs|dict2items }}"
+#   when: item.key != "server"
+# - name: Generate client wg_configs
+#   template:
+#     src: wireguard/client.conf.j2
+#     dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
+#     backup: true
+#   loop: "{{ wg_configs|dict2items }}"
+#   when: item.key != "server"

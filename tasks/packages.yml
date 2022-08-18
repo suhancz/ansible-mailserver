@@ -309,6 +309,7 @@
       - kmod-wireguard
       - wireguard-tools
       - bindfs
+      - golang
     state: latest
 - name: Install Remi packages
   dnf:
@@ -396,3 +397,6 @@
   pear:
     name: pear.horde.org/Horde_ActiveSync
     state: latest
+- name: Install Go packages
+  command: go get -u github.com/subspacecommunity/subspace
+  

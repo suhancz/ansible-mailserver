@@ -23,8 +23,8 @@
 #   include: dns.yml
 # - name: Configure PostfixAdmin
 #   include: postfixadmin.yml
-# - name: Set up SSL
-#   include: ssl.yml
+- name: Set up SSL
+  include: ssl.yml
 # - name: Configure LDAP
 #   include: ldap.yml
 # - name: Set up Horde

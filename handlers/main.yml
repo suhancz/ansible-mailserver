@@ -113,6 +113,12 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Restart subspace
+  systemd:
+    name: subspace
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Restart systemd-resolved
   systemd:
     name: systemd-resolved

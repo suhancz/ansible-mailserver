@@ -59,3 +59,12 @@
     env: yes
     name: MAILTO
     job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
+- name: Set GOPATH
+  lineinfile:
+    path: /etc/profile.d/gopath.sh
+    line: "export {{ item }}"
+    backup: yes
+    create: yes
+  loop:
+    - "GOPATH=/usr/local/go/bin"
+    - "PATH=$PATH:$GOPATH"
