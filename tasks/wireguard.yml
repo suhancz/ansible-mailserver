@@ -34,6 +34,14 @@
     - /etc/podman/compose/subspace
     - "{{ wireguard.config_dir }}"
   notify: Restart subspace
+- name: Allow Apache to reach the subspace directory
+  acl:
+    path: "{{ wireguard.config_dir }}"
+    entity: apache
+    etype: user
+    permissions: rx
+    state: present
+    recursive: yes
 - name: Deploy docker-compose.yaml
   template:
     src: subspace/docker-compose.yaml.j2
