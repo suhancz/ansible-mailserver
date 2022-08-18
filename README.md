@@ -45,18 +45,13 @@ Role Variables
     pdns_backup_path # path to the tarball containing DNSMASQ backups
     wireguard: # wireguard configuration for admin access
       config_dir: # directory on the server to deploy WireGuard configuration to
-      server:
-        mtu # server-side MTU
-        cidr # VPN range in CIDR notation
-        address # server listen address
-        lport # listening port
-        dns_ip # DNS to provide for the clients
-      clients: # config for the clients
-        client1:
-          cidr # client address on the VPN in CIDR notation
-          keepalive # connection keepalive in seconds
-          lport # listening port
-          mtu # client-side MTU
+      ipv4_pool: # CIDR of the IPv4 pool of the clients
+      ipv6_pool: # CIDR of the IPv6 pool of the clients
+      nameservers: # list of DNS servers to use for the VPN
+      http_port: # Subspace UI listen address
+      listen_port: # Wireguard server listen address
+      allowed_ips: # list of IP addresses to reach via VPN
+      keepalive: # VPN keepalive in seconds
     httpd_pam_deny_users: # list of users who shouldn't authenticate against HTTPD using PAM
 
 Example Playbook
