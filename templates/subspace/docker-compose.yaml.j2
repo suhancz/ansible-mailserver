@@ -19,7 +19,7 @@ services:
         - "SUBSPACE_IPV6_POOL={{ wireguard.ipv6_pool }}"
         - SUBSPACE_IPV4_NAT_ENABLED=1
         - SUBSPACE_IPV6_NAT_ENABLED=1
-        - SUBSPACE_DISABLE_DNS=0
+        - SUBSPACE_DISABLE_DNS=1
         - "SUBSPACE_PERSISTENT_KEEPALIVE={{ wireguard.keepalive }}"
     cap_add:
         - NET_ADMIN
