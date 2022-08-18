@@ -49,14 +49,6 @@
     - { src: "httpd/wildcard.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf" }
     - { src: "httpd/wildcard-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
-- name: Deploy default index.html
-  copy:
-    src: httpd/wildcard_index.html
-    dest: /var/www/html/index.html
-    mode: u=rw,og=r
-    backup: yes
-    owner: root
-    group: root
 - name: Deploy SSL config
   copy:
     src: httpd/options-ssl-apache.conf

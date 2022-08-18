@@ -24,14 +24,16 @@
   loop:
     - "net.ipv4.ip_forward"
     - "net.ipv6.conf.all.forwarding"
-- name: Create subspace config directory
+- name: Create subspace config directories
   file:
-    path: "/etc/{{ item }}"
+    path: "{{ item }}"
     state: directory
   loop:
-    - podman
-    - podman/compose
-    - podman/compose/subspace
+    - /etc/podman
+    - /etc/podman/compose
+    - /etc/podman/compose/subspace
+    - "{{ wireguard.config_dir }}"
+  notify: Restart subspace
 - name: Deploy docker-compose.yaml
   template:
     src: subspace/docker-compose.yaml.j2

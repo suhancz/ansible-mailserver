@@ -2,8 +2,6 @@
   ServerName {{ mailserver_domain }}
   ServerAlias {% for custom_domain in custom_domains %}{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 
-  DocumentRoot /var/www/html/
-
   ErrorLog /var/log/httpd/wildcard_error.log
   CustomLog /var/log/httpd/wildcard_access.log combined
 
