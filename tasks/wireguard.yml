@@ -9,6 +9,10 @@
     line: "{{ item }}"
     create: yes
     backup: yes
+  loop:
+    - wireguard
+    - iptable_nat
+    - ip6table_nat
 - name: Set sysctl variables
   sysctl:
     name: "{{ item }}"
@@ -22,16 +26,15 @@
     - "net.ipv6.conf.all.forwarding"
 - name: Create subspace config directory
   file:
-    path: /etc/subspace
+    path: "/etc/{{ item }}"
     state: directory
+  loop:
+    - podman
+    - podman/compose
+    - podman/compose/subspace
 - name: Deploy docker-compose.yaml
   template:
     src: subspace/docker-compose.yaml.j2
-    dest: /etc/subspace/docker-compose.yaml
-    backup: true
-- name: Create subspace container
-  docker_compose:
-    project_name: subspace
-    project_src: /etc/subspace
-    build: yes
-    pull: yes
+    dest: /etc/podman/compose/subspace/docker-compose.yaml
+    backup: yes
+  notify: Restart subspace

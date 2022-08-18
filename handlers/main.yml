@@ -115,7 +115,7 @@
     state: restarted
 - name: Restart subspace
   systemd:
-    name: subspace
+    name: podman-compose@subspace
     daemon_reload: yes
     enabled: yes
     state: restarted

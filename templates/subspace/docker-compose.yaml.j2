@@ -9,7 +9,7 @@ services:
     restart: always
     environment:
         - "SUBSPACE_HTTP_HOST=vpn.{{ mailserver_domain }}"
-        - SUBSPACE_LETSENCRYPT=false
+        - SUBSPACE_LETSENCRYPT=false    
         - SUBSPACE_HTTP_INSECURE=true
         - "SUBSPACE_HTTP_ADDR=:{{ wireguard.http_port }}"
         - "SUBSPACE_NAMESERVERS={{ wireguard.nameservers|join(',) }}"
