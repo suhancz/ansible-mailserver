@@ -18,7 +18,7 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthExternal pwauth
     Require valid-user
     DirectoryIndex disabled
-    ProxyPass "http://localhost:{{ wireguard.http_port }}"
+    ProxyPass "http://localhost6:{{ wireguard.http_port }}"
   </Location>
 
 SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
