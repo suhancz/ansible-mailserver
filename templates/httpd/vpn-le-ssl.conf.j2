@@ -9,6 +9,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   AddExternalAuth pwauth /usr/bin/pwauth
   SetExternalAuthMethod pwauth pipe
 
+  ProxyProtocol On
+
   <Location />
     DAV On
     Options +Indexes
