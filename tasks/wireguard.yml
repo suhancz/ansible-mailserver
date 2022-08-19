@@ -4,6 +4,13 @@
   vars:
     port: "{{ wireguard.listen_port }}/udp"
 - name: Load kernel modules
+  modprobe:
+    name: "{{ item }}"
+  loop:
+    - wireguard
+    - iptable_nat
+    - ip6table_nat
+- name: Load kernel modules at boot
   lineinfile:
     path: "/etc/modules-load.d/{{ item }}.conf"
     line: "{{ item }}"
