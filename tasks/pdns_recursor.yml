@@ -29,6 +29,7 @@
     - { key: "local-port", value: "5301" }
     - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
     - { key: "lua-config-file", value: "/etc/pdns-recursor/recursorconf.lua" }
+    - { key: "query-local-address", value: "0.0.0.0 [::]" }
   no_log: yes
   when: 'public_dns == "yes"'
   notify: Restart pdns-recursor
