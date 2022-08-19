@@ -29,7 +29,7 @@
   lineinfile:
     path: /etc/pdns/pdns.conf
     line: "{{ item.key }}={{ item.value }}"
-    regex: "^{{ item.key }}"
+    regex: "^{{ item.key }}="
     state: present
     owner: pdns
     group: pdns
@@ -41,7 +41,7 @@
     - { key: "gmysql-password", value: "{{ powerdns_db_password }}" }
     - { key: "gmysql-dbname", value: "powerdnsdb" }
     - { key: "dnsupdate", value: "yes" }
-    - { key: "local-address", value: "127.0.0.1" }
+    - { key: "local-address", value: "127.0.0.1 ::1" }
     - { key: "local-port", value: "5300" }
     - { key: "gmysql-dnssec", value: "yes" }
     - { key: "secondary-do-renotify", value: "yes" }
