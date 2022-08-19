@@ -36,6 +36,7 @@
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "forward-zones+={{ item }}=127.0.0.1:5300"
+    regex: "^forward-zones+={{ item }}="
     state: present
     backup: yes
   loop: "{{ custom_domains }}"
