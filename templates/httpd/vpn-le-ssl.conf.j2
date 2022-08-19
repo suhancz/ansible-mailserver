@@ -9,8 +9,6 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   AddExternalAuth pwauth /usr/bin/pwauth
   SetExternalAuthMethod pwauth pipe
 
-  ProxyProtocol On
-
   <Location />
     DAV On
     Options +Indexes
@@ -20,7 +18,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthExternal pwauth
     Require valid-user
     DirectoryIndex disabled
-    ProxyPass "http://localhost6:{{ wireguard.http_port }}"
+    ProxyPass "http://localhost:{{ wireguard.http_port }}/"
+    ProxyPassReverse "http://localhost:{{ wireguard.http_port }}/"
   </Location>
 
 SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
