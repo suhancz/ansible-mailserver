@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  wg:
+    # build: .
+    image: ngoduykhanh/wireguard-ui:latest
+    container_name: wgui
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    environment:
+    #   - SENDGRID_API_KEY
+      - EMAIL_FROM_ADDRESS={{ mailserver_admin_user }}@{{ mailserver_domain }}
+      - EMAIL_FROM_NAME={{ mailserver_admin_user }}
+      - SESSION_SECRET={{ lookup('password', '/tmp/ansible-mailserver-install.wireguard-ui-session-secret chars=ascii_letters,digits') }}
+      - WGUI_USERNAME={{ mailserver_admin_user }}
+      - WGUI_PASSWORD={% for user in users %}{% if user.name == mailserver_adimn_user %}{{ user.password }}{% endif %}{% endfor %}
+      - WG_CONF_TEMPLATE=/etc/podman/compose/wireguard-ui/wg.conf.tmpl
+      - WGUI_SERVER_LISTEN_PORT={{ wireguard.http_port }}
+      - SMTP_HOSTNAME=localhost
+      - SMTP_PORT=25
+      - SMTP_USERNAME={{ mailserver_admin_user }}@{{ mailserver_domain }}
+      - SMTP_PASSWORD={% for user in users %}{% if user.name == mailserver_adimn_user %}{{ user.password }}{% endif %}{% endfor %}
+      - SMTP_AUTH_TYPE=PLAIN
+      - WGUI_DEFAULT_CLIENT_ALLOWED_IPS={{ wireguard.allowed_ips|join(',') }}
+      - WGUI_SERVER_INTERFACE_ADDRESSES={{ wireguard.ipv4_pool }},{{ wireguard.ipv6_pool }}
+      - WGUI_PERSISTENT_KEEPALIVE={{ wireguard.keepalive }}
+      - WGUI_DNS={{ wireguard.nameservers|join(',') }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+    volumes:
+      - /etc/podman/compose/wireguard-ui/db:/app/db
+      - /etc/wireguard:/etc/wireguard
