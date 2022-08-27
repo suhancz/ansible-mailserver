@@ -132,7 +132,7 @@ wireguard:
   nameservers:
     - "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
     - "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
-  http_port: 7827
+  # http_port: 7827
   listen_port: 25472
   allowed_ips:
     # - "0.0.0.0/0"

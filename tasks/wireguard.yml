@@ -31,17 +31,19 @@
   loop:
     - "net.ipv4.ip_forward"
     - "net.ipv6.conf.all.forwarding"
-- name: Create subspace config directories
+- name: Create WireGard UI config directories
   file:
     path: "{{ item }}"
     state: directory
   loop:
     - /etc/podman
     - /etc/podman/compose
-    - /etc/podman/compose/subspace
+    # - /etc/podman/compose/subspace
+    - /etc/podman/compose/wireguard-ui
     - "{{ wireguard.config_dir }}"
-  notify: Restart subspace
-- name: Allow Apache to reach the subspace directory
+  # notify: Restart subspace
+  notify: Restart wireguard-ui
+- name: Allow Apache to reach the WireGuard UI directory
   acl:
     path: "{{ wireguard.config_dir }}"
     entity: apache
@@ -51,7 +53,22 @@
     recursive: yes
 - name: Deploy docker-compose.yaml
   template:
-    src: subspace/docker-compose.yaml.j2
-    dest: /etc/podman/compose/subspace/docker-compose.yaml
+    # src: subspace/docker-compose.yaml.j2
+    # dest: /etc/podman/compose/subspace/docker-compose.yaml
+    src: wireguard-ui/docker-compose.yaml.j2
+    dest: /etc/podman/compose/wireguard-ui/docker-compose.yaml
     backup: yes
-  notify: Restart subspace
+  # notify: Restart subspace
+  notify: Restart wireguard-ui
+- name: Deploy wg.conf template
+  copy:
+    src: wireguard-ui/wg.conf.tmpl
+    dest: /etc/podman/compose/wireguard-ui/wg.conf.tmpl
+    backup: yes
+  notify: Restart wireguard-ui
+- name: Deploy systemd path watcher
+  copy:
+    src: systemd/wgui.path
+    dest: /etc/systemd/system/podman-compose@wireguard-ui.path
+    backup: yes
+  notify: Restart wireguard-ui

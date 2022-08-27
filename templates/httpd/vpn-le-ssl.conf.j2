@@ -3,8 +3,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
 <VirtualHost vpn.{{ mailserver_domain }}:443>
   ServerName vpn.{{ mailserver_domain }}
 
-  ErrorLog /var/log/httpd/webdav_error.log
-  CustomLog /var/log/httpd/webdav_access.log combined
+  ErrorLog /var/log/httpd/vpn_error.log
+  CustomLog /var/log/httpd/vpn_access.log combined
 
   AddExternalAuth pwauth /usr/bin/pwauth
   SetExternalAuthMethod pwauth pipe
@@ -18,8 +18,10 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthExternal pwauth
     Require valid-user
     DirectoryIndex disabled
-    ProxyPass "http://localhost:{{ wireguard.http_port }}/"
-    ProxyPassReverse "http://localhost:{{ wireguard.http_port }}/"
+    # ProxyPass "http://localhost:{{ wireguard.http_port }}/"
+    # ProxyPassReverse "http://localhost:{{ wireguard.http_port }}/"
+    ProxyPass "http://localhost:5000/"
+    ProxyPassReverse "http://localhost:5000/"
   </Location>
 
 SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
