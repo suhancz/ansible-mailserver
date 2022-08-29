@@ -43,7 +43,7 @@
     - /etc/podman/compose/wireguard-ui/db
     - "{{ wireguard.config_dir }}"
   # notify: Restart subspace
-  notify: Restart wireguard-ui
+  notify: Restart WireGuard
 - name: Allow Apache to reach the WireGuard UI directory
   acl:
     path: "{{ wireguard.config_dir }}"
@@ -60,16 +60,19 @@
     dest: /etc/podman/compose/wireguard-ui/docker-compose.yaml
     backup: yes
   # notify: Restart subspace
-  notify: Restart wireguard-ui
+  notify: Restart WireGuard
 - name: Deploy wg.conf template
   copy:
     src: wireguard-ui/wg.conf.tmpl
     dest: /etc/podman/compose/wireguard-ui/db/wg.conf.tmpl
     backup: yes
-  notify: Restart wireguard-ui
+  notify: Restart WireGuard
 - name: Deploy systemd path watcher
   copy:
-    src: systemd/wgui.path
-    dest: /etc/systemd/system/podman-compose@wireguard-ui.path
+    src: "systemd/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
     backup: yes
-  notify: Restart wireguard-ui
+  notify: Restart WireGuard
+  loop: 
+    - wgui.path
+    - wgui.service

@@ -131,14 +131,15 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
-- name: Restart wireguard-ui
+- name: Restart WireGuard
   systemd:
-    name: "podman-compose@wireguard-ui.{{ systemd_unit_type }}"
+    name: "{{ systemd_unit }}"
     daemon_reload: yes
     enabled: yes
     state: restarted
   loop:
-    - service
-    - path
+    - podman-compose@wireguard-ui.service
+    - wgui.service
+    - wgui.path
   loop_control:
-    loop_var: systemd_unit_type
+    loop_var: systemd_unit
