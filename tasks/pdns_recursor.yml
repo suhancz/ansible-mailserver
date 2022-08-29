@@ -1,7 +1,7 @@
 ---
 - name: Render RPZ file for local addresses
   template:
-    src: pdns-recursor.rpz.j2
+    src: pdns-recursor/basic.rpz.j2
     dest: /etc/pdns-recursor/pdns-recursor.rpz
     owner: pdns-recursor
     group: pdns-recursor
@@ -9,7 +9,7 @@
   when: 'public_dns == "yes"'
 - name: Create LUA config
   copy:
-    content: 'rpzFile("basic.rpz", {})'
+    content: 'rpzFile("/etc/pdns-recursor/pdns-recursor.rpz", {})'
     dest: /etc/pdns-recursor/recursorconf.lua
     owner: pdns-recursor
     group: pdns-recursor

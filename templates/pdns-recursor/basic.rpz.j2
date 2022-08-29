@@ -1,10 +1,9 @@
 $TTL 2h;
 $ORIGIN {{ mailserver_domain }}.
-@          SOA ns.{{ mailserver_domain }} hostmaster.{{ mailserver_domain }} 0 10800 3600 604800 3600 ( 1 12h 15m 3w 2h)
+@          SOA ns.{{ mailserver_domain }} hostmaster.{{ mailserver_domain }} 0 10800 3600 604800 3600
            NS ns.{{ mailserver_domain }}. 
 ; begin RPZ RR definitions
 
 {{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
-*.{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
 {{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
-*.{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
+*.{{ mailswerver_domain }}	3600	IN	CNAME	{{ mailswerver_domain }}.
