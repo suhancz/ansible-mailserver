@@ -26,6 +26,7 @@ services:
       - WGUI_SERVER_INTERFACE_ADDRESSES={{ wireguard.ipv4_pool }},{{ wireguard.ipv6_pool }}
       - WGUI_PERSISTENT_KEEPALIVE={{ wireguard.keepalive }}
       - WGUI_DNS={{ wireguard.nameservers|join(',') }}
+      - WGUI_ENDPOINT_ADDRESS=vpn.{{ mailserver_domain }}
     logging:
       driver: json-file
       options:
