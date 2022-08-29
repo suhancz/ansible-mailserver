@@ -9,7 +9,7 @@
   when: 'public_dns == "yes"'
 - name: Create LUA config
   copy:
-    content: 'rpzFile("/etc/pdns-recursor/pdns-recursor.rpz", {})'
+    content: 'rpzFile("/etc/pdns-recursor/pdns-recursor.rpz", {defpol=Policy.NoAction})'
     dest: /etc/pdns-recursor/recursorconf.lua
     owner: pdns-recursor
     group: pdns-recursor
