@@ -16,7 +16,7 @@ services:
       - WGUI_USERNAME={{ mailserver_admin_user }}
       - WGUI_PASSWORD={% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor +%}
       - WG_CONF_TEMPLATE=/app/db/wg.conf.tmpl
-      - WGUI_SERVER_LISTEN_PORT={{ wireguard.http_port }}
+      - WGUI_SERVER_LISTEN_PORT={{ wireguard.listen_port }}
       - SMTP_HOSTNAME={{ mailserver_domain }}
       - SMTP_PORT=587
       - SMTP_USERNAME={{ mailserver_admin_user }}@{{ mailserver_domain }}
