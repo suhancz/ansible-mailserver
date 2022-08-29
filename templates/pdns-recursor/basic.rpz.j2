@@ -4,9 +4,9 @@ $ORIGIN {{ mailserver_domain }}.
            NS ns.{{ mailserver_domain }}. 
 ; begin RPZ RR definitions
 
-{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
-{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
-*.{{ mailserver_domain }} CNAME {{ mailswerver_domain }}.
+;{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
+;{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
+;*.{{ mailserver_domain }} CNAME {{ mailserver_domain }}.
 {% for dns_record in default_dns_records %}
 {% if dns_record.content == hostvars[inventory_hostname]['ansible_default_ipv4']['address'] %}
 {% set dns_record.content = wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') %}
