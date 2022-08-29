@@ -6,4 +6,7 @@ $ORIGIN {{ mailserver_domain }}.
 
 {{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
 {{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
-*.{{ mailswerver_domain }}	3600	IN	CNAME	{{ mailswerver_domain }}.
+*.{{ mailserver_domain }} CNAME {{ mailswerver_domain }}.
+{% for dns_record in default_dns_records %}
+{{ dns_record.name|default('@') }}.{{ mailserver_domain }} {{ dns_record.type }} {{ dns_record.content }}
+{% endif %}
