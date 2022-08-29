@@ -40,6 +40,7 @@
     - /etc/podman/compose
     # - /etc/podman/compose/subspace
     - /etc/podman/compose/wireguard-ui
+    - /etc/podman/compose/wireguard-ui/db
     - "{{ wireguard.config_dir }}"
   # notify: Restart subspace
   notify: Restart wireguard-ui
