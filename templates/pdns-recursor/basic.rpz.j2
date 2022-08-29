@@ -4,9 +4,7 @@ $ORIGIN {{ mailserver_domain }}.
            NS ns.{{ mailserver_domain }}. 
 ; begin RPZ RR definitions
 
-{% for custom_domain in [mailserver_domain] + custom_domains %}
-{{ custom_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
-*.{{ custom_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
-{{ custom_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
-*.{{ custom_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
-{% endfor %}
+{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
+*.{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}{% else %}127.0.0.1{% endif %}
+{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}
+*.{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}{% else %}::1{% endif %}

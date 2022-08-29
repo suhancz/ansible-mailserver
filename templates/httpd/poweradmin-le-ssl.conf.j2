@@ -1,8 +1,7 @@
 <IfModule mod_ssl.c>
 SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
-<VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}poweradmin.{{ custom_domain }}:443{% if loop.index != loop.length %} {% endif %}{% endfor %}>
+<VirtualHost poweradmin.{{ mailserver_domain }}:443>
   ServerName poweradmin.{{ mailserver_domain }}
-  ServerAlias {% for custom_domain in custom_domains %}poweradmin.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 
   DocumentRoot /var/www/poweradmin/
 
