@@ -103,3 +103,13 @@
     permissions: rwX
     state: present
     recursive: yes
+- name: Create HTTPD SystemD drop-in directory
+  file:
+    path: /etc/systemd/system/httpd.service.d
+    state: directory
+- name: Increase startup timeout
+  copy:
+    src: systemd/httpd.timeout.conf
+    dest: /etc/systemd/system/httpd.service.d/timeout.conf
+    backup: yes
+  notify: Restart httpd
