@@ -64,7 +64,7 @@
 - name: Deploy wg.conf template
   copy:
     src: wireguard-ui/wg.conf.tmpl
-    dest: /etc/podman/compose/wireguard-ui/wg.conf.tmpl
+    dest: /etc/podman/compose/wireguard-ui/db/wg.conf.tmpl
     backup: yes
   notify: Restart wireguard-ui
 - name: Deploy systemd path watcher
