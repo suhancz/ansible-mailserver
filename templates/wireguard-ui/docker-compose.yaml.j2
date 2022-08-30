@@ -11,7 +11,6 @@ services:
     environment:
     #   - SENDGRID_API_KEY
       - EMAIL_FROM_ADDRESS={{ mailserver_admin_user }}@{{ mailserver_domain }}
-      - EMAIL_FROM_NAME={{ mailserver_admin_user }}
       - SESSION_SECRET={{ lookup('password', '/tmp/ansible-mailserver-install.wireguard-ui-session-secret chars=ascii_letters,digits') }}
       - WGUI_USERNAME={{ mailserver_admin_user }}
       - WGUI_PASSWORD={% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor +%}
