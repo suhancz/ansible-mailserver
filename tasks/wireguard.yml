@@ -44,14 +44,21 @@
     - "{{ wireguard.config_dir }}"
   # notify: Restart subspace
   notify: Restart WireGuard
-- name: Allow Apache to reach the WireGuard UI directory
-  acl:
+- name: BindFS mount the WireGuard UI directory
+  mount:
     path: "{{ wireguard.config_dir }}"
-    entity: apache
-    etype: user
-    permissions: rx
-    state: present
-    recursive: yes
+    src: /etc/wireguard
+    opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
+    state: mounted
+    fstype: fuse.bindfs
+# - name: Allow Apache to reach the WireGuard UI directory
+#   acl:
+#     path: "{{ wireguard.config_dir }}"
+#     entity: apache
+#     etype: user
+#     permissions: rwX
+#     state: present
+#     recursive: yes
 - name: Deploy docker-compose.yaml
   template:
     # src: subspace/docker-compose.yaml.j2

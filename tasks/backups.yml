@@ -1,24 +1,32 @@
 ---
 - name: Create backup directories
   file:
-    path: "/backup/{{ item }}"
+    path: "{{ item }}"
     state: directory
     recurse: yes
     owner: root
     group: root
     mode: u=rwX
   loop:
-    - ''
-    - mariadb
-    - ldap
-    - opendkim
-    - opendmarc
-    - vsftpd
-    - ssl
-    - horde
-    - dovecot
-    - postfix
-    - pdns
+    - /backup
+    - /backup/mariadb
+    - /backup/ldap
+    - /backup/opendkim
+    - /backup/opendmarc
+    - /backup/vsftpd
+    - /backup/ssl
+    - /backup/horde
+    - /backup/dovecot
+    - /backup/postfix
+    - /backup/pdns
+    - /var/www/webdav/.backup
+- name: BindFS mount the backup directory to WebDav
+  mount:
+    path: /var/www/webdav/.backup
+    src: /backup
+    opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
+    state: mounted
+    fstype: fuse.bindfs
 - name: Create systemd tarball backup services
   template:
     src: "systemd/tarball-backup.service.j2"
