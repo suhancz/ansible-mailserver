@@ -140,6 +140,7 @@
   loop:
     - podman-compose@wireguard-ui.service
     - wgui.path
-    - wgui.service
+    # - wgui.service
+    - wireguard-ui.service
   loop_control:
     loop_var: systemd_unit
