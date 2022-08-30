@@ -23,7 +23,7 @@ services:
       - SMTP_PASSWORD={% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor +%}
       - SMTP_AUTH_TYPE=PLAIN
       - WGUI_DEFAULT_CLIENT_ALLOWED_IPS={{ wireguard.allowed_ips|join(',') }}
-      - WGUI_SERVER_INTERFACE_ADDRESSES={{ wireguard.ipv4_pool }},{{ wireguard.ipv6_pool }}
+      - WGUI_SERVER_INTERFACE_ADDRESSES={{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }},{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }},{{ wireguard.ipv4_pool }},{{ wireguard.ipv6_pool }}
       - WGUI_PERSISTENT_KEEPALIVE={{ wireguard.keepalive }}
       - WGUI_DNS={{ wireguard.nameservers|join(',') }}
       - WGUI_ENDPOINT_ADDRESS=vpn.{{ mailserver_domain }}
