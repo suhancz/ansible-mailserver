@@ -7,14 +7,14 @@
     group: pdns-recursor
     backup: yes
   when: 'public_dns == "yes"'
-- name: Create LUA config
-  copy:
-    content: 'rpzFile("/etc/pdns-recursor/pdns-recursor.rpz", {defpol=Policy.NoAction})'
-    dest: /etc/pdns-recursor/recursorconf.lua
-    owner: pdns-recursor
-    group: pdns-recursor
-    backup: yes
-  when: 'public_dns == "yes"'
+# - name: Create LUA config
+#   copy:
+#     content: 'rpzFile("/etc/pdns-recursor/pdns-recursor.rpz", {defpol=Policy.NoAction})'
+#     dest: /etc/pdns-recursor/recursorconf.lua
+#     owner: pdns-recursor
+#     group: pdns-recursor
+#     backup: yes
+#   when: 'public_dns == "yes"'
 - name: Configure PowerDNS recursor
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
@@ -28,10 +28,21 @@
     - { key: "local-address", value: "0.0.0.0 [::]" }
     - { key: "local-port", value: "5301" }
     - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
-    - { key: "lua-config-file", value: "/etc/pdns-recursor/recursorconf.lua" }
+    # - { key: "lua-config-file", value: "/etc/pdns-recursor/recursorconf.lua" }
     - { key: "query-local-address", value: "0.0.0.0 [::]" }
+    - { key: "export-etc-hosts", value: "yes" }
   no_log: yes
   when: 'public_dns == "yes"'
+  notify: Restart pdns-recursor
+- name: Add VPN addresses to hosts file
+  lineinfile:
+    line: "{{ item }} postfixadmin.{{ mailserver_domain }} poweradmin.{{ mailserver_domain }}"
+    path: /etc/hosts
+    backup: yes
+  loop:
+    - "{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}"
+    - "{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '\.1') }}"
+  when: wireguard is defined
   notify: Restart pdns-recursor
 - name: Configure PowerDNS recursor to forward custom domains
   lineinfile:
