@@ -4,6 +4,7 @@ services:
   wg-easy:
     environment:
       - WG_HOST=vpn.{{ mailserver_domain }}
+      - WG_PORT={{ wireguard.listen_port }}
       - PASSWORD={% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor +%}
       - WG_PERSISTENT_KEEPALIVE={{ wireguard.keepalive }}
       - WG_DEFAULT_ADDRESS={{ wireguard.ipv4_pool }}
@@ -15,8 +16,8 @@ services:
     volumes:
       - /etc/wireguard:/etc/wireguard
     ports:
-      - {{ wireguard.listen_port }}:51820/udp
-      - {{ wireguard.http_port }}:51821/tcp
+      - 127.0.0.1:{{ wireguard.listen_port }}:51820/udp
+      - 127.0.0.1:{{ wireguard.http_port }}:51821/tcp
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
