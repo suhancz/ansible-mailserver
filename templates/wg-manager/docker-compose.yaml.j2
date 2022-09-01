@@ -1,0 +1,23 @@
+version: "2.1"
+services:
+  wireguard:
+    container_name: wg-manager
+    image: perara/wg-manager
+    restart: always
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 0  # Required for IPV6
+    cap_add:
+      - NET_ADMIN
+    network_mode: host # Alternatively
+    ports:
+       - {{ wireguard.listen_port }}:{{ wireguard.listen_port }}/udp
+       - 127.0.0.1:{{ wireguard.http_port }}:{{ wireguard.http_port }}
+    volumes:
+      - /etc/wireguard:/config
+    environment:
+      HOST: vpn.{{ mailserver_domain }}
+      PORT: {{ wireguard.http_port }}
+      ADMIN_USERNAME: {{ mailserver_admin_user }}
+      ADMIN_PASSWORD: {% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor +%}
+      WEB_CONCURRENCY: 1
+      SERVER_INIT_INTERFACE: '{{ server_init_interface_json.content|b64decode }}'

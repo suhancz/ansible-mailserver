@@ -127,11 +127,8 @@ httpd_pam_deny_users:
   - root
 wireguard:
   config_dir: /var/www/html/webdav/.wireguard
-  # ipv4_pool: 10.42.42.0/24
-  # ipv6_pool: fd00::10:42:0/112
-  # ipv4_pool: 10.42.42.1
-  # ipv6_pool: fd00::10:42:1
-  ipv4_pool: 10.42.42.0
+  ipv4_pool: 10.42.42.0/24
+  ipv6_pool: fd00::10:42:0/112
   nameservers:
     - 10.42.42.1
     # - fd00::10:42:1

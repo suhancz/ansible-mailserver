@@ -41,7 +41,8 @@
     # - /etc/podman/compose/subspace
     # - /etc/podman/compose/wireguard-ui
     # - /etc/podman/compose/wireguard-ui/db
-    - /etc/podman/compose/wg-easy
+    # - /etc/podman/compose/wg-easy
+    - /etc/podman/compose/wg-manager
     - "{{ wireguard.config_dir }}"
   # notify: Restart subspace
   notify: Restart WireGuard
@@ -60,14 +61,25 @@
 #     permissions: rwX
 #     state: present
 #     recursive: yes
+- name: Render wg-manager server init interface JSON
+  template:
+    src: wg-manager/server_init_interface.json.j2
+    dest: /etc/podman/compose/wg-manager/server_init_interface.json
+    backup: yes
+- name: Slurp wg-manager server init interface JSON
+  slurp:
+    src: /etc/podman/compose/wg-manager/server_init_interface.json
+  register: server_init_interface_json
 - name: Deploy docker-compose.yaml
   template:
     # src: subspace/docker-compose.yaml.j2
     # dest: /etc/podman/compose/subspace/docker-compose.yaml
     # src: wireguard-ui/docker-compose.yaml.j2
     # dest: /etc/podman/compose/wireguard-ui/docker-compose.yaml
-    src: wg-easy/docker-compose.yaml.j2
-    dest: /etc/podman/compose/wg-easy/docker-compose.yaml
+    # src: wg-easy/docker-compose.yaml.j2
+    # dest: /etc/podman/compose/wg-easy/docker-compose.yaml
+    src: wg-manager/docker-compose.yaml.j2
+    dest: /etc/podman/compose/wg-manager/docker-compose.yaml
     backup: yes
   # notify: Restart subspace
   notify: Restart WireGuard

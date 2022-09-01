@@ -139,7 +139,8 @@
     state: restarted
   loop:
     # - podman-compose@wireguard-ui.service
-    - podman-compose@wg-easy.service
+    # - podman-compose@wg-easy.service
+    - podman-compose@wg-manager.service
     - wgui.path
     # - wgui.service
   loop_control:
