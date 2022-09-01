@@ -10,6 +10,7 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   SetExternalAuthMethod pwauth pipe
 
   <Location />
+    ProxyPreserveHost On
     DAV On
     Options +Indexes
     AuthType Basic

@@ -15,7 +15,7 @@ services:
     volumes:
       - /etc/wireguard:/config
     environment:
-      HOST: vpn.{{ mailserver_domain }}
+      HOST: 0.0.0.0
       PORT: {{ wireguard.http_port }}
       ADMIN_USERNAME: {{ mailserver_admin_user }}
       ADMIN_PASSWORD: {% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor +%}
