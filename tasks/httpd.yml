@@ -65,7 +65,7 @@
 - name: Deploy Horde default config
   copy:
     src: httpd/php-horde-horde.conf
-    dest: /etc/httpd/conf.d/php-horde-horde.conf
+    dest: /etc/httpd/conf.d/002-php-horde-horde.conf
     mode: u=rw,og=r
     backup: yes
     owner: root
