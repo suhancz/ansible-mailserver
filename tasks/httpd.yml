@@ -36,8 +36,8 @@
   loop:
     - { src: "httpd/domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}.conf" }
     - { src: "httpd/domain-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/horde.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/002-horde.{{ mailserver_domain }}-le-ssl.conf" }
+    - { src: "httpd/horde.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
     - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
@@ -46,8 +46,8 @@
     - { src: "httpd/vpn-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/webdav.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf" }
     - { src: "httpd/webdav-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/wildcard.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/wildcard-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf" }
+    - { src: "httpd/wildcard.conf.j2", dest: "/etc/httpd/conf.d/zzz-wildcard.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/wildcard-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/zzz-wildcard.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
 - name: Deploy SSL config
   copy:
@@ -61,7 +61,7 @@
 - name: Deploy Horde default config
   copy:
     src: httpd/php-horde-horde.conf
-    dest: /etc/httpd/conf.d/002-php-horde-horde.conf
+    dest: /etc/httpd/conf.d/php-horde-horde.conf
     mode: u=rw,og=r
     backup: yes
     owner: root
