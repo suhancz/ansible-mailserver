@@ -315,6 +315,7 @@
       - python3-docker
       - python3-dockerpty
       - python3-pyyaml
+      - python3-jinja2
     state: latest
 - name: Install Remi packages
   dnf:
