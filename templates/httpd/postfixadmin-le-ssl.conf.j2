@@ -1,6 +1,6 @@
 <IfModule mod_ssl.c>
 SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
-<VirtualHost postfixadmin.{{ mailserver_domain }}:443>
+<VirtualHost *:443>
   ServerName postfixadmin.{{ mailserver_domain }}
 
   DocumentRoot /var/www/postfixadmin/public/
