@@ -1,0 +1,26 @@
+---
+- name: Check if WireGuard config exists
+  stat:
+    path: "{{ wg_config_file }}"
+  register: wg_config_file_info
+- name: Read existing WireGuard config into variable
+  when: wg_config_file_info.stat.exists
+  block:
+    - name: Read WireGuard config file
+      slurp:
+        src: "{{ wg_config_file }}"
+      register: wg_config_content
+    - name: Write WireGuard config file to temporary location on the control machine
+      local_action:
+        copy:
+          content: "{{ wg_config_content|b64decode }}"
+          dest: "/var/tmp/wg_config_ini_{{ wg_config_file|b64encode }}"
+    - name: Read WireGuard config into variables
+      set_fact:
+        wg_interface: "{{ q('ansible.builtin.ini', '.*', section='Interface', file='/var/tmp/wg_config_ini_' ~ (wg_config_file|b64encode), re=True) }}"
+        wg_peer: "{{ q('ansible.builtin.ini', '.*', section='Peer', file='/var/tmp/wg_config_ini_' ~ (wg_config_file|b64encode), re=True) }}"
+    - name: Remove temporary config from the control machine
+      local_action:
+        file:
+          path: "/var/tmp/wg_config_ini_{{ wg_config_file|b64encode }}"
+          state: absent

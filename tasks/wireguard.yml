@@ -31,29 +31,35 @@
   loop:
     - "net.ipv4.ip_forward"
     - "net.ipv6.conf.all.forwarding"
-- name: Create WireGard UI config directories
+- name: Create WireGuard config directories
   file:
     path: "{{ item }}"
     state: directory
   loop:
-    - /etc/podman
-    - /etc/podman/compose
-    # - /etc/podman/compose/subspace
-    # - /etc/podman/compose/wireguard-ui
-    # - /etc/podman/compose/wireguard-ui/db
-    # - /etc/podman/compose/wg-easy
-    - /etc/podman/compose/wg-manager
+    # - /etc/podman
+    # - /etc/podman/compose
+    # # - /etc/podman/compose/subspace
+    # # - /etc/podman/compose/wireguard-ui
+    # # - /etc/podman/compose/wireguard-ui/db
+    # # - /etc/podman/compose/wg-easy
+    # - /etc/podman/compose/wg-manager
+    - /etc/wireguard/clients
     - "{{ wireguard.config_dir }}"
   # notify: Restart subspace
   notify: Restart WireGuard
-- name: BindFS mount the WireGuard UI directory
+- name: BindFS mount the WireGuard directory
   mount:
     path: "{{ wireguard.config_dir }}"
     src: /etc/wireguard
     opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
     state: mounted
     fstype: fuse.bindfs
-# - name: Allow Apache to reach the WireGuard UI directory
+- name: Deploy .htaccess for the WireGuard configs
+  template:
+    src: wireguard/htaccess.j2 # TODO: set user auth for each client only for their respective users
+    dest: /etc/wireguard/.htaccess
+    backup: yes
+# - name: Allow Apache to reach the WireGuard directory
 #   acl:
 #     path: "{{ wireguard.config_dir }}"
 #     entity: apache
@@ -61,40 +67,70 @@
 #     permissions: rwX
 #     state: present
 #     recursive: yes
-- name: Render wg-manager server init interface JSON
-  template:
-    src: wg-manager/server_init_interface.json.j2
-    dest: /etc/podman/compose/wg-manager/server_init_interface.json
-    backup: yes
-- name: Slurp wg-manager server init interface JSON
-  slurp:
-    src: /etc/podman/compose/wg-manager/server_init_interface.json
-  register: server_init_interface_json
-- name: Deploy docker-compose.yaml
-  template:
-    # src: subspace/docker-compose.yaml.j2
-    # dest: /etc/podman/compose/subspace/docker-compose.yaml
-    # src: wireguard-ui/docker-compose.yaml.j2
-    # dest: /etc/podman/compose/wireguard-ui/docker-compose.yaml
-    # src: wg-easy/docker-compose.yaml.j2
-    # dest: /etc/podman/compose/wg-easy/docker-compose.yaml
-    src: wg-manager/docker-compose.yaml.j2
-    dest: /etc/podman/compose/wg-manager/docker-compose.yaml
-    backup: yes
-  # notify: Restart subspace
-  notify: Restart WireGuard
-# - name: Deploy wg.conf template
+# - name: Render wg-manager server init interface JSON
+#   template:
+#     src: wg-manager/server_init_interface.json.j2
+#     dest: /etc/podman/compose/wg-manager/server_init_interface.json
+#     backup: yes
+# - name: Slurp wg-manager server init interface JSON
+#   slurp:
+#     src: /etc/podman/compose/wg-manager/server_init_interface.json
+#   register: server_init_interface_json
+# - name: Deploy docker-compose.yaml
+#   template:
+#     # src: subspace/docker-compose.yaml.j2
+#     # dest: /etc/podman/compose/subspace/docker-compose.yaml
+#     # src: wireguard-ui/docker-compose.yaml.j2
+#     # dest: /etc/podman/compose/wireguard-ui/docker-compose.yaml
+#     # src: wg-easy/docker-compose.yaml.j2
+#     # dest: /etc/podman/compose/wg-easy/docker-compose.yaml
+#     src: wg-manager/docker-compose.yaml.j2
+#     dest: /etc/podman/compose/wg-manager/docker-compose.yaml
+#     backup: yes
+#   # notify: Restart subspace
+#   notify: Restart WireGuard
+# # - name: Deploy wg.conf template
+# #   copy:
+# #     src: wireguard-ui/wg.conf.tmpl
+# #     dest: /etc/podman/compose/wireguard-ui/db/wg.conf.tmpl
+# #     backup: yes
+# #   notify: Restart WireGuard
+- name: Read WireGuard server config
+  include: read_wireguard_config.yml
+  vars:
+    wg_config_file: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
+- name: Define read server values
+  set_fact:
+    wg_server:
+      privatekey: "{{ wg_interface.PrivateKey }}"
+      publickey: "{{ wg_peer.PublicKey }}"
+      psk: "{{ wg_peer.PresharedKey }}"
+- name: Set WireGuard server config
+  set_fact:
+    wg_server: "{{ wg_server|default({})|combine(wireguard.server, recursive=True) }}"
+- name: Generate WireGuard server keys
+  include_tasks: generate_wireguard_keys.yml
+  vars:
+    wg_name: "server"
+    wg_privatekey: "{{ wg_server.privatekey|default('') }}"
+    wg_publickey: "{{ wg_server.publickey|default('') }}"
+- name: Define read client values #TODO: read client configs
+  set_fact:
+    wg_clients: "{{ wireguard.clients|default({})|combine(, recursive=True) }}"
+- name: Generate WireGuard client keys #TODO: continue from here and generate QR codes https://github.com/suhancz/ansible-wireguard/blob/main/tasks/main.yml
+  include_tasks: generate_wireguard_keys.yml
+  vars:
+    wg_name: "{{ item.key }}"
+    wg_privatekey: "{{ item.value.privatekey|default('') }}"
+    wg_publickey: "{{ item.value.publickey|default('') }}"
+    wg_psk: "{{ item.value.psk|default('') }}"
+  loop: "{{ wg_clients|dict2items }}"
+# - name: Deploy systemd path watcher
 #   copy:
-#     src: wireguard-ui/wg.conf.tmpl
-#     dest: /etc/podman/compose/wireguard-ui/db/wg.conf.tmpl
+#     src: "systemd/{{ item }}"
+#     dest: "/etc/systemd/system/{{ item }}"
 #     backup: yes
 #   notify: Restart WireGuard
-- name: Deploy systemd path watcher
-  copy:
-    src: "systemd/{{ item }}"
-    dest: "/etc/systemd/system/{{ item }}"
-    backup: yes
-  notify: Restart WireGuard
-  loop: 
-    - wgui.path
-    - wgui.service
+#   loop: 
+#     - wgui.path
+#     - wgui.service

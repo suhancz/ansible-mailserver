@@ -127,6 +127,7 @@ httpd_pam_deny_users:
   - root
 wireguard:
   config_dir: /var/www/html/webdav/.wireguard
+  interface: wg0
   ipv4_pool: 10.42.42.0/24
   ipv6_pool: fd00::10:42:0/112
   nameservers:
@@ -137,7 +138,7 @@ wireguard:
   # http_port: 7827
   # http_port: 5000
   # listen_port: 25472
-  http_port: 51821
+  # http_port: 51821
   listen_port: 51820
   allowed_ips:
     # - "0.0.0.0/0"
