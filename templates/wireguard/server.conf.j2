@@ -1,0 +1,20 @@
+[Interface]
+{% if 'mtu' in wireguard %}
+MTU={{ wireguard.mtu }}
+{% endif %}
+PrivateKey = {{ wg_configs.server.privatekey }}
+ListenPort = {{ wireguard.listen_port }}
+Address = {{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') }}, {{ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}
+
+{% for client in wg_clients|dict2items %}
+[Peer]
+{% if client.key != "server" %}
+# {{ client.key }}
+PublicKey = {{ client.value.publickey }}
+AllowedIPs = {{ client.value.cidr }}
+{% if 'psk' in client.value %}
+PresharedKey = {{ client.value.psk }}
+{% endif %}
+{% endif %}
+
+{% endfor %}
