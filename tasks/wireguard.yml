@@ -56,7 +56,7 @@
     fstype: fuse.bindfs
 - name: Deploy .htaccess for the WireGuard configs
   template:
-    src: wireguard/htaccess.j2 # TODO: set user auth for each client only for their respective users
+    src: wireguard/htaccess.j2 # TODO: set owner of each VPN config
     dest: /etc/wireguard/.htaccess
     backup: yes
 # - name: Allow Apache to reach the WireGuard directory
