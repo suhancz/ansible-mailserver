@@ -115,15 +115,18 @@
     wg_privatekey: "{{ wg_server.privatekey|default('') }}"
     wg_publickey: "{{ wg_server.publickey|default('') }}"
 - name: Define read client values #TODO: read client configs
-  set_fact:
-    wg_clients: "{{ wireguard.clients|default({})|combine(, recursive=True) }}"
+  include_tasks: define_vpn_clients.yml
+  vars:
+    vpn_client_data: "{{ item.vpn|default([{'name': item.name}]) }}"
+    vpn_client_owner: "{{ item.name }}"
+  loop: "{{ users }}"
 - name: Generate WireGuard client keys #TODO: continue from here and generate QR codes https://github.com/suhancz/ansible-wireguard/blob/main/tasks/main.yml
   include_tasks: generate_wireguard_keys.yml
   vars:
-    wg_name: "{{ item.key }}"
-    wg_privatekey: "{{ item.value.privatekey|default('') }}"
-    wg_publickey: "{{ item.value.publickey|default('') }}"
-    wg_psk: "{{ item.value.psk|default('') }}"
+    wg_name: "{{ item.name }}"
+    wg_privatekey: "{{ item.privatekey|default('') }}"
+    wg_publickey: "{{ item.publickey|default('') }}"
+    wg_psk: "{{ item.psk|default('') }}"
   loop: "{{ wg_clients|dict2items }}"
 # - name: Deploy systemd path watcher
 #   copy:
