@@ -128,6 +128,34 @@
     wg_publickey: "{{ item.publickey|default('') }}"
     wg_psk: "{{ item.psk|default('') }}"
   loop: "{{ wg_clients|dict2items }}"
+- name: Generate server config
+  template:
+    src: server.conf.j2
+    dest: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
+    backup: yes
+- name: Create client config dirs
+  file:
+    state: directory
+    name: "{{ wireguard.config_dir }}/clients/{{ item.key }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+- name: Generate client configs
+  template:
+    src: client.conf.j2
+    dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    backup: yes
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+- name: Generate QR codes
+  command: "qrencode -o {{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.png -r {{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+  become: yes
+  become_user: "{{ item.owner }}"
 # - name: Deploy systemd path watcher
 #   copy:
 #     src: "systemd/{{ item }}"

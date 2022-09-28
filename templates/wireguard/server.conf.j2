@@ -9,7 +9,7 @@ Address = {{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') }}, {{ wire
 {% for client in wg_clients|dict2items %}
 [Peer]
 {% if client.key != "server" %}
-# {{ client.key }}
+# {{ client.key }} owned by {{ client.user }}
 PublicKey = {{ client.value.publickey }}
 AllowedIPs = {{ client.value.cidr }}
 {% if 'psk' in client.value %}

@@ -29,6 +29,6 @@
       stdout: "{{ wg_psk }}"
   when: wg_psk is defined and wg_psk != ""
 - set_fact:
-    wg_configs_json: '{"{{ wg_name }}": {"privatekey": "{{ wg_privatekey_output.stdout }}", "publickey": "{{ wg_publickey_output.stdout }}", "psk": "{{ wg_psk_output.stdout }}"}}'
+    wg_configs_json: '{"{{ wg_name }}": {"privatekey": "{{ wg_privatekey_output.stdout }}", "publickey": "{{ wg_publickey_output.stdout }}", "psk": "{{ wg_psk_output.stdout }}", "owner": "{{ wg_name }}"}}'
 - set_fact:
     wg_configs: "{{ wg_configs|default({})|combine(wg_configs_json) }}"
