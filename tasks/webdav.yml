@@ -3,7 +3,6 @@
   file:
     path: /var/www/html/webdav
     state: directory
-    recurse: yes
     owner: apache
     group: apache
     mode: u=rwX,og=rX
