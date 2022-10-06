@@ -4,7 +4,7 @@
     vpn_config_owner: "{{ vpn_client_owner }}"
 - name: Fill array of WireGuard clients
   set_fact:
-    wg_clients: "{{ wg_clients|default([]) + [vpn_client|combine(vpn_config_owner)] }}"
+    wg_clients: "{{ wg_clients|default([]) + [vpn_client|combine('name':vpn_config_owner)] }}"
   loop: "{{ vpn_client_data }}"
   loop_control:
     loop_var: vpn_client

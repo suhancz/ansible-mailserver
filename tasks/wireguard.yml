@@ -102,12 +102,12 @@
 - name: Define read server values
   set_fact:
     wg_server:
-      privatekey: "{{ wg_interface.PrivateKey }}"
-      publickey: "{{ wg_peer.PublicKey }}"
-      psk: "{{ wg_peer.PresharedKey }}"
+      privatekey: "{{ wg_interface.PrivateKey|default('') }}"
+      publickey: "{{ wg_peer.PublicKey|default('') }}"
+      psk: "{{ wg_peer.PresharedKey|default('') }}"
 - name: Set WireGuard server config
   set_fact:
-    wg_server: "{{ wg_server|default({})|combine(wireguard.server, recursive=True) }}"
+    wg_server: "{{ wg_server|default({})|combine(wireguard.server|default({}), recursive=True) }}"
 - name: Generate WireGuard server keys
   include_tasks: generate_wireguard_keys.yml
   vars:
