@@ -6,7 +6,6 @@
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   register: powerdns_db_state
   when: 'public_dns == "yes"'
-  notify: Restart pdns
 - name: Set up PowerDNS DB privileges
   mysql_user:
     name: powerdns
@@ -52,3 +51,10 @@
   no_log: yes
   when: 'public_dns == "yes"'
   notify: Restart pdns
+- name: Restart pdns
+  systemd:
+    name: pdns
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  when: powerdns_db_state.changed
