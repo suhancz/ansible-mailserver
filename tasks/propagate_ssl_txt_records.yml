@@ -7,7 +7,7 @@
       name: "{{ challenge_item.value['dns-01'].resource }}"
       type: TXT
       content: "{{ challenge_item.value['dns-01'].resource_value }}"
-  when: '{{ (public_dns == "yes") and ((challenge_item.value["dns-01"].resource ~ "." ~ current_domain) == challenge_item.value["dns-01"].record) }}'
+  when: '{{ (public_dns == "yes") and ((challenge_item.key == current_domain) and ((challenge_item.value["dns-01"].resource ~ "." ~ current_domain) == challenge_item.value["dns-01"].record)) }}'
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
   loop_control:
     loop_var: challenge_item
