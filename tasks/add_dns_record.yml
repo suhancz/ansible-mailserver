@@ -2,7 +2,16 @@
 - name: 'Quote and escape record content "{{ record.content }}"'
   set_fact:
     record_content: '"{{ record.content }}"'
+- name: Add DNS record
+  when: record.append is defined and record.append
+  block:
+    - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl|default("3600") }} IN {{ record.type }} {{ record.content }}'
+      command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl|default('3600') }} '{{ record.content }}'"
+  rescue:
+    - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl|default("3600") }} IN {{ record.type }} {{ record.content }}'
+      command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl|default('3600') }} '{{ record_content }}'"
 - name: Update or add DNS record
+  when: record.append is not defined or not record.append
   block:
     - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl|default("3600") }} IN {{ record.type }} {{ record.content }}'
       command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl|default('3600') }} '{{ record.content }}'"

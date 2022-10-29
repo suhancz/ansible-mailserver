@@ -8,6 +8,7 @@
       type: TXT
       content: "{{ challenge_item.value['dns-01'].resource_value }}"
       ttl: 60
+      append: yes
   when: 'public_dns == "yes"'
 - name: Reload PowerDNS config
   systemd:
