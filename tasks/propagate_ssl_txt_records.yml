@@ -1,5 +1,5 @@
 ---
-- name: ""
+- name: "Validate SSL for {{ challenge_item.key }}"
   block:
     - name: "Set up ACME challenge TXT records for {{ current_domain }}"
       include: add_dns_record.yml
