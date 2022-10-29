@@ -55,7 +55,7 @@
           - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
           - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
           - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish", ident="2y") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
-      no_log: yes
+      # no_log: yes
       when: 'public_dns == "yes"'
   rescue:
     - name: Fill PowerDNS DB with PowerAdmin data replacing Blowfish 2b ident with 2y
@@ -68,7 +68,7 @@
           - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
           - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
           - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
-      no_log: yes
+      # no_log: yes
       when: 'public_dns == "yes"'
 - name: Check if DynDNS .htaccess exists
   stat:
