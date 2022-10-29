@@ -1,5 +1,5 @@
 ---
-- name: "Set up ACME challenge TXT records for {{ current_domain }}"
+- name: "Set up ACME challenge TXT records for {{ challenge_item.key }}"
   include: add_dns_record.yml
   vars:
     record:
@@ -33,9 +33,9 @@
 - name: "Wait for TXT record {{ challenge_item.value['dns-01'].record }} to get propagated with value {{ challenge_item.value['dns-01'].resource_value }}"
   community.dns.wait_for_txt:
     always_ask_default_resolver: no
-    max_sleep: 42
-    query_retry: 42
-    query_timeout: 42
+    max_sleep: 60
+    query_retry: 60
+    query_timeout: 60
     records:
       - name: "{{ challenge_item.value['dns-01'].record }}"
         values: "{{ challenge_item.value['dns-01'].resource_value }}"

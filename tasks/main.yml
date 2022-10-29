@@ -45,10 +45,10 @@
 #   include: postfix.yml
 # - name: Configure Dovecot
 #   include: dovecot.yml
-# - name: Set up DKIM
-#   include: dkim.yml
-# - name: Set up DMARC
-#   include: dmarc.yml
+- name: Set up DKIM
+  include: dkim.yml
+- name: Set up DMARC
+  include: dmarc.yml
 # - name: Set up MongoDB
 #   include: mongodb.yml
 - name: Set up WebDav
