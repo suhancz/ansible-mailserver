@@ -1,19 +1,23 @@
-CREATE TABLE domains (
-  id                    INT AUTO_INCREMENT,
-  name                  VARCHAR(255) NOT NULL,
-  master                VARCHAR(128) DEFAULT NULL,
-  last_check            INT DEFAULT NULL,
-  type                  VARCHAR(8) NOT NULL,
-  notified_serial       INT UNSIGNED DEFAULT NULL,
-  account               VARCHAR(40) CHARACTER SET 'utf8' DEFAULT NULL,
-  options               VARCHAR(64000) DEFAULT NULL,
-  catalog               VARCHAR(255) DEFAULT NULL,
-  PRIMARY KEY (id)
-) Engine=InnoDB CHARACTER SET 'latin1';
+-- MySQL dump 10.19  Distrib 10.3.28-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: powerdnsdb
+-- ------------------------------------------------------
+-- Server version	10.3.28-MariaDB
 
-CREATE UNIQUE INDEX name_index ON domains(name);
-CREATE INDEX catalog_idx ON domains(catalog);
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+--
+-- Table structure for table `comments`
+--
 
 DROP TABLE IF EXISTS `comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -32,9 +36,9 @@ CREATE TABLE `comments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE INDEX nametype_index ON records(name,type);
-CREATE INDEX domain_id ON records(domain_id);
-CREATE INDEX ordername ON records (ordername);
+--
+-- Table structure for table `cryptokeys`
+--
 
 DROP TABLE IF EXISTS `cryptokeys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -51,12 +55,9 @@ CREATE TABLE `cryptokeys` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE TABLE supermasters (
-  ip                    VARCHAR(64) NOT NULL,
-  nameserver            VARCHAR(255) NOT NULL,
-  account               VARCHAR(40) CHARACTER SET 'utf8' NOT NULL,
-  PRIMARY KEY (ip, nameserver)
-) Engine=InnoDB CHARACTER SET 'latin1';
+--
+-- Table structure for table `domainmetadata`
+--
 
 DROP TABLE IF EXISTS `domainmetadata`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -71,7 +72,46 @@ CREATE TABLE `domainmetadata` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE TABLE comments (
+--
+-- Table structure for table `domains`
+--
+
+DROP TABLE IF EXISTS `domains`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE domains (
+  id                    INT AUTO_INCREMENT,
+  name                  VARCHAR(255) NOT NULL,
+  master                VARCHAR(128) DEFAULT NULL,
+  last_check            INT DEFAULT NULL,
+  type                  VARCHAR(8) NOT NULL,
+  notified_serial       INT UNSIGNED DEFAULT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' DEFAULT NULL,
+  options               VARCHAR(64000) DEFAULT NULL,
+  catalog               VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY `name_index` (`name`),
+  KEY `catalog_idx` (`catalog`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `migrations`
+--
+
+DROP TABLE IF EXISTS `migrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `migrations` (
+  `version` varchar(255) NOT NULL,
+  `apply_time` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `comments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `comments` (
   id                    INT AUTO_INCREMENT,
   domain_id             INT NOT NULL,
   name                  VARCHAR(255) NOT NULL,
@@ -79,8 +119,71 @@ CREATE TABLE comments (
   modified_at           INT NOT NULL,
   account               VARCHAR(40) CHARACTER SET 'utf8' DEFAULT NULL,
   comment               TEXT CHARACTER SET 'utf8' NOT NULL,
-  PRIMARY KEY (id)
-) Engine=InnoDB CHARACTER SET 'latin1';
+  PRIMARY KEY (id),
+  KEY `comments_name_type_idx` (`name`,`type`),
+  KEY `comments_order_idx` (`domain_id`,`modified_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `records_zone_templ`
+--
+
+DROP TABLE IF EXISTS `cryptokeys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cryptokeys` (
+  id                    INT AUTO_INCREMENT,
+  domain_id             INT NOT NULL,
+  flags                 INT NOT NULL,
+  active                BOOL,
+  published             BOOL DEFAULT 1,
+  content               TEXT,
+  PRIMARY KEY(id),
+  KEY `domainidindex` (`domain_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `supermasters`
+--
+
+DROP TABLE IF EXISTS `supermasters`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `supermasters` (
+  ip                    VARCHAR(64) NOT NULL,
+  nameserver            VARCHAR(255) NOT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' NOT NULL,
+  PRIMARY KEY (ip, nameserver)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `domainmetadata`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `domainmetadata` (
+  id                    INT AUTO_INCREMENT,
+  domain_id             INT NOT NULL,
+  kind                  VARCHAR(32),
+  content               TEXT,
+  PRIMARY KEY (id),
+  KEY `domainmetadata_idx` (`domain_id`,`kind`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `tsigkeys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tsigkeys` (
+  id                    INT AUTO_INCREMENT,
+  name                  VARCHAR(255),
+  algorithm             VARCHAR(50),
+  secret                VARCHAR(255),
+  PRIMARY KEY (id),
+  UNIQUE KEY `namealgoindex` (`name`,`algorithm`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `domains`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -143,31 +246,64 @@ CREATE TABLE domainmetadata (
   PRIMARY KEY (id)
 ) Engine=InnoDB CHARACTER SET 'latin1';
 
-CREATE INDEX domainmetadata_idx ON domainmetadata (domain_id, kind);
+DROP TABLE IF EXISTS `zone_templ`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `zone_templ` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `descr` varchar(1024) NOT NULL,
+  `owner` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Table structure for table `zone_templ_records`
+--
 
-CREATE TABLE cryptokeys (
-  id                    INT AUTO_INCREMENT,
-  domain_id             INT NOT NULL,
-  flags                 INT NOT NULL,
-  active                BOOL,
-  published             BOOL DEFAULT 1,
-  content               TEXT,
-  PRIMARY KEY(id)
-) Engine=InnoDB CHARACTER SET 'latin1';
+DROP TABLE IF EXISTS `zone_templ_records`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `zone_templ_records` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `zone_templ_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` varchar(6) NOT NULL,
+  `content` varchar(255) NOT NULL,
+  `ttl` int(11) NOT NULL,
+  `prio` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE INDEX domainidindex ON cryptokeys(domain_id);
+--
+-- Table structure for table `zones`
+--
 
+DROP TABLE IF EXISTS `zones`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `zones` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain_id` int(11) NOT NULL,
+  `owner` int(11) NOT NULL,
+  `comment` varchar(1024) DEFAULT NULL,
+  `zone_templ_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-CREATE TABLE tsigkeys (
-  id                    INT AUTO_INCREMENT,
-  name                  VARCHAR(255),
-  algorithm             VARCHAR(50),
-  secret                VARCHAR(255),
-  PRIMARY KEY (id)
-) Engine=InnoDB CHARACTER SET 'latin1';
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-CREATE UNIQUE INDEX namealgoindex ON tsigkeys(name, algorithm);
+-- Dump completed on 2022-04-11 22:49:18
 
 DROP TABLE IF EXISTS `records`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
