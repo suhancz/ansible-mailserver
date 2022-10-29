@@ -33,6 +33,10 @@
   when: "{{ (item.value['dns-01'].resource ~ '.' ~ current_domain) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
 - name: "Wait for TXT record to get propagated"
   community.dns.wait_for_txt:
+    always_ask_default_resolver: no
+    max_sleep: 42
+    query_retry: 42
+    query_timeout: 42
     records:
       - name: "{{ item.value['dns-01'].record }}"
         values: "{{ item.value['dns-01'].resource_value }}"

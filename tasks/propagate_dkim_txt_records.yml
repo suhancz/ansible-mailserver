@@ -49,6 +49,10 @@
   when: desired_dkim_record != current_dkim_record
 - name: "Wait for {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record to get propagated"
   community.dns.wait_for_txt:
+    always_ask_default_resolver: no
+    max_sleep: 42
+    query_retry: 42
+    query_timeout: 42
     records:
       - name: "{{ dkim_selector }}._domainkey.{{ domain_item }}"
         values: "{{ desired_dkim_record }}"
