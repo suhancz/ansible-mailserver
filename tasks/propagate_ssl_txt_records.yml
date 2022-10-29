@@ -25,14 +25,16 @@
       - "Please, set up the following TXT record with your DNS provider if not done yet:"
       - "==============================================================================="
       - ""
-      - "domain: {{ item.key }}"
-      - "record: {{ item.value['dns-01'].record }}"
+      - "domain: {{ challenge_item.key }}"
+      - "record: {{ challenge_item.value['dns-01'].record }}"
       - "type: TXT"
       - "ttl: 60"
-      - "value: {{ item.value['dns-01'].resource_value }}"
+      - "value: {{ challenge_item.value['dns-01'].resource_value }}"
       - ""
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: "{{ (item.value['dns-01'].resource ~ '.' ~ current_domain) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
+  loop_control:
+    loop_var: challenge_item
+  when: "{{ (challenge_item.key == current_domain) and ((challenge_item.value['dns-01'].resource ~ '.' ~ current_domain) == challenge_item.value['dns-01'].record and challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')) }}"
 - name: "Wait for TXT record to get propagated"
   community.dns.wait_for_txt:
     always_ask_default_resolver: no
@@ -40,9 +42,11 @@
     query_retry: 42
     query_timeout: 42
     records:
-      - name: "{{ item.value['dns-01'].record }}"
-        values: "{{ item.value['dns-01'].resource_value }}"
+      - name: "{{ challenge_item.value['dns-01'].record }}"
+        values: "{{ challenge_item.value['dns-01'].resource_value }}"
         mode: equals
     always_ask_default_resolver: no
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: "{{ (item.value['dns-01'].resource ~ '.' ~ current_domain) == item.value['dns-01'].record and item.value['dns-01'].resource_value != lookup('community.general.dig', item.value['dns-01'].record ~ './TXT') }}"
+  loop_control:
+    loop_var: challenge_item
+  when: "{{ (challenge_item.key == current_domain) and ((challenge_item.value['dns-01'].resource ~ '.' ~ current_domain) == challenge_item.value['dns-01'].record and challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')) }}"
