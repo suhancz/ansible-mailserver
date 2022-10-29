@@ -64,11 +64,9 @@
 - name: Check Let's Encrypt TXT records
   when: letsencrypt_challenge.changed is true
   include_tasks: propagate_ssl_txt_records.yml
-  vars:
-    current_domain: '{{ domain_item }}'
-  loop: '{{ [mailserver_domain] + custom_domains }}'
+  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
   loop_control:
-    loop_var: domain_item
+    loop_var: challenge_item
 - name: Let the challenge be validated and retrieve the cert and immediate certificate
   acme_certificate:
     account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
