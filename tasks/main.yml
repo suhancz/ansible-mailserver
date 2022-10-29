@@ -17,8 +17,8 @@
   no_log: yes
 - name: Configure OS
   include: os.yml
-- name: Configure MariaDB
-  include: mariadb.yml
+# - name: Configure MariaDB
+#   include: mariadb.yml
 - name: Configure DNS
   include: dns.yml
 # - name: Configure PostfixAdmin

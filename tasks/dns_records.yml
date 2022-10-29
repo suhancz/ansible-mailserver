@@ -11,14 +11,14 @@
       command: "pdnsutil create-zone {{ item }} ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
-      loop: "{{ [mailserver_domain] + custom_domains }}"
+      loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] }}"
       when: 'public_dns == "yes"'
   rescue:
     - name: Create DNS zones
       command: "pdnsutil --force create-zone {{ item }} ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
-      loop: "{{ [mailserver_domain] + custom_domains }}"
+      loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] }}"
       when: 'reset and public_dns == "yes"'
 - name: Make sure local zones are master zones
   command: "pdnsutil set-kind {{ item }} primary"
