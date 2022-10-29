@@ -62,7 +62,6 @@
     remaining_days: 60
   register: letsencrypt_challenge
 - name: Check Let's Encrypt TXT records
-  when: "letsencrypt_challenge.changed is true and challenge_item.key in [ mailserver_domain, custom_domains ]"
   include_tasks: propagate_ssl_txt_records.yml
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
   loop_control:
