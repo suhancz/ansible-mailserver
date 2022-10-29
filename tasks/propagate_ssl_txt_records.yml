@@ -1,52 +1,48 @@
 ---
-- name: "Set up ACME challenge TXT records for {{ current_domain }}"
-  include: add_dns_record.yml
-  vars:
-    record:
-      zone: "{{ challenge_item.key|replace('*.', '') }}"
-      name: "{{ challenge_item.value['dns-01'].resource }}"
-      type: TXT
-      content: "{{ challenge_item.value['dns-01'].resource_value }}"
-  when: '{{ (public_dns == "yes") and ((challenge_item.value["dns-01"].resource ~ "." ~ current_domain) == challenge_item.value["dns-01"].record) }}'
+- name: ""
+  block:
+    - name: "Set up ACME challenge TXT records for {{ current_domain }}"
+      include: add_dns_record.yml
+      vars:
+        record:
+          zone: "{{ challenge_item.key|replace('*.', '') }}"
+          name: "{{ challenge_item.value['dns-01'].resource }}"
+          type: TXT
+          content: "{{ challenge_item.value['dns-01'].resource_value }}"
+      when: '{{ (public_dns == "yes") and ((challenge_item.value["dns-01"].resource ~ "." ~ current_domain) == challenge_item.value["dns-01"].record) }}'
+    - name: Reload PowerDNS config
+      systemd:
+        name: pdns
+        daemon_reload: yes
+        enabled: yes
+        state: restarted
+      when: 'public_dns == "yes"'
+    - name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ current_domain }}"
+      debug:
+        msg:
+          - ""
+          - "Please, set up the following TXT record with your DNS provider if not done yet:"
+          - "==============================================================================="
+          - ""
+          - "domain: {{ challenge_item.key }}"
+          - "record: {{ challenge_item.value['dns-01'].record }}"
+          - "type: TXT"
+          - "ttl: 60"
+          - "value: {{ challenge_item.value['dns-01'].resource_value }}"
+          - ""
+      when: "{{ (challenge_item.value['dns-01'].resource ~ '.' ~ current_domain) == challenge_item.value['dns-01'].record and challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT') }}"
+    - name: "Wait for TXT record to get propagated"
+      community.dns.wait_for_txt:
+        always_ask_default_resolver: no
+        max_sleep: 42
+        query_retry: 42
+        query_timeout: 42
+        records:
+          - name: "{{ challenge_item.value['dns-01'].record }}"
+            values: "{{ challenge_item.value['dns-01'].resource_value }}"
+            mode: equals
+        always_ask_default_resolver: no
+      when: "{{ (challenge_item.value['dns-01'].resource ~ '.' ~ current_domain) == challenge_item.value['dns-01'].record and challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT' }}"
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
   loop_control:
     loop_var: challenge_item
-- name: Reload PowerDNS config
-  systemd:
-    name: pdns
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
-  when: 'public_dns == "yes"'
-- name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ current_domain }}"
-  debug:
-    msg:
-      - ""
-      - "Please, set up the following TXT record with your DNS provider if not done yet:"
-      - "==============================================================================="
-      - ""
-      - "domain: {{ challenge_item.key }}"
-      - "record: {{ challenge_item.value['dns-01'].record }}"
-      - "type: TXT"
-      - "ttl: 60"
-      - "value: {{ challenge_item.value['dns-01'].resource_value }}"
-      - ""
-  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  loop_control:
-    loop_var: challenge_item
-  when: "{{ (challenge_item.value['dns-01'].resource ~ '.' ~ current_domain) == challenge_item.value['dns-01'].record and challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT') }}"
-- name: "Wait for TXT record to get propagated"
-  community.dns.wait_for_txt:
-    always_ask_default_resolver: no
-    max_sleep: 42
-    query_retry: 42
-    query_timeout: 42
-    records:
-      - name: "{{ challenge_item.value['dns-01'].record }}"
-        values: "{{ challenge_item.value['dns-01'].resource_value }}"
-        mode: equals
-    always_ask_default_resolver: no
-  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  loop_control:
-    loop_var: challenge_item
-  when: "{{ (challenge_item.value['dns-01'].resource ~ '.' ~ current_domain) == challenge_item.value['dns-01'].record and challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT' }}"
