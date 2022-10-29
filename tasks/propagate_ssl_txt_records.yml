@@ -15,7 +15,7 @@
     enabled: yes
     state: restarted
   when: 'public_dns == "yes"'
-- name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ current_domain }}"
+- name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ challenge_item.key }}"
   debug:
     msg:
       - ""
@@ -29,7 +29,7 @@
       - "value: {{ challenge_item.value['dns-01'].resource_value }}"
       - ""
   when: "challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')"
-- name: "Wait for TXT record to get propagated"
+- name: "Wait for TXT record {{ challenge_item.value['dns-01'].record }} to get propagated with value {{ challenge_item.value['dns-01'].resource_value }}"
   community.dns.wait_for_txt:
     always_ask_default_resolver: no
     max_sleep: 42
