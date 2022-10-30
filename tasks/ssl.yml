@@ -66,6 +66,7 @@
   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
   loop_control:
     loop_var: challenge_item
+  when: letsencrypt_challenge.challenge_data is defined
 - name: Let the challenge be validated and retrieve the cert and immediate certificate
   acme_certificate:
     account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
