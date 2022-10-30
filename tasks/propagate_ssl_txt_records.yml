@@ -41,5 +41,4 @@
       - name: "{{ challenge_item.value['dns-01'].record }}"
         values: "{{ challenge_item.value['dns-01'].resource_value }}"
         mode: equals
-    always_ask_default_resolver: no
   when: "challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')"
