@@ -30,18 +30,6 @@
       - "ttl: 60"
       - "value: {{ challenge_item.value['dns-01'].resource_value }}"
       - ""
-  until: "challenge_item.value['dns-01'].resource_value == lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')"
+  until: "challenge_item.value['dns-01'].resource_value in lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')|split(',')"
   retries: 60
   delay: 60
-#   when: "challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')"
-# - name: "Wait for TXT record {{ challenge_item.value['dns-01'].record }} to get propagated with value {{ challenge_item.value['dns-01'].resource_value }}"
-#   community.dns.wait_for_txt:
-#     always_ask_default_resolver: no
-#     max_sleep: 60
-#     query_retry: 60
-#     query_timeout: 60
-#     records:
-#       - name: "{{ challenge_item.value['dns-01'].record }}"
-#         values: "{{ challenge_item.value['dns-01'].resource_value }}"
-#         # mode: equals
-#   when: "challenge_item.value['dns-01'].resource_value != lookup('community.general.dig', challenge_item.value['dns-01'].record ~ './TXT')"
