@@ -19,8 +19,8 @@
   include: os.yml
 # - name: Configure MariaDB
 #   include: mariadb.yml
-# - name: Configure DNS
-#   include: dns.yml
+- name: Configure DNS
+  include: dns.yml
 # - name: Configure PostfixAdmin
 #   include: postfixadmin.yml
 - name: Set up SSL

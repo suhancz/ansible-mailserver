@@ -3,7 +3,7 @@
   set_fact:
     record_content: '"{{ record.content }}"'
 - name: Add DNS record
-  when: '{{ (record.append is defined and record.append) and (record.content not in lookup('community.general.dig', record.name ~ '.' ~ record.zone ~ './' ~ record.type)|split(',')) }}'
+  when: "{{ (record.append is defined and record.append) and (record.content not in lookup('community.general.dig', record.name ~ '.' ~ record.zone ~ './' ~ record.type)|split(',')) }}"
   block:
     - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl|default("3600") }} IN {{ record.type }} {{ record.content }}'
       command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl|default('3600') }} '{{ record.content }}'"
