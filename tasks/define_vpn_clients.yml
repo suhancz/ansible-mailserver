@@ -6,3 +6,4 @@
   loop: "{{ vpn_config_data }}"
   loop_control:
     loop_var: vpn_client
+# TODO: assign IP to clients
