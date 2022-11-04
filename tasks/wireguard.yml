@@ -150,6 +150,27 @@
     backup: yes
   loop: "{{ wg_configs|dict2items }}"
   when: item.key != "server"
+- name: Ensure user VPN config directories exist
+  file:
+    path: "{{ ansible_env.HOME }}/{{ item.owner }}/public_html/.vpn"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    state: directory
+  become: true
+  become_user: "{{ item.owner }}"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+- name: Allow access to VPN configs
+  file:
+    src: "{{ wireguard.config_dir }}/clients/{{ item.key }}"
+    dest: "{{ ansible_env.HOME }}/{{ item.owner }}/public_html/.vpn/{{ item.key }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    state: link
+  become: true
+  become_user: "{{ item.owner }}"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
 - name: Generate QR codes
   command: "qrencode -o {{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.png -r {{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
   loop: "{{ wg_configs|dict2items }}"
