@@ -36,16 +36,8 @@
     path: "{{ item }}"
     state: directory
   loop:
-    # - /etc/podman
-    # - /etc/podman/compose
-    # # - /etc/podman/compose/subspace
-    # # - /etc/podman/compose/wireguard-ui
-    # # - /etc/podman/compose/wireguard-ui/db
-    # # - /etc/podman/compose/wg-easy
-    # - /etc/podman/compose/wg-manager
     - /etc/wireguard/clients
     - "{{ wireguard.config_dir }}"
-  # notify: Restart subspace
   notify: Restart WireGuard
 - name: BindFS mount the WireGuard directory
   mount:
@@ -59,42 +51,6 @@
     src: wireguard/htaccess.j2 # TODO: set owner of each VPN config
     dest: /etc/wireguard/.htaccess
     backup: yes
-# - name: Allow Apache to reach the WireGuard directory
-#   acl:
-#     path: "{{ wireguard.config_dir }}"
-#     entity: apache
-#     etype: user
-#     permissions: rwX
-#     state: present
-#     recursive: yes
-# - name: Render wg-manager server init interface JSON
-#   template:
-#     src: wg-manager/server_init_interface.json.j2
-#     dest: /etc/podman/compose/wg-manager/server_init_interface.json
-#     backup: yes
-# - name: Slurp wg-manager server init interface JSON
-#   slurp:
-#     src: /etc/podman/compose/wg-manager/server_init_interface.json
-#   register: server_init_interface_json
-# - name: Deploy docker-compose.yaml
-#   template:
-#     # src: subspace/docker-compose.yaml.j2
-#     # dest: /etc/podman/compose/subspace/docker-compose.yaml
-#     # src: wireguard-ui/docker-compose.yaml.j2
-#     # dest: /etc/podman/compose/wireguard-ui/docker-compose.yaml
-#     # src: wg-easy/docker-compose.yaml.j2
-#     # dest: /etc/podman/compose/wg-easy/docker-compose.yaml
-#     src: wg-manager/docker-compose.yaml.j2
-#     dest: /etc/podman/compose/wg-manager/docker-compose.yaml
-#     backup: yes
-#   # notify: Restart subspace
-#   notify: Restart WireGuard
-# # - name: Deploy wg.conf template
-# #   copy:
-# #     src: wireguard-ui/wg.conf.tmpl
-# #     dest: /etc/podman/compose/wireguard-ui/db/wg.conf.tmpl
-# #     backup: yes
-# #   notify: Restart WireGuard
 - name: Read WireGuard server config
   include: read_wireguard_config.yml
   vars:
@@ -120,7 +76,7 @@
     vpn_client_data: "{{ item.vpn|default([{'name': item.name}]) }}"
     vpn_client_owner: "{{ item.name }}"
   loop: "{{ users }}"
-- name: Generate WireGuard client keys #TODO: continue from here and generate QR codes https://github.com/suhancz/ansible-wireguard/blob/main/tasks/main.yml
+- name: Generate WireGuard client keys
   include_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "{{ item.name }}"
@@ -177,12 +133,4 @@
   when: item.key != "server"
   become: yes
   become_user: "{{ item.owner }}"
-# - name: Deploy systemd path watcher
-#   copy:
-#     src: "systemd/{{ item }}"
-#     dest: "/etc/systemd/system/{{ item }}"
-#     backup: yes
-#   notify: Restart WireGuard
-#   loop: 
-#     - wgui.path
-#     - wgui.service
+# TODO: add DYNDNS and VPN records for clients

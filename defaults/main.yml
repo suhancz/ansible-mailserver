@@ -148,6 +148,3 @@ wireguard:
     - 10.42.42.0
     # - fd00::10:42:0
   keepalive: 42
-vpn:
-  - name: "{{ mailserver_admin_user }}"
-    owner: "{{ mailserver_admin_user }}"
