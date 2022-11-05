@@ -138,5 +138,111 @@
   when: item.key != "server"
   become: yes
   become_user: "{{ item.owner }}"
-# TODO: add DYNDNS and VPN records for clients
-# TODO: Generate DynDNS scripts and share them along with the VPN configs
+- name: Add DynDNS root A record
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "dyndns.{{ mailserver_domain }}"
+      name: "@"
+      ttl: "3600"
+      type: A
+      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+- name: Add DynDNS root AAAA record
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "dyndns.{{ mailserver_domain }}"
+      name: "@"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
+- name: Add DynDNS A records
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "dyndns.{{ mailserver_domain }}"
+      name: "{{ item.key }}"
+      ttl: "3600"
+      type: A
+      content: "{{ item.value.cidr.split(', ')|first }}"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+  become: yes
+  become_user: "{{ item.owner }}"
+- name: Add DynDNS AAAA records
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "dyndns.{{ mailserver_domain }}"
+      name: "{{ item.key }}"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ item.value.cidr.split(', ')|last }}"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+  become: yes
+  become_user: "{{ item.owner }}"
+- name: Add VPN root A record
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "vpn.{{ mailserver_domain }}"
+      name: "@"
+      ttl: "3600"
+      type: A
+      content: "{{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') }}"
+- name: Add VPN root AAAA record
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "vpn.{{ mailserver_domain }}"
+      name: "@"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}"
+- name: Add VPN A records
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: vpn.{{ mailserver_domain }}"
+      name: "{{ item.key }}"
+      ttl: "3600"
+      type: A
+      content: "{{ item.value.cidr.split(', ')|first }}"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+  become: yes
+  become_user: "{{ item.owner }}"
+- name: Add VPN AAAA records
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "vpn.{{ mailserver_domain }}"
+      name: "{{ item.key }}"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ item.value.cidr.split(', ')|last }}"
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+  become: yes
+  become_user: "{{ item.owner }}"
+- name: Generate BASH DynDNS clients
+  template:
+    src: dyndns/dynamic_dns_client.sh.j2
+    dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/dynamic_dns_client.sh"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: u=rwX
+    backup: true
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"
+- name: Generate Python DynDNS clients
+  template:
+    src: dyndns/dynamic_dns_client.py.j2
+    dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/dynamic_dns_client.py"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: u=rwX
+    backup: true
+  loop: "{{ wg_configs|dict2items }}"
+  when: item.key != "server"

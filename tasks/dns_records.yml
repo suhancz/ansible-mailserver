@@ -53,4 +53,4 @@
   when: '{{ (item.rc != 0) and ("already secure, remove keys with pdnsutil remove-zone-key if needed" not in item.stderr) }}'
 - name: Correct SOA record for all domains
   command: 'pdnsutil replace-rrset {{ item }} @ SOA 3600 "ns.{{ item }} hostmaster.{{ item }} 0 10800 3600 604800 3600"'
-  loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] }}"
+  loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] + ['dyndns.' ~ mailserver_domain] }}"
