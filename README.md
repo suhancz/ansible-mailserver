@@ -54,7 +54,6 @@ Role Variables
       ipv4_pool: # CIDR of the IPv4 pool of the clients
       ipv6_pool: # CIDR of the IPv6 pool of the clients
       nameservers: # list of DNS servers to use for the VPN
-      http_port: # Subspace UI listen address
       listen_port: # Wireguard server listen address
       allowed_ips: # list of IP addresses to reach via VPN
       keepalive: # VPN keepalive in seconds

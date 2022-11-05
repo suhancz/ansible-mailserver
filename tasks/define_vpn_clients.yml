@@ -4,8 +4,8 @@
     vpn_config_owner: "{{ vpn_client_owner }}"
 - name: Fill array of WireGuard clients
   set_fact:
-    wg_clients: "{{ wg_clients|default([]) + [vpn_client|combine('name':vpn_config_owner)] }}"
+    next_ip_segment: "{{ next_ip_segment | int + 1 }}"
+    wg_clients: "{{ wg_clients|default([]) + [vpn_client|combine('name':vpn_config_owner, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6)] }}"
   loop: "{{ vpn_client_data }}"
   loop_control:
     loop_var: vpn_client
-# TODO: assign IP to clients

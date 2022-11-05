@@ -64,6 +64,9 @@
 - name: Set WireGuard server config
   set_fact:
     wg_server: "{{ wg_server|default({})|combine(wireguard.server|default({}), recursive=True) }}"
+- name: Set the next client's last IP segment
+  set_fact:
+    next_ip_segment: 1
 - name: Generate WireGuard server keys
   include_tasks: generate_wireguard_keys.yml
   vars:
@@ -73,7 +76,9 @@
 - name: Define read client values #TODO: read client configs
   include_tasks: define_vpn_clients.yml
   vars:
-    vpn_client_data: "{{ item.vpn|default([{'name': item.name}]) }}"
+    current_ipv4: "{{ wireguard.ipv4_pool.split('/')|first|replace('.0',next_ip_segment) }}"
+    current_ipv6: "{{ wireguard.ipv6_pool.split('/')|first|replace(':0',next_ip_segment) }}"
+    vpn_client_data: "{{ item.vpn|default([{'name': item.name, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6 }]) }}"
     vpn_client_owner: "{{ item.name }}"
   loop: "{{ users }}"
 - name: Generate WireGuard client keys
