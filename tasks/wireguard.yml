@@ -66,7 +66,7 @@
     wg_server: "{{ wg_server|default({})|combine(wireguard.server|default({}), recursive=True) }}"
 - name: Set the next client's last IP segment
   set_fact:
-    next_ip_segment: 1
+    next_ip_segment: 2
 - name: Generate WireGuard server keys
   include_tasks: generate_wireguard_keys.yml
   vars:
