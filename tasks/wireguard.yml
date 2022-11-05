@@ -134,3 +134,4 @@
   become: yes
   become_user: "{{ item.owner }}"
 # TODO: add DYNDNS and VPN records for clients
+# TODO: Generate DynDNS scripts and share them along with the VPN configs
