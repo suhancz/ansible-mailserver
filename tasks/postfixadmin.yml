@@ -47,6 +47,7 @@
       password: "{{ postfixadmin_db_password }}"
   when: mariadb_schema_created.changed
   no_log: yes
+  notify: Warn on passwords
 - name: Generate PostfixAdmin PHP password
   command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password

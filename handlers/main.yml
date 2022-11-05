@@ -138,10 +138,10 @@
     enabled: yes
     state: restarted
   loop:
-    # - podman-compose@wireguard-ui.service
-    # - podman-compose@wg-easy.service
-    - podman-compose@wg-manager.service
     - wgui.path
     # - wgui.service
   loop_control:
     loop_var: systemd_unit
+- name: Warn on passwords
+  debug:
+    msg: "!!!WARNING!!! All web UI admin passwords are set to the same as your admin user's password. For your own safety, change them before going live"

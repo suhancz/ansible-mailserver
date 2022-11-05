@@ -49,6 +49,7 @@
     state: present
   loop: "{{ users }}"
   no_log: yes
+  notify: Warn on passwords
 - name: Enable ip_conntrack
   modprobe:
     name: ip_conntrack
