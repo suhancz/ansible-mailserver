@@ -10,10 +10,8 @@ login = "dyndns"
 password = "{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}"
 dyndns = socket.gethostname().split('.', 1)[0].lower() + ".dyndns.{{ mailserver_domain }}"
 dyndns_server = 'https://dyndns.{{ mailserver_domain }}'
-clientip = 'https://clientip.{{ mailserver_domain }}'
+ip_lookup_url = 'https://clientip.{{ mailserver_domain }}'
 verbose = 1
-
-ip_lookup_url  = clientip + '/addons/clientip.php'
 
 ipv4 = ''
 ipv6 = ''
