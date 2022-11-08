@@ -133,15 +133,15 @@
     state: restarted
 - name: Restart WireGuard
   systemd:
-    name: "{{ systemd_unit }}"
+    name: "wg_vpn.{{ systemd_unit_type }}"
     daemon_reload: yes
     enabled: yes
     state: restarted
   loop:
-    - wgui.path
-    # - wgui.service
+    - path
+    - service
   loop_control:
-    loop_var: systemd_unit
+    loop_var: systemd_unit_type
 - name: Warn on passwords
   debug:
     msg: "!!!WARNING!!! All web UI admin passwords are set to the same as your admin user's password. For your own safety, change them before going live"

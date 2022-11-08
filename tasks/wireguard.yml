@@ -94,6 +94,7 @@
     src: server.conf.j2
     dest: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
     backup: yes
+  notify: Restart WireGuard
 - name: Create client config dirs
   file:
     state: directory
@@ -246,3 +247,11 @@
     backup: true
   loop: "{{ wg_configs|dict2items }}"
   when: item.key != "server"
+- name: Deploy WureGuard SystemD components
+  file:
+    src: "wg_vpn.{{ item }}"
+    dest: "/etc/systemd/system/wg_vpn.{{ item }}"
+  loop:
+    - path
+    - service
+  notify: Restart WireGuard
