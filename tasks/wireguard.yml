@@ -48,7 +48,7 @@
     fstype: fuse.bindfs
 - name: Deploy .htaccess for the WireGuard configs
   template:
-    src: wireguard/htaccess.j2 # TODO: set owner of each VPN config
+    src: wireguard/htaccess.j2
     dest: /etc/wireguard/.htaccess
     backup: yes
 - name: Read WireGuard server config
