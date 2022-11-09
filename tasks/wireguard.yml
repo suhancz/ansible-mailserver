@@ -191,7 +191,7 @@
       name: "@"
       ttl: "3600"
       type: A
-      content: "{{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') }}"
+      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 - name: Add VPN root AAAA record
   include: add_dns_record.yml
   vars:
@@ -200,7 +200,7 @@
       name: "@"
       ttl: "3600"
       type: AAAA
-      content: "{{ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}"
+      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
 - name: Add VPN A records
   include: add_dns_record.yml
   vars:
