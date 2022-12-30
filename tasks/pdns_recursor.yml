@@ -40,7 +40,7 @@
     path: /etc/hosts
     backup: yes
   loop:
-    - "{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\\.0$', '\\.1') }}"
+    - "{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\\.0$', '\.1') }}"
     # - "{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}"
   when: wireguard is defined
   notify: Restart pdns-recursor
