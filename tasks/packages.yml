@@ -124,7 +124,7 @@
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable DNF modules
-  command: dnf module enable php:remi-7.4 389-directory-server:stable/default -y
+  command: dnf module enable php:remi-7.4 389-directory-server:stable/default go-toolset -y
 - name: Install packages
   package:
     name:
