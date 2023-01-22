@@ -209,7 +209,7 @@
       name: "{{ item.key }}"
       ttl: "3600"
       type: A
-      content: "{{ (item.value.cidr.split(', ')|first).split('/')|first
+      content: "{{ (item.value.cidr.split(', ')|first).split('/')|first }}"
   loop: "{{ wg_configs|dict2items }}"
   when: item.key != "server"
   become: yes

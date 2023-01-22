@@ -19,8 +19,8 @@
   include: os.yml
 # - name: Configure MariaDB
 #   include: mariadb.yml
-- name: Configure DNS
-  include: dns.yml
+# - name: Configure DNS
+#   include: dns.yml
 # - name: Configure PostfixAdmin
 #   include: postfixadmin.yml
 - name: Set up SSL
@@ -33,8 +33,8 @@
 # #   include: elasticsearch.yml
 # - name: Set up FTP
 #   include: ftp.yml
-- name: Configure Apache
-  include: httpd.yml
+# - name: Configure Apache
+#   include: httpd.yml
 # - name: Set up SPAMAssassin
 #   include: spamassassin.yml
 # - name: Configure Antivirus
@@ -45,14 +45,14 @@
 #   include: postfix.yml
 # - name: Configure Dovecot
 #   include: dovecot.yml
-- name: Set up DKIM
-  include: dkim.yml
-- name: Set up DMARC
-  include: dmarc.yml
+# - name: Set up DKIM
+#   include: dkim.yml
+# - name: Set up DMARC
+#   include: dmarc.yml
 # - name: Set up MongoDB
 #   include: mongodb.yml
-- name: Set up WebDav
-  include: webdav.yml
+# - name: Set up WebDav
+#   include: webdav.yml
 - name: Set up WireGuard
   include: wireguard.yml
 # - name: Set up backups
