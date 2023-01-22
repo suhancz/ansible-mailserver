@@ -60,9 +60,18 @@
     env: yes
     name: MAILTO
     job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
-- name: Create Podman Compose service
-  copy:
-    dest: '/etc/systemd/system/podman-compose@.service'
-    src: 'systemd/podman-compose@.service'
+- name: Add GO path to PATH
+  lineinfile:
+    path: /etc/profile.d/gopath.sh
+    line: 'export PATH=$PATH:$(go env GOPATH)/bin'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
     backup: yes
-  notify: Restart subspace
+# - name: Create Podman Compose service
+#   copy:
+#     dest: '/etc/systemd/system/podman-compose@.service'
+#     src: 'systemd/podman-compose@.service'
+#     backup: yes
+#   notify: Restart subspace
