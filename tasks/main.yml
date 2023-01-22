@@ -5,6 +5,7 @@
     postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"
     horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.horde_db_password chars=ascii_letters,digits')) }}"
     powerdns_db_password: "{{ powerdns_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_db_password chars=ascii_letters,digits')) }}"
+    powerdns_api_key: "{{ powerdns_api_key | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_api_key chars=ascii_letters,digits')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/ansible-mailserver-install.mysql_root_password chars=ascii_letters,digits')) }}"
     ldap_admin_password: "{{ ldap_admin_password | default(lookup('password', '/tmp/ansible-mailserver-install.ldap_admin_password chars=ascii_letters,digits')) }}"
     mariabackup_password: "{{ mariabackup_password | default(lookup('password', '/tmp/ansible-mailserver-install.mariabackup_password chars=ascii_letters,digits')) }}"

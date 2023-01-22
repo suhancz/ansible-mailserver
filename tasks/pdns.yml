@@ -48,6 +48,9 @@
     - { key: "allow-unsigned-autoprimary", value: "yes" }
     - { key: "superslave", value: "yes" }
     - { key: "allow-unsigned-supermaster", value: "yes" }
+    - { key: "allow-dnsupdate-from", value: "127.0.0.0/8,::1" }
+    - { key: "api", value: "yes" }
+    - { key: "api-key", value: "{{ powerdns_api_key }}" }
   no_log: yes
   when: 'public_dns == "yes"'
   notify: Restart pdns
