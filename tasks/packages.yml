@@ -404,7 +404,7 @@
   pear:
     name: pear.horde.org/Horde_ActiveSync
     state: latest
-- name: Install go package:
+- name: Install go package
   command: "go install {{ item }}"
   loop:
     - github.com/go-acme/lego/v4/cmd/lego@latest
