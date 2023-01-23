@@ -81,6 +81,20 @@
     remaining_days: 60
     data: "{{ letsencrypt_challenge }}"
   when: letsencrypt_challenge.changed is true
+- name: Clean up Let's Encrypt TXT records
+  include: delete_dns_record.yml
+  vars:
+    record:
+      zone: "{{ challenge_item.key|replace('*.', '') }}"
+      name: "{{ challenge_item.value['dns-01'].resource }}"
+      type: TXT
+      content: "{{ challenge_item.value['dns-01'].resource_value }}"
+      ttl: 60
+      append: yes
+  loop_control:
+    loop_var: challenge_item
+  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
+  when: letsencrypt_challenge.challenge_data is defined and public_dns == "yes"
 - name: Create symlink to the Let's Encrypt content
   file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/{{ item }}.pem"
