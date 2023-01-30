@@ -139,6 +139,18 @@
   when: item.key != "server"
   become: yes
   become_user: "{{ item.owner }}"
+- name: Add DynDNS NS records
+  include: add_dns_record.yml
+  vars:
+    record:
+      zone: "{{ mailserver_domain }}"
+      name: "{{ item }}"
+      ttl: "3600"
+      type: NS
+      content: "ns.{{ mailserver_domain }}"
+  loop:
+    - dyndns
+    - vpn
 - name: Add DynDNS root A record
   include: add_dns_record.yml
   vars:
