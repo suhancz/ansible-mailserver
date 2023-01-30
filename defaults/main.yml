@@ -123,6 +123,16 @@ default_dns_records:
   - { name: "mail", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { name: "mail2", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
   - { name: "smtp", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
+  - { type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
+  - { name: "mail", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
+  - { name: "mail2", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
+  - { name: "smtp", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
+  - { type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
+  - { name: "mail", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
+  - { name: "mail2", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
+  - { name: "smtp", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
+  - { name: "{{ mailserver_hostname }}", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
+  - { name: "{{ mailserver_hostname }}", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
 httpd_pam_deny_users:
   - root
 wireguard:
