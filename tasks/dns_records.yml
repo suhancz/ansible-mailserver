@@ -51,6 +51,10 @@
     msg: "{{ item.stderr }}"
   loop: "{{ enable_dnssec.results }}"
   when: '{{ (item.rc != 0) and ("already secure, remove keys with pdnsutil remove-zone-key if needed" not in item.stderr) }}'
+- name: Count DNS records
+  command: 'pdnsutil list-zone {{ item }}'
+  register: zone_records
+  loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] + ['dyndns.' ~ mailserver_domain] }}"
 - name: Correct SOA record for all domains
-  command: 'pdnsutil replace-rrset {{ item }} @ SOA 3600 "ns.{{ item }} hostmaster.{{ item }} 0 10800 3600 604800 3600"'
+  command: 'pdnsutil replace-rrset {{ item }} . SOA 3600 "ns.{{ mailserver_domain }} hostmaster@{{ item }} {{ zone_records.stdout_lines|length }} 10800 3600 604800 3600"'
   loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] + ['dyndns.' ~ mailserver_domain] }}"
