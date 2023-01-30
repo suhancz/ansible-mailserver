@@ -56,5 +56,7 @@
   register: zone_records
   loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] + ['dyndns.' ~ mailserver_domain] }}"
 - name: Correct SOA record for all domains
-  command: 'pdnsutil replace-rrset {{ item }} . SOA 3600 "ns.{{ mailserver_domain }} hostmaster@{{ item }} {{ zone_records.stdout_lines|length }} 10800 3600 604800 3600"'
+  command: 'pdnsutil replace-rrset {{ item }} . SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ item }} {{ zone_records.stdout_lines|length }} 10800 3600 604800 3600"'
   loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] + ['dyndns.' ~ mailserver_domain] }}"
+- name: Rectify all zones
+  command: pdnsutil rectify-all-zones
