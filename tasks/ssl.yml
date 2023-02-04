@@ -1,4 +1,13 @@
 ---
+#
+# TODO: Implement for simplicity:
+#  1. create:
+#    export PDNS_API_URL=http://127.0.0.1:8081/
+#    export PDNS_API_KEY={{ powerdns_api_key }}
+#    EXEC_PROPAGATION_TIMEOUT=4242 lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }}{% endfor %} --server https://acme-staging-v02.api.letsencrypt.org/directory run
+#  2. renew
+#    TODO
+#
 - name: Determine ACME directory
   set_fact:
     acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
