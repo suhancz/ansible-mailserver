@@ -408,3 +408,9 @@
   command: "go install {{ item }}"
   loop:
     - github.com/go-acme/lego/v4/cmd/lego@latest
+- name: Copy GO binaries to /usr/local/bin
+  copy:
+    src: "{{ lookup('env','HOME') }}/go/bin/"
+    dest: /usr/local/bin/
+    remote_src: yes
+    backup: yes
