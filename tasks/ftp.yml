@@ -41,7 +41,7 @@
     - { key: "ssl_sslv2", value: "YES" }
     - { key: "ssl_sslv3", value: "YES" }
     - { key: "rsa_cert_file", value: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem" }
-    - { key: "rsa_private_key_file", value: "/etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem" }
+    - { key: "rsa_private_key_file", value: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.key" }
     - { key: "allow_anon_ssl", value: "NO" }
     - { key: "force_local_data_ssl", value: "YES" }
     - { key: "force_local_logins_ssl", value: "YES" }

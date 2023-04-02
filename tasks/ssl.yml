@@ -1,14 +1,4 @@
 ---
-#
-# TODO: Implement for simplicity:
-#  1. create:
-#    export PDNS_API_URL=http://127.0.0.1:8081/
-#    export PDNS_API_KEY={{ powerdns_api_key }}
-#    EXEC_PROPAGATION_TIMEOUT=4242 lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }}{% endfor %} -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server https://acme-staging-v02.api.letsencrypt.org/directory run
-#  2. symlink restults to certbot-compatible paths
-#  3. renew
-#    EXEC_PROPAGATION_TIMEOUT=4242 lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }}{% endfor %} -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server https://acme-staging-v02.api.letsencrypt.org/directory renew
-#
 - name: Determine ACME directory
   set_fact:
     acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
@@ -27,93 +17,97 @@
     - { path: "live", mode: "u=rwx,g=rx" }
     - { path: "live/{{ mailserver_domain }}", mode: "u=rwx,go=rx" }
     - { path: "renewal", mode: "u=rwX,g=rX" }
-- name: Generate Let's Encrypt account key
-  openssl_privatekey:
-    path: "/etc/letsencrypt/keys/0000_key-certbot.pem"
-    backup: yes
-    mode: u=rw,g=rx
-    owner: root
-    group: root
-- name: Generate OpenSSL private key
-  openssl_privatekey:
-    path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
-    backup: yes
-    mode: u=rw,g=rx
-    owner: root
-    group: root
-- name: Generate SAN CSR
-  openssl_csr:
-    path: /etc/letsencrypt/csr/0000_csr-certbot.pem
-    privatekey_path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
-    subject_alt_name: '{% for custom_domain in [mailserver_domain] + custom_domains %}DNS:{{ custom_domain }},DNS:*.{{ custom_domain }},{% endfor %}DNS:*.vpn.{{ mailserver_domain }}'
-    backup: yes
-    mode: u=rw,go=r
-    owner: root
-    group: root
-- name: Make sure account exists and have given contacts. We agree to TOS.
-  acme_account:
-    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
-    acme_directory: "{{ acme_directory }}"
-    acme_version: 2
-    state: present
-    terms_agreed: yes
-    contact:
-      - "mailto:ssl@{{ mailserver_domain }}"
-  register: acme_account
-- name: Request Let's Encrypt certificate
-  acme_certificate:
-    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
-    account_email: "ssl@{{ mailserver_domain }}"
-    src: /etc/letsencrypt/csr/0000_csr-certbot.pem
-    cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
-    acme_directory: "{{ acme_directory }}"
-    acme_version: 2
-    challenge: dns-01
-    remaining_days: 60
-  register: letsencrypt_challenge
-- name: Check Let's Encrypt TXT records
-  include_tasks: propagate_ssl_txt_records.yml
-  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  loop_control:
-    loop_var: challenge_item
-  when: letsencrypt_challenge.challenge_data is defined
-- name: Let the challenge be validated and retrieve the cert and immediate certificate
-  acme_certificate:
-    account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
-    account_email: "ssl@{{ mailserver_domain }}"
-    src: /etc/letsencrypt/csr/0000_csr-certbot.pem
-    cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
-    chain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/chain1.pem"
-    fullchain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/fullchain1.pem"
-    acme_directory: "{{ acme_directory }}"
-    acme_version: 2
-    challenge: dns-01
-    remaining_days: 60
-    data: "{{ letsencrypt_challenge }}"
-  when: letsencrypt_challenge.changed is true
-- name: Clean up Let's Encrypt TXT records
-  include: delete_dns_record.yml
-  vars:
-    record:
-      zone: "{{ challenge_item.key|replace('*.', '') }}"
-      name: "{{ challenge_item.value['dns-01'].resource }}"
-      type: TXT
-      content: "{{ challenge_item.value['dns-01'].resource_value }}"
-      ttl: 60
-      append: yes
-  loop_control:
-    loop_var: challenge_item
-  with_dict: "{{ letsencrypt_challenge.challenge_data }}"
-  when: letsencrypt_challenge.challenge_data is defined and public_dns == "yes"
+# - name: Generate Let's Encrypt account key
+#   openssl_privatekey:
+#     path: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+#     backup: yes
+#     mode: u=rw,g=rx
+#     owner: root
+#     group: root
+# - name: Generate OpenSSL private key
+#   openssl_privatekey:
+#     path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
+#     backup: yes
+#     mode: u=rw,g=rx
+#     owner: root
+#     group: root
+# - name: Generate SAN CSR
+#   openssl_csr:
+#     path: /etc/letsencrypt/csr/0000_csr-certbot.pem
+#     privatekey_path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
+#     subject_alt_name: '{% for custom_domain in [mailserver_domain] + custom_domains %}DNS:{{ custom_domain }},DNS:*.{{ custom_domain }},{% endfor %}DNS:*.vpn.{{ mailserver_domain }}'
+#     backup: yes
+#     mode: u=rw,go=r
+#     owner: root
+#     group: root
+# - name: Make sure account exists and have given contacts. We agree to TOS.
+#   acme_account:
+#     account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+#     acme_directory: "{{ acme_directory }}"
+#     acme_version: 2
+#     state: present
+#     terms_agreed: yes
+#     contact:
+#       - "mailto:ssl@{{ mailserver_domain }}"
+#   register: acme_account
+# - name: Request Let's Encrypt certificate
+#   acme_certificate:
+#     account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+#     account_email: "ssl@{{ mailserver_domain }}"
+#     src: /etc/letsencrypt/csr/0000_csr-certbot.pem
+#     cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
+#     acme_directory: "{{ acme_directory }}"
+#     acme_version: 2
+#     challenge: dns-01
+#     remaining_days: 60
+#   register: letsencrypt_challenge
+# - name: Check Let's Encrypt TXT records
+#   include_tasks: propagate_ssl_txt_records.yml
+#   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
+#   loop_control:
+#     loop_var: challenge_item
+#   when: letsencrypt_challenge.challenge_data is defined
+# - name: Let the challenge be validated and retrieve the cert and immediate certificate
+#   acme_certificate:
+#     account_key_src: "/etc/letsencrypt/keys/0000_key-certbot.pem"
+#     account_email: "ssl@{{ mailserver_domain }}"
+#     src: /etc/letsencrypt/csr/0000_csr-certbot.pem
+#     cert: "/etc/letsencrypt/archive/{{ mailserver_domain }}/cert1.pem"
+#     chain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/chain1.pem"
+#     fullchain_dest: "/etc/letsencrypt/archive/{{ mailserver_domain }}/fullchain1.pem"
+#     acme_directory: "{{ acme_directory }}"
+#     acme_version: 2
+#     challenge: dns-01
+#     remaining_days: 60
+#     data: "{{ letsencrypt_challenge }}"
+#   when: letsencrypt_challenge.changed is true
+# - name: Clean up Let's Encrypt TXT records
+#   include: delete_dns_record.yml
+#   vars:
+#     record:
+#       zone: "{{ challenge_item.key|replace('*.', '') }}"
+#       name: "{{ challenge_item.value['dns-01'].resource }}"
+#       type: TXT
+#       content: "{{ challenge_item.value['dns-01'].resource_value }}"
+#       ttl: 60
+#       append: yes
+#   loop_control:
+#     loop_var: challenge_item
+#   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
+#   when: letsencrypt_challenge.challenge_data is defined and public_dns == "yes"
+- name: Generate LetsEncrypt certificates
+  command: "lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }}{% endfor %} -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
+  environment:
+    EXEC_PROPAGATION_TIMEOUT: 4242
+    PDNS_API_URL: http://127.0.0.1:8081/
+    PDNS_API_KEY: "{{ powerdns_api_key }}"
 - name: Create symlink to the Let's Encrypt content
   file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/{{ item }}.pem"
-    src: "../../archive/{{ mailserver_domain }}/{{ item }}1.pem"
+    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.{{ 'pem' if item == 'fullchain' else 'key' }}"
     state: link
   loop:
     - privkey
-    - cert
-    - chain
     - fullchain
 - name: Allow Apache to reach letsencrypt keys
   acl:
@@ -142,9 +136,20 @@
     owner: root
     group: root
     backup: yes
+- name: Set environment variables for certificate auto-renewals
+  cron:
+    name: "{{ item.key }}"
+    env: yes
+    job: "{{ item.value }}"
+    backup: yes
+  loop:
+    - { key: "EXEC_PROPAGATION_TIMEOUT", value: 4242 }
+    - { key: "PDNS_API_URL", value: http://127.0.0.1:8081/ }
+    - { key: "PDNS_API_KEY", value: "{{ powerdns_api_key }}" }
 - name: Auto-renew certificates
   cron:
-    name: certbot
+    name: certificate-auto-renewal
     special_time: daily
-    job: "certbot renew --quiet && systemctl reload postfix dovecot httpd"
+    # job:  certbot renew --quiet && systemctl reload postfix dovecot httpd
+    job:  "lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }}{% endfor %} -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew --days 90 --must-staple"
     backup: yes

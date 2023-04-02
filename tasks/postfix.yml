@@ -54,8 +54,8 @@
     - "mydestination = {{ mailserver_domain }}, $myhostname, localhost.$mydomain, localhost"
     - "message_size_limit = 52428800"
     - "mailbox_size_limit = 0"
-    - "smtpd_tls_cert_file = /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem"
-    - "smtpd_tls_key_file = /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
+    - "smtpd_tls_cert_file = /etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
+    - "smtpd_tls_key_file = /etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
     - "smtpd_tls_loglevel = 1"
     - "smtp_tls_loglevel = 1"
   notify: Restart postfix

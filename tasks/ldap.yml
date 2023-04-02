@@ -74,7 +74,7 @@
 - name: Start LDAP server
   command: "dsctl {{ mailserver_hostname }} start"
 - name: Import TLS certificate for LDAP
-  command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
+  command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
 - name: Enable LDAP plugins
   command: "dsconf {{ mailserver_hostname }} plugin {{ item }} enable"
   loop:

@@ -27,8 +27,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     DirectoryIndex disabled
   </Location>
 
-SSLCertificateFile /etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem
-SSLCertificateKeyFile /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem
+SSLCertificateFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.pem
+SSLCertificateKeyFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.key
 Include /etc/letsencrypt/options-ssl-apache.conf
 Header always set Strict-Transport-Security "max-age=31536000"
 SSLUseStapling on
