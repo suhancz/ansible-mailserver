@@ -99,6 +99,15 @@
     recurse: yes
   loop: "{{ users }}"
   no_log: true
+- name: BindFS mount SSL certificates to user public_html
+  mount:
+    path: "~{{ item.name }}/public_html/.certificates"
+    src: /etc/letsencrypt/certificates
+    opts: "map=root/{{ item.name }}:@root/@apache,perms=u=rwX:g=rwX,"
+    state: mounted
+    fstype: fuse.bindfs
+  loop: "{{ users }}"
+  no_log: true
 - name: Set postfixadmin ACLs
   acl:
     path: /var/www/postfixadmin/templates_c

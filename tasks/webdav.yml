@@ -6,6 +6,13 @@
     owner: apache
     group: apache
     mode: u=rwX,og=rX
+- name: BindFS mount SSL certificates to WebDav
+  mount:
+    path: /var/www/html/webdav/.certificates
+    src: /etc/letsencrypt/certificates
+    opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
+    state: mounted
+    fstype: fuse.bindfs
 - name: Set up SELinux rules for WebDAV
   when: "{{ getenforce.stdout != 'Disabled' }}"
   block:
