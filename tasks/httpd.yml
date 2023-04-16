@@ -99,6 +99,16 @@
     recurse: yes
   loop: "{{ users }}"
   no_log: true
+- name: Ensure user certificate directories exist
+  file:
+    path: "{{ ansible_env.HOME }}/{{ item.name }}/public_html/.vpn"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    state: directory
+  become: true
+  become_user: "{{ item.name }}"
+  loop: "{{ users }}"
+  no_log: true
 - name: BindFS mount SSL certificates to user public_html
   mount:
     path: "~{{ item.name }}/public_html/.certificates"

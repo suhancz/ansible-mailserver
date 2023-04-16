@@ -6,6 +6,14 @@
     owner: apache
     group: apache
     mode: u=rwX,og=rX
+- name: Ensure WebDav certificate directory exists
+  file:
+    path: /var/www/html/webdav/.certificates
+    owner: apache
+    group: apache
+    state: directory
+  become: true
+  become_user: apache
 - name: BindFS mount SSL certificates to WebDav
   mount:
     path: /var/www/html/webdav/.certificates
