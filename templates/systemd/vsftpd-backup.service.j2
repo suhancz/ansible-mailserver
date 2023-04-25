@@ -1,6 +1,7 @@
 [Unit]
 Description=FTP backup
 After=vsftpd.service
+After=backup.mount
 Requires=vsftpd.service
 
 [Service]
