@@ -293,7 +293,8 @@
 - name: Deploy WireGuard routing helper scripts
   template:
     src: wireguard/{{ item }}.j2
-    dest: /etc/wireguard/{{ item }}
+    dest: /etc/wireguard/helper/{{ item }}
+    mode: ug=rwx,o=x
     backup: yes
   loop:
     - add-nat-routing.sh
