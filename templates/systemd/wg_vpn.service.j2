@@ -4,9 +4,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/sh -c '/usr/bin/systemctl restart wg-quick@wg0.service && /usr/bin/echo "Your VPN config has changed, download the new config from https://vpn.{{ mailserver_domain }}" | mailx -s "VPN config change on vpn.{{ mailserver_domain }}" -r noreply@{{ mailserver_domain }}{% for user in users %} -b {{ user.name }}@{{ mailserver_domain }}{% endfor %} vpn@{{ mailserver_domain }}'
 ExecStart=/usr/bin/sh -c '/usr/bin/systemctl restart wg-quick@wg0.service ; /usr/bin/echo "Your VPN config has changed, download the new config from https://vpn.{{ mailserver_domain }}" | mailx -s "VPN config change on vpn.{{ mailserver_domain }}" -r noreply@{{ mailserver_domain }}{% for user in users %} -b {{ user.name }}@{{ mailserver_domain }}{% endfor %} vpn@{{ mailserver_domain }}'
-ExecStart=/usr/bin/sh -c '/usr/bin/systemctl restart wg-quick@wg0.service && /usr/bin/echo "Your VPN config has changed, download the new config from https://vpn.{{ mailserver_domain }}" | mailx -s "VPN config change on vpn.{{ mailserver_domain }}" -r vpn@{{ mailserver_domain }}{% for user in users %} -b {{ user.name }}@{{ mailserver_domain }}{% endfor %} noreply@{{ mailserver_domain }}'
 
 [Install]
 RequiredBy=wg_vpn.path
