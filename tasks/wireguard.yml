@@ -278,11 +278,23 @@
     backup: true
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
+- name: Deploy WireGuard SystemD config path watcher
+  copy:
+    src: systemd/wg_vpn.path
+    dest: /etc/systemd/system/wg_vpn.path
+  notify: Restart WireGuard
 - name: Deploy WireGuard SystemD components
   copy:
-    src: "systemd/wg_vpn.{{ item }}"
-    dest: "/etc/systemd/system/wg_vpn.{{ item }}"
-  loop:
-    - path
-    - service
+    src: systemd/wg_vpn.service.j2
+    dest: /etc/systemd/system/wg_vpn.service
   notify: Restart WireGuard
+- name: Enable WireGuard config watch
+  systemd:
+    name: wg_vpn.path
+    daemon_reload: yes
+    enabled: yes
+- name: Load WireGuard config watch
+  systemd:
+    name: wg_vpn.service
+    daemon_reload: yes
+    enabled: no

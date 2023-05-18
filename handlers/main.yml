@@ -135,7 +135,6 @@
   systemd:
     name: "wg_vpn.{{ systemd_unit_type }}"
     daemon_reload: yes
-    enabled: yes
     state: started
   loop:
     - path
