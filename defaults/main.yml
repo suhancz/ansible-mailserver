@@ -142,19 +142,11 @@ wireguard:
   ipv6_pool: fd00::10:42:0/112
   nameservers:
     - 10.42.42.1
-    # - fd00::10:42:1
+    - fd00::10:42:1
     - "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-    # - "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
-  # http_port: 7827
-  # http_port: 5000
-  # listen_port: 25472
-  # http_port: 51821
-  listen_port: 51820
+    - "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
+  listen_port: 25472
   allowed_ips:
-    # - "0.0.0.0/0"
-    # - "::/0"
-    # - 10.42.42.0/24
-    # - fd00::10:42:0/112
     - 10.42.42.0
-    # - fd00::10:42:0
+    - fd00::10:42:0
   keepalive: 42

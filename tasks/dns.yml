@@ -1,19 +1,19 @@
 ---
 - name: Open firewall
-  include: firewall.yml
+  import_tasks: firewall.yml
   vars:
     port: dns
   when: 'public_dns == "yes"'
 - name: Configure local DNS cache
-  include: local_dns_cache.yml
+  import_tasks: local_dns_cache.yml
 - name: Configure PowerDNS
-  include: pdns.yml
+  import_tasks: pdns.yml
 - name: Set up DNS records
-  include: dns_records.yml
+  import_tasks: dns_records.yml
 - name: Configure PowerDNS recursor
-  include: pdns_recursor.yml
+  import_tasks: pdns_recursor.yml
 - name: Configure DNSDist
-  include: dnsdist.yml
+  import_tasks: dnsdist.yml
 - name: Make sure PowerDNS is running
   systemd:
     name: pdns
@@ -35,4 +35,4 @@
     state: started
   when: 'public_dns == "yes"'
 - name: Configure PowerAdmin
-  include: poweradmin.yml
+  import_tasks: poweradmin.yml

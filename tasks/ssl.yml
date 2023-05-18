@@ -62,7 +62,7 @@
 #     remaining_days: 60
 #   register: letsencrypt_challenge
 # - name: Check Let's Encrypt TXT records
-#   include_tasks: propagate_ssl_txt_records.yml
+#   import_tasks: propagate_ssl_txt_records.yml
 #   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 #   loop_control:
 #     loop_var: challenge_item
@@ -82,7 +82,7 @@
 #     data: "{{ letsencrypt_challenge }}"
 #   when: letsencrypt_challenge.changed is true
 # - name: Clean up Let's Encrypt TXT records
-#   include: delete_dns_record.yml
+#   include_tasks: delete_dns_record.yml
 #   vars:
 #     record:
 #       zone: "{{ challenge_item.key|replace('*.', '') }}"

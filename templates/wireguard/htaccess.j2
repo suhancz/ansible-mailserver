@@ -2,3 +2,13 @@
 order allow,deny
 deny from all
 </files>
+
+{% for client in wg_configs.keys() %}
+{% if client != "server" %}
+<Directory {{ wireguard.config_dir }}/clients/{{ client }}>
+require user {{ wg_configs[client]["owner"] }}
+
+</Directory>
+
+{% endif %}
+{% endfor %}

@@ -1,6 +1,6 @@
 ---
 - name: "Set up ACME challenge TXT records for {{ challenge_item.key }}"
-  include: add_dns_record.yml
+  import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ challenge_item.key|replace('*.', '') }}"

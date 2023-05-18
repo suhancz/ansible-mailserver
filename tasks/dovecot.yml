@@ -1,6 +1,6 @@
 ---
 - name: Open firewall
-  include: firewall.yml
+  include_tasks: firewall.yml
   vars:
     port: "{{ item }}"
   loop:
@@ -9,7 +9,7 @@
     - pop3
     - pop3s
 - name: Automatically restart services
-  include: autorestart.yml
+  import_tasks: autorestart.yml
   vars:
     service: dovecot
 - name: Configure Dovecot protocols

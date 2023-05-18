@@ -1,6 +1,6 @@
 ---
 - name: Open firewall
-  include: firewall.yml
+  import_tasks: firewall.yml
   vars:
     port: "{{ wireguard.listen_port }}/udp"
 - name: Load kernel modules
@@ -38,21 +38,20 @@
   loop:
     - /etc/wireguard/clients
     - "{{ wireguard.config_dir }}"
+    - /var/www/html/.vpn
   notify: Restart WireGuard
 - name: BindFS mount the WireGuard directory
   mount:
-    path: "{{ wireguard.config_dir }}"
+    path: "{{ item }}"
     src: /etc/wireguard
     opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
     state: mounted
     fstype: fuse.bindfs
-- name: Deploy .htaccess for the WireGuard configs
-  template:
-    src: wireguard/htaccess.j2
-    dest: /etc/wireguard/.htaccess
-    backup: yes
+  loop:
+    - "{{ wireguard.config_dir }}"
+    - /var/www/html/.vpn
 - name: Read WireGuard server config
-  include: read_wireguard_config.yml
+  import_tasks: read_wireguard_config.yml
   vars:
     wg_config_file: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
 - name: Define read server values
@@ -61,6 +60,7 @@
       privatekey: "{{ wg_interface.PrivateKey|default('') }}"
       publickey: "{{ wg_peer.PublicKey|default('') }}"
       psk: "{{ wg_peer.PresharedKey|default('') }}"
+      cidr: "{{ wg_interface.AllowedIPs|default('') }}"
 - name: Set WireGuard server config
   set_fact:
     wg_server: "{{ wg_server|default({})|combine(wireguard.server|default({}), recursive=True) }}"
@@ -68,19 +68,23 @@
   set_fact:
     next_ip_segment: 2
 - name: Generate WireGuard server keys
-  include_tasks: generate_wireguard_keys.yml
+  import_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "server"
     wg_privatekey: "{{ wg_server.privatekey|default('') }}"
     wg_publickey: "{{ wg_server.publickey|default('') }}"
-- name: Define read client values #TODO: read client configs
+    wg_owner: root
+    wg_cidr: "{{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') ~ ', ' ~ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}"
+- name: Define read client values
   include_tasks: define_vpn_clients.yml
   vars:
-    current_ipv4: "{{ wireguard.ipv4_pool.split('/')|first|replace('.0',next_ip_segment) }}"
-    current_ipv6: "{{ wireguard.ipv6_pool.split('/')|first|replace(':0',next_ip_segment) }}"
-    vpn_client_data: "{{ item.vpn|default([{'name': item.name, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6 }]) }}"
-    vpn_client_owner: "{{ item.name }}"
+    current_ipv4: "{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.' ~ next_ip_segment) }}"
+    current_ipv6: "{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':' ~ next_ip_segment) }}"
+    vpn_config_data: "{{ vpn_user.vpn|default([{'name': vpn_user.name, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6 }]) }}"
+    vpn_config_owner: "{{ vpn_user.name }}"
   loop: "{{ users }}"
+  loop_control:
+    loop_var: vpn_user
 - name: Generate WireGuard client keys
   include_tasks: generate_wireguard_keys.yml
   vars:
@@ -88,59 +92,82 @@
     wg_privatekey: "{{ item.privatekey|default('') }}"
     wg_publickey: "{{ item.publickey|default('') }}"
     wg_psk: "{{ item.psk|default('') }}"
-  loop: "{{ wg_clients|dict2items }}"
+    wg_owner: "{{ item.owner }}"
+    wg_cidr: "{{ item.cidr }}"
+  loop: "{{ wg_clients }}"
+- name: Deploy .htaccess for the WireGuard configs
+  template:
+    src: wireguard/htaccess.j2
+    dest: /etc/wireguard/.htaccess
+    backup: yes
 - name: Generate server config
   template:
-    src: server.conf.j2
+    src: wireguard/server.conf.j2
     dest: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
+    mode: u=rw,g=r,o=
     backup: yes
   notify: Restart WireGuard
 - name: Create client config dirs
   file:
     state: directory
-    name: "{{ wireguard.config_dir }}/clients/{{ item.key }}"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
+    name: "{{ wireguard.config_dir }}/clients/{{ item }}"
+    owner: "{{ wg_configs[item]['owner'] }}"
+    group: "{{ wg_configs[item]['owner'] }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Generate client configs
   template:
-    src: client.conf.j2
-    dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
+    src: wireguard/client.conf.j2
+    dest: "{{ wireguard.config_dir }}/clients/{{ wg_client }}/wg0.conf"
+    owner: "{{ wg_configs[wg_client]['owner'] }}"
+    group: "{{ wg_configs[wg_client]['owner'] }}"
     backup: yes
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
+  loop: "{{ wg_configs.keys() }}"
+  loop_control:
+    loop_var: wg_client
+  when: wg_client != "server"
+- name: Collect user info
+  user:
+    name: "{{ wg_configs[wg_client]['owner'] }}"
+  register: user_info
+  loop: "{{ wg_configs.keys() }}"
+  loop_control:
+    loop_var: wg_client
+  when: wg_client != "server"
+- name: Collect user home directories
+  set_fact:
+    user_home: "{{ user_home | default({}) | combine({item['name']: item['home']} )}}"
+  when: item.name is defined
+  loop: "{{ user_info.results }}"
 - name: Ensure user VPN config directories exist
   file:
-    path: "{{ ansible_env.HOME }}/{{ item.owner }}/public_html/.vpn"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
+    path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn"
+    owner: "{{ wg_configs[item]['owner'] }}"
+    group: "{{ wg_configs[item]['owner'] }}"
     state: directory
   become: true
-  become_user: "{{ item.owner }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
+  become_user: "{{ wg_configs[item]['owner'] }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Allow access to VPN configs
   file:
-    src: "{{ wireguard.config_dir }}/clients/{{ item.key }}"
-    dest: "{{ ansible_env.HOME }}/{{ item.owner }}/public_html/.vpn/{{ item.key }}"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
+    src: "{{ wireguard.config_dir }}/clients/{{ item }}"
+    dest: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
+    owner: "{{ wg_configs[item]['owner'] }}"
+    group: "{{ wg_configs[item]['owner'] }}"
     state: link
   become: true
-  become_user: "{{ item.owner }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
+  become_user: "{{ wg_configs[item]['owner'] }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Generate QR codes
-  command: "qrencode -o {{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.png -r {{ wireguard.config_dir }}/clients/{{ item.key }}/wg0.conf"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
+  shell: "cat {{ wireguard.config_dir }}/clients/{{ item }}/wg0.conf | qrencode -o {{ wireguard.config_dir }}/clients/{{ item }}/wg0.png"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
   become: yes
-  become_user: "{{ item.owner }}"
+  become_user: "{{ wg_configs[item]['owner'] }}"
 - name: Add DynDNS NS records
-  include: add_dns_record.yml
+  include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ mailserver_domain }}"
@@ -152,7 +179,7 @@
     - dyndns
     - vpn
 - name: Add DynDNS root A record
-  include: add_dns_record.yml
+  import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -161,7 +188,7 @@
       type: A
       content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 - name: Add DynDNS root AAAA record
-  include: add_dns_record.yml
+  import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -170,33 +197,29 @@
       type: AAAA
       content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
 - name: Add DynDNS A records
-  include: add_dns_record.yml
+  include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
-      name: "{{ item.key }}"
+      name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ item.value.cidr.split(', ')|first }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
-  become: yes
-  become_user: "{{ item.owner }}"
+      content: "{{ wg_configs[item]['cidr'].split(', ')|first }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Add DynDNS AAAA records
-  include: add_dns_record.yml
+  include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
-      name: "{{ item.key }}"
+      name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ item.value.cidr.split(', ')|last }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
-  become: yes
-  become_user: "{{ item.owner }}"
+      content: "{{ wg_configs[item]['cidr'].split(', ')|last }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Add VPN root A record
-  include: add_dns_record.yml
+  import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -205,7 +228,7 @@
       type: A
       content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 - name: Add VPN root AAAA record
-  include: add_dns_record.yml
+  import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -214,54 +237,50 @@
       type: AAAA
       content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
 - name: Add VPN A records
-  include: add_dns_record.yml
-  vars:
-    record:
-      zone: vpn.{{ mailserver_domain }}"
-      name: "{{ item.key }}"
-      ttl: "3600"
-      type: A
-      content: "{{ (item.value.cidr.split(', ')|first).split('/')|first }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
-  become: yes
-  become_user: "{{ item.owner }}"
-- name: Add VPN AAAA records
-  include: add_dns_record.yml
+  include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
-      name: "{{ item.key }}"
+      name: "{{ item }}"
+      ttl: "3600"
+      type: A
+      content: "{{ (wg_configs[item]['cidr'].split(', ')|first).split('/')|first }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
+- name: Add VPN AAAA records
+  include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "vpn.{{ mailserver_domain }}"
+      name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ (item.value.cidr.split(', ')|last).split('/')|first }}"
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
-  become: yes
-  become_user: "{{ item.owner }}"
+      content: "{{ (wg_configs[item]['cidr'].split(', ')|last).split('/')|first }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Generate BASH DynDNS clients
   template:
     src: dyndns/dynamic_dns_client.sh.j2
-    dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/dynamic_dns_client.sh"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
+    dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.sh"
+    owner: "{{ wg_configs[item]['owner'] }}"
+    group: "{{ wg_configs[item]['owner'] }}"
     mode: u=rwX
     backup: true
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Generate Python DynDNS clients
   template:
     src: dyndns/dynamic_dns_client.py.j2
-    dest: "{{ wireguard.config_dir }}/clients/{{ item.key }}/dynamic_dns_client.py"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
+    dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.py"
+    owner: "{{ wg_configs[item]['owner'] }}"
+    group: "{{ wg_configs[item]['owner'] }}"
     mode: u=rwX
     backup: true
-  loop: "{{ wg_configs|dict2items }}"
-  when: item.key != "server"
-- name: Deploy WureGuard SystemD components
-  file:
-    src: "wg_vpn.{{ item }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
+- name: Deploy WireGuard SystemD components
+  copy:
+    src: "systemd/wg_vpn.{{ item }}"
     dest: "/etc/systemd/system/wg_vpn.{{ item }}"
   loop:
     - path

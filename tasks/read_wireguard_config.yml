@@ -10,17 +10,15 @@
       slurp:
         src: "{{ wg_config_file }}"
       register: wg_config_content
-    - name: Write WireGuard config file to temporary location on the control machine
-      copy:
-        content: "{{ wg_config_content|b64decode }}"
-        dest: "/var/tmp/wg_config_ini_{{ wg_config_file|b64encode }}"
-      delegate_to: localhost
-    - name: Read WireGuard config into variables
+    - name: Gather WiregGuard config lines
       set_fact:
-        wg_interface: "{{ q('ansible.builtin.ini', '.*', section='Interface', file='/var/tmp/wg_config_ini_' ~ (wg_config_file|b64encode), re=True) }}"
-        wg_peer: "{{ q('ansible.builtin.ini', '.*', section='Peer', file='/var/tmp/wg_config_ini_' ~ (wg_config_file|b64encode), re=True) }}"
-    - name: Remove temporary config from the control machine
-      file:
-        path: "/var/tmp/wg_config_ini_{{ wg_config_file|b64encode }}"
-        state: absent
-      delegate_to: localhost
+        wireguard_config_lines: "{{ wg_config_content.content|b64decode|split('\n') }}"
+    - debug:
+        var: wg_config_lines
+    - name: Gather WireGuard config sections
+      include_tasks: gather_wireguard_config_sections.yml
+      vars:
+        wireguard_config_line: "{{ item }}"
+      loop: "{{ wireguard_config_lines }}"
+      loop_control:
+        extended: true

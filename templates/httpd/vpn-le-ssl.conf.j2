@@ -3,6 +3,7 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
 <VirtualHost *:443>
   ServerName vpn.{{ mailserver_domain }}
 
+  DocumentRoot /var/www/html/.vpn/
   ErrorLog /var/log/httpd/vpn_error.log
   CustomLog /var/log/httpd/vpn_access.log combined
 
@@ -10,17 +11,13 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   SetExternalAuthMethod pwauth pipe
 
   <Location />
-    ProxyPreserveHost On
-    DAV On
     Options +Indexes
     AuthType Basic
-    AuthName "private area"
+    AuthName "vpn.{{ mailserver_domain }}"
     AuthBasicProvider external
     AuthExternal pwauth
-    Require valid-user
+    Require user {{ mailserver_admin_user }}
     DirectoryIndex disabled
-    ProxyPass "http://localhost:{{ wireguard.http_port }}/"
-    ProxyPassReverse "http://localhost:{{ wireguard.http_port }}/"
   </Location>
 
 SSLCertificateFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.pem

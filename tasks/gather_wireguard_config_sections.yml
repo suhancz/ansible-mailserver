@@ -1,0 +1,38 @@
+---
+- name: Set server config
+  when: '{{ "[Interface]" == wireguard_config_line }}'
+  set_fact:
+    current_wireguard_section: server
+- name: Set server private key
+  when: current_wireguard_section == 'server' and 'PrivateKey' in wireguard_config_line
+  set_fact:
+    wg_server_private_key: "{{ wireguard_config_line|split(' ')|last }}"
+- name: Set client config
+  when: '{{ "[Peer]" == wireguard_config_line }}'
+  set_fact:
+    current_wireguard_section: client
+    wg_client_count: "{{ wg_client_count|default(0)|int + 1 }}"
+- name: Set client name
+  when: current_wireguard_section == 'client' and 'owned by' in wireguard_config_line
+  set_fact:
+    wg_client_name: "{{ (wireguard_config_line|split(' '))[2] }}"
+- name: Set client owner
+  when: current_wireguard_section == 'client' and 'owned by' in wireguard_config_line
+  set_fact:
+    wg_client_owner: "{{ wireguard_config_line|split(' ')|last }}"
+- name: Set client pre-shared key
+  when: current_wireguard_section == 'client' and 'PresharedKey' in wireguard_config_line
+  set_fact:
+    wg_server_psk: "{{ wireguard_config_line|split(' ')|last }}"
+- name: Set wireguard config server section
+  when: current_wireguard_section == 'server' and wg_server_private_key is defined and "[Peer]" == wireguard_config_line
+  set_fact:
+    wg_server: '{{ wg_server|default({})|combine({"privatekey": wg_server_private_key}) }}'
+- name: Set wireguard config client section
+  when: '{{ "[Peer]" == wireguard_config_line }}'
+  set_fact:
+    last_wg_client: '{{ wg_client_count|default(0) }}'
+- name: Set wireguard config client section
+  when: current_wireguard_section == 'client' and (wg_client_count < last_wg_client or ansible_loop.last) and wg_client_name is defined and wg_client_owner is defined and wg_client_psk is defined
+  set_fact:
+    wg_clients: '{{ wg_clients|default([]) + {"name": wg_client_name, "owner": wg_client_owner, "psk": wg_server_psk} }}'

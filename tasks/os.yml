@@ -7,7 +7,7 @@
 - name: Install requiremets
   block:
     - name: Install packages
-      include: packages.yml
+      import_tasks: packages.yml
   rescue:
     - name: Find repo configs
       find:
@@ -29,7 +29,7 @@
         validate: "grep '^baseurl=http://vault.centos.org' %s"
       loop: "{{ repo_files.files }}"
     - name: Install packages
-      include: packages.yml
+      import_tasks: packages.yml
 - name: Set up OS mail aliases
   lineinfile:
     path: /etc/aliases
@@ -48,6 +48,7 @@
     append: yes
     state: present
   loop: "{{ users }}"
+  register: user_info
   no_log: yes
   notify: Warn on passwords
 - name: Enable ip_conntrack

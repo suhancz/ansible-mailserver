@@ -1,6 +1,6 @@
 ---
 - name: Open firewall
-  include: firewall.yml
+  include_tasks: firewall.yml
   vars:
     port: "{{ item }}"
   loop:
@@ -46,8 +46,8 @@
     - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
     - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
-    # - { src: "httpd/vpn.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}.conf" }
-    # - { src: "httpd/vpn-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf" }
+    - { src: "httpd/vpn.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/vpn-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/webdav.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf" }
     - { src: "httpd/webdav-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/wildcard.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf" }
@@ -101,7 +101,7 @@
   no_log: true
 - name: Ensure user certificate directories exist
   file:
-    path: "{{ ansible_env.HOME }}/{{ item.name }}/public_html/.vpn"
+    path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
     state: directory
@@ -135,4 +135,39 @@
     src: systemd/httpd.timeout.conf
     dest: /etc/systemd/system/httpd.service.d/timeout.conf
     backup: yes
+  notify: Restart httpd
+- name: Create PAM module for HTTPD auth
+  copy:
+    src: pam/httpd-auth
+    dest: /etc/pam.d/httpd-auth
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  notify: Restart httpd
+- name: Deny blacklisted users from PAM authentication
+  lineinfile:
+    path: /etc/httpd/conf.d/denyusers
+    line: "{{ item }}"
+    owner: apache
+    group: apache
+    mode: u=rw,g=r
+    create: yes
+    backup: yes
+  loop: "{{ httpd_pam_deny_users }}"
+  notify: Restart httpd
+- name: Allow Apache read /etc/shadow
+  file:
+    path: /etc/shadow
+    state: file
+    group: apache
+    mode: ug=r
+- name: Enable HTTPD PAM auth
+  copy:
+    src: httpd/55-authnz_pam.conf
+    dest: /etc/httpd/conf.modules.d/55-authnz_pam.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
   notify: Restart httpd

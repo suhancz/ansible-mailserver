@@ -48,7 +48,8 @@ Role Variables
     horde_backup_path # path to the tarball containing Horde backups
     dovecot_backup_path # path to the tarball containing Dovecot backups
     postfix_backup_path # path to the tarball containing Postfix backups
-    pdns_backup_path # path to the tarball containing DNSMASQ backups
+    pdns_backup_path # path to the tarball containing PowerDNS backups
+    wg_vpn_backup_path # path to the tarball containing WireGuard backups
     wireguard: # wireguard configuration for admin access
       config_dir: # directory on the server to deploy WireGuard configuration to
       ipv4_pool: # CIDR of the IPv4 pool of the clients

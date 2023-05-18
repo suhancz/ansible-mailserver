@@ -1,6 +1,6 @@
 ---
 - name: Open firewall
-  include: firewall.yml
+  include_tasks: firewall.yml
   vars:
     port: "{{ item }}"
   loop:

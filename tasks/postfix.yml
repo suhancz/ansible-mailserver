@@ -12,7 +12,7 @@
     system: yes
     uid: 2000
 - name: Open firewall
-  include: firewall.yml
+  include_tasks: firewall.yml
   vars:
     port: "{{ item }}"
   loop:
@@ -32,7 +32,7 @@
 - name: Apply mail aliases
   command: newaliases
 - name: Set up automatic restart of services
-  include: autorestart.yml
+  import_tasks: autorestart.yml
   vars:
     service: postfix
 - name: Deploy Postfix master config

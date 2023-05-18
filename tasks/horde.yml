@@ -49,7 +49,7 @@
     - { app: '', mode: 'ug=rw' }
     # - { app: 'kronolith', mode: 'u=rw' }
 - name: Create horde DB schema
-  include_tasks: create_mariadb_schema.yml
+  import_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: horde
 - name: Set up Horde DB privileges
