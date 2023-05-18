@@ -283,17 +283,18 @@
     src: systemd/wg_vpn.path
     dest: /etc/systemd/system/wg_vpn.path
   notify: Restart WireGuard
-- name: Deploy WireGuard SystemD components
-  copy:
+- name: Deploy WireGuard config loader SystemD service
+  template:
     src: systemd/wg_vpn.service.j2
     dest: /etc/systemd/system/wg_vpn.service
+    backup: yes
   notify: Restart WireGuard
 - name: Enable WireGuard config watch
   systemd:
     name: wg_vpn.path
     daemon_reload: yes
     enabled: yes
-- name: Load WireGuard config watch
+- name: Load WireGuard config loader
   systemd:
     name: wg_vpn.service
     daemon_reload: yes
