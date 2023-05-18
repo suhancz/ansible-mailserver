@@ -24,6 +24,7 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthExternal pwauth
     Require valid-user
     Require file-owner
+    AllowOverride All
     DirectoryIndex disabled
   </Location>
 

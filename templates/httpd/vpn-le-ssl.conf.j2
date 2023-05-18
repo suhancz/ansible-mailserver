@@ -17,6 +17,7 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthBasicProvider external
     AuthExternal pwauth
     Require user {{ mailserver_admin_user }}
+    AllowOverride All
     DirectoryIndex disabled
   </Location>
 
