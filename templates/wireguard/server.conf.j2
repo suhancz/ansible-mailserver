@@ -6,14 +6,14 @@ PrivateKey = {{ wg_configs.server.privatekey }}
 ListenPort = {{ wireguard.listen_port }}
 Address = {{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') }}, {{ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}
 
-{% for client in wg_clients|dict2items %}
+{% for client in wg_configs.keys() %}
+{% if client != "server" %}
 [Peer]
-{% if client.key != "server" %}
-# {{ client.key }} owned by {{ client.user }}
-PublicKey = {{ client.value.publickey }}
-AllowedIPs = {{ client.value.cidr }}
-{% if 'psk' in client.value %}
-PresharedKey = {{ client.value.psk }}
+# {{ client }} owned by {{ wg_configs[client].owner }}
+PublicKey = {{ wg_configs[client]['publickey'] }}
+AllowedIPs = {{ wg_configs[client]['cidr'] }}
+{% if wg_configs[client]['psk'] is defined %}
+PresharedKey = {{ wg_configs[client]['psk'] }}
 {% endif %}
 {% endif %}
 
