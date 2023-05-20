@@ -4,7 +4,7 @@ MTU={{ wireguard.mtu }}
 {% endif %}
 PrivateKey = {{ wg_configs.server.privatekey }}
 ListenPort = {{ wireguard.listen_port }}
-Address = {{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') }}, {{ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}
+Address = {{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}, {{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':1') }}
 PostUp = /etc/wireguard/helper/add-nat-routing.sh
 PostDown = /etc/wireguard/helper/remove-nat-routing.sh
 

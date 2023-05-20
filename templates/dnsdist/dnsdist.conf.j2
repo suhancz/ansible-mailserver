@@ -4,9 +4,9 @@ addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}'
 
 {# addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}') #}
 {% if wireguard is defined %}
-addLocal('{{ wireguard.ipv4_pool | regex_replace('\.(.*)0/.*/', '1.1') }}')
+addLocal('{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}')
 
-{# addLocal('{{ wireguard.ipv6_pool | regex_replace('\:(.*)0/.*/', '1:1' }}') #}
+{# addLocal('{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':1') }}') #}
 {% endif %}
 
 setACL({'0.0.0.0/0', '::/0'}) -- Allow all IPs access
