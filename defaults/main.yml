@@ -141,9 +141,9 @@ wireguard:
   ipv4_pool: 10.42.42.0/24
   ipv6_pool: fd00::10:42:0/112
   # TODO: sort out DNS on the DNSDist/PDNS and/or firewall side
-  # nameservers:
-  #   - 10.42.42.1
-  #   - fd00::10:42:1
+  nameservers:
+    - 10.42.42.1
+    - fd00::10:42:1
   #   # - "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
   #   # - "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
   listen_port: 25472
