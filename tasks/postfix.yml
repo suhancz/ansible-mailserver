@@ -134,7 +134,7 @@
       #   reject_rhsbl_sender dbl.spamhaus.org
          permit_dnswl_client list.dnswl.org=127.0.[0..255].[1..3]
          permit_dnswl_client swl.spamhaus.org
-         reject_rbl_client zen.spamhaus.org
+      #   reject_rbl_client zen.spamhaus.org
   notify: Restart postfix
 - name: Configure Milter
   blockinfile:
