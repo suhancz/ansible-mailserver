@@ -10,13 +10,13 @@
   <Directory />
     Options FollowSymLinks
     AllowOverride All
+    Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
   </Directory>
 
   <Directory /var/www/poweradmin/>
     Options FollowSymLinks MultiViews
     AllowOverride All
-    Order allow,deny
-    allow from all
+    Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
   </Directory>
 
 RewriteEngine on
