@@ -1,6 +1,6 @@
 <VirtualHost *:80>
   # TODO: change to VPN domain after confirming VPN and name resolution works fine
-  ServerName postfixadmin.{{ mailserver_domain }}
+  ServerName postfixadmin.vpn.{{ mailserver_domain }}
 
   DocumentRoot /var/www/postfixadmin/public/
 
@@ -20,7 +20,7 @@
   </Directory>
 
 RewriteEngine on
-RewriteCond %{SERVER_NAME} =postfixadmin.{{ mailserver_domain }}
+RewriteCond %{SERVER_NAME} =postfixadmin.vpn.{{ mailserver_domain }}
 
 RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
