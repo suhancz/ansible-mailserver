@@ -1,3 +1,4 @@
+---
 - name: Check SELinux status
   shell: getenforce
   register: getenforce
@@ -6,7 +7,7 @@
 - name: Install requiremets
   block:
     - name: Install packages
-      include: packages.yml
+      import_tasks: packages.yml
   rescue:
     - name: Find repo configs
       find:
@@ -28,7 +29,7 @@
         validate: "grep '^baseurl=http://vault.centos.org' %s"
       loop: "{{ repo_files.files }}"
     - name: Install packages
-      include: packages.yml
+      import_tasks: packages.yml
 - name: Set up OS mail aliases
   lineinfile:
     path: /etc/aliases
@@ -47,7 +48,9 @@
     append: yes
     state: present
   loop: "{{ users }}"
+  register: user_info
   no_log: yes
+  notify: Warn on passwords
 - name: Enable ip_conntrack
   modprobe:
     name: ip_conntrack
@@ -58,3 +61,19 @@
     env: yes
     name: MAILTO
     job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
+- name: Add GO path to PATH
+  lineinfile:
+    path: /etc/profile.d/gopath.sh
+    line: 'export PATH=$PATH:$(go env GOPATH)/bin'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    create: yes
+    backup: yes
+# - name: Create Podman Compose service
+#   copy:
+#     dest: '/etc/systemd/system/podman-compose@.service'
+#     src: 'systemd/podman-compose@.service'
+#     backup: yes
+#   notify: Restart subspace

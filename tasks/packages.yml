@@ -1,3 +1,4 @@
+---
 - name: Set up Remi repository
   dnf:
     name: "https://rpms.remirepo.net/enterprise/remi-release-{{ hostvars[inventory_hostname].ansible_distribution_major_version }}.rpm"
@@ -123,7 +124,7 @@
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable DNF modules
-  command: dnf module enable php:remi-7.4 389-directory-server:stable/default -y
+  command: dnf module enable php:remi-7.4 389-directory-server:stable/default go-toolset -y
 - name: Install packages
   package:
     name:
@@ -302,6 +303,20 @@
       - dnsdist
       - python3-netaddr
       - redis
+      - mod_authnz_pam
+      - mod_authnz_external
+      - pwauth
+      - kmod-wireguard
+      - wireguard-tools
+      - bindfs
+      - golang
+      - podman-docker
+      - podman-compose
+      - python3-docker
+      - python3-dockerpty
+      - python3-pyyaml
+      - python3-jinja2
+      - qrencode
     state: latest
 - name: Install Remi packages
   dnf:
@@ -389,3 +404,13 @@
   pear:
     name: pear.horde.org/Horde_ActiveSync
     state: latest
+- name: Install go package
+  command: "go install {{ item }}"
+  loop:
+    - github.com/go-acme/lego/v4/cmd/lego@latest
+- name: Copy GO binaries to /usr/local/bin
+  copy:
+    src: "{{ ansible_env.HOME }}/go/bin/"
+    dest: /usr/local/bin/
+    remote_src: yes
+    backup: yes

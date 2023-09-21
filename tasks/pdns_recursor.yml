@@ -1,0 +1,65 @@
+---
+- name: Render RPZ file for local addresses
+  template:
+    src: pdns-recursor/basic.rpz.j2
+    dest: /etc/pdns-recursor/pdns-recursor.rpz
+    owner: pdns-recursor
+    group: pdns-recursor
+    backup: yes
+  when: 'public_dns == "yes"'
+# - name: Create LUA config
+#   copy:
+#     content: 'rpzFile("/etc/pdns-recursor/pdns-recursor.rpz", {defpol=Policy.NoAction})'
+#     dest: /etc/pdns-recursor/recursorconf.lua
+#     owner: pdns-recursor
+#     group: pdns-recursor
+#     backup: yes
+#   when: 'public_dns == "yes"'
+- name: Configure PowerDNS recursor
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "{{ item.key }}={{ item.value }}"
+    regex: "^{{ item.key }}"
+    state: present
+    owner: pdns-recursor
+    group: pdns-recursor
+    backup: yes
+  loop:
+    - { key: "local-address", value: "0.0.0.0 [::]" }
+    - { key: "local-port", value: "5301" }
+    - { key: "forward-zones", value: "{{ mailserver_domain }}=127.0.0.1:5300" }
+    # - { key: "lua-config-file", value: "/etc/pdns-recursor/recursorconf.lua" }
+    - { key: "query-local-address", value: "0.0.0.0 [::]" }
+    - { key: "export-etc-hosts", value: "yes" }
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Restart pdns-recursor
+- name: Add VPN addresses to hosts file
+  lineinfile:
+    line: "{{ item }} postfixadmin.{{ mailserver_domain }} poweradmin.{{ mailserver_domain }}"
+    path: /etc/hosts
+    backup: yes
+  loop:
+    - "{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\\.0$', '\.1') }}"
+    # - "{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}"
+  when: wireguard is defined
+  notify: Restart pdns-recursor
+- name: Configure PowerDNS recursor to forward custom domains
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "forward-zones+={{ item }}=127.0.0.1:5300"
+    regex: "^forward-zones+={{ item }}="
+    state: present
+    backup: yes
+  loop: "{{ custom_domains }}"
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Restart pdns-recursor
+- name: Set IPv6 route size
+  sysctl:
+    name: net.ipv6.route.max_size
+    value: 16384
+    state: present # not required. choices: present;absent. Whether the entry should be present or absent in the sysctl file.
+    ignoreerrors: no # not required. Use this option to ignore errors about unknown keys.
+    reload: yes # not required. If C(yes), performs a I(/sbin/sysctl -p) if the C(sysctl_file) is updated. If C(no), does not reload I(sysctl) even if the C(sysctl_file) is updated.
+    sysctl_set: yes

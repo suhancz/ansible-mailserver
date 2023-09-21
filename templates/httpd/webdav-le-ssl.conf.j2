@@ -1,0 +1,37 @@
+<IfModule mod_ssl.c>
+SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
+<VirtualHost *:443>
+  ServerName webdav.{{ mailserver_domain }}
+  ServerAlias {% for custom_domain in custom_domains %}webdav.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+
+  DocumentRoot /var/www/html/webdav/
+
+  ErrorLog /var/log/httpd/webdav_error.log
+  CustomLog /var/log/httpd/webdav_access.log combined
+
+  AddExternalAuth pwauth /usr/bin/pwauth
+  SetExternalAuthMethod pwauth pipe
+
+  <IfModule mod_dav_fs.c>
+      DAVLockDB /var/lib/dav/lockdb
+  </IfModule>
+  <Location />
+    DAV On
+    Options +Indexes
+    AuthType Basic
+    AuthName "private area"
+    AuthBasicProvider external
+    AuthExternal pwauth
+    Require valid-user
+    Require file-owner
+    AllowOverride All
+    DirectoryIndex disabled
+  </Location>
+
+SSLCertificateFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.pem
+SSLCertificateKeyFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.key
+Include /etc/letsencrypt/options-ssl-apache.conf
+Header always set Strict-Transport-Security "max-age=31536000"
+SSLUseStapling on
+</VirtualHost>
+</IfModule>

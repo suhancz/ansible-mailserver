@@ -1,3 +1,4 @@
+---
 - name: "Create restart directories for {{ service }}"
   file:
     state: directory
@@ -13,6 +14,4 @@
     backup: yes
     owner: root
     group: root
-  notify: Restart systemd service
-  vars:
-    service_to_restart: "{{ service }}"
+  notify: "Restart {{ service }}"

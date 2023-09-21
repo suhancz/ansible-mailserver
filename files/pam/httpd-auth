@@ -1,0 +1,6 @@
+auth       required     pam_listfile.so item=user sense=deny file=/etc/httpd/conf.d/denyusers onerr=succeed
+auth       include      system-auth
+account    include      system-auth
+auth       substack     password-auth
+account    include      password-auth
+password   include      password-auth

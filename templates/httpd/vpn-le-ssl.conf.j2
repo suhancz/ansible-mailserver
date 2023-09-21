@@ -1,0 +1,30 @@
+<IfModule mod_ssl.c>
+SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
+<VirtualHost *:443>
+  ServerName vpn.{{ mailserver_domain }}
+
+  DocumentRoot /var/www/html/.vpn/
+  ErrorLog /var/log/httpd/vpn_error.log
+  CustomLog /var/log/httpd/vpn_access.log combined
+
+  AddExternalAuth pwauth /usr/bin/pwauth
+  SetExternalAuthMethod pwauth pipe
+
+  <Location />
+    Options +Indexes
+    AuthType Basic
+    AuthName "vpn.{{ mailserver_domain }}"
+    AuthBasicProvider external
+    AuthExternal pwauth
+    Require user {{ mailserver_admin_user }}
+    AllowOverride All
+    DirectoryIndex disabled
+  </Location>
+
+SSLCertificateFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.pem
+SSLCertificateKeyFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.key
+Include /etc/letsencrypt/options-ssl-apache.conf
+Header always set Strict-Transport-Security "max-age=31536000"
+SSLUseStapling on
+</VirtualHost>
+</IfModule>

@@ -38,6 +38,7 @@ VALUES {% for alias_domain in custom_domains -%}
        ('root@{{ mailserver_domain }}','{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
        ('{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ mailserver_admin_user }}@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
        ('ssl@{{ mailserver_domain }}','hostmaster@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
+       ('vpn@{{ mailserver_domain }}','hostmaster@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1),
        ('webmaster@{{ mailserver_domain }}','root@{{ mailserver_domain }}','{{ mailserver_domain }}','{{ now.date }} {{ now.time }}','{{ now.date }} {{ now.time }}',1);
 /*!40000 ALTER TABLE `alias` ENABLE KEYS */;
 UNLOCK TABLES;

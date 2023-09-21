@@ -1,0 +1,24 @@
+---
+- name: Check if WireGuard config exists
+  stat:
+    path: "{{ wg_config_file }}"
+  register: wg_config_file_info
+- name: Read existing WireGuard config into variable
+  when: wg_config_file_info.stat.exists
+  block:
+    - name: Read WireGuard config file
+      slurp:
+        src: "{{ wg_config_file }}"
+      register: wg_config_content
+    - name: Gather WiregGuard config lines
+      set_fact:
+        wireguard_config_lines: "{{ wg_config_content.content|b64decode|split('\n') }}"
+    - debug:
+        var: wg_config_lines
+    - name: Gather WireGuard config sections
+      include_tasks: gather_wireguard_config_sections.yml
+      vars:
+        wireguard_config_line: "{{ item }}"
+      loop: "{{ wireguard_config_lines }}"
+      loop_control:
+        extended: true

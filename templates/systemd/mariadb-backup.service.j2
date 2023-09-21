@@ -1,6 +1,7 @@
 [Unit]
 Description=MariaDB backup
 After=mariadb.service
+After=backup.mount
 Requires=mariadb.service
 
 [Service]
