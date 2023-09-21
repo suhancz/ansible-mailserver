@@ -1,3 +1,4 @@
+---
 - name: Configure limits
   lineinfile:
     regexp: '^mongod '
@@ -9,6 +10,4 @@
     state: present
     backup: yes
     create: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: mongod
+  notify: Restart mongod

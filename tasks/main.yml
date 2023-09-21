@@ -5,6 +5,7 @@
     postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"
     horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.horde_db_password chars=ascii_letters,digits')) }}"
     powerdns_db_password: "{{ powerdns_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_db_password chars=ascii_letters,digits')) }}"
+    powerdns_api_key: "{{ powerdns_api_key | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_api_key chars=ascii_letters,digits')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/ansible-mailserver-install.mysql_root_password chars=ascii_letters,digits')) }}"
     ldap_admin_password: "{{ ldap_admin_password | default(lookup('password', '/tmp/ansible-mailserver-install.ldap_admin_password chars=ascii_letters,digits')) }}"
     mariabackup_password: "{{ mariabackup_password | default(lookup('password', '/tmp/ansible-mailserver-install.mariabackup_password chars=ascii_letters,digits')) }}"
@@ -16,42 +17,46 @@
   loop: "{{ users }}"
   no_log: yes
 - name: Configure OS
-  include: os.yml
-- name: Configure MariaDB
-  include: mariadb.yml
-- name: Configure DNS
-  include: dns.yml
-- name: Configure PostfixAdmin
-  include: postfixadmin.yml
-- name: Set up SSL
-  include: ssl.yml
-- name: Configure LDAP
-  include: ldap.yml
-- name: Set up Horde
-  include: horde.yml
-# - name: Set up ElasticSearch
-#   include: elasticsearch.yml
-- name: Set up FTP
-  include: ftp.yml
+  import_tasks: os.yml
+# - name: Configure MariaDB
+#   import_tasks: mariadb.yml
+# - name: Configure DNS
+#   import_tasks: dns.yml
+# - name: Configure PostfixAdmin
+#   import_tasks: postfixadmin.yml
+# - name: Set up SSL
+#   import_tasks: ssl.yml
+# - name: Configure LDAP
+#   import_tasks: ldap.yml
+# - name: Set up Horde
+#   import_tasks: horde.yml
+# # - name: Set up ElasticSearch
+# #   import_tasks: elasticsearch.yml
+# - name: Set up FTP
+#   import_tasks: ftp.yml
 - name: Configure Apache
-  include: httpd.yml
-- name: Set up SPAMAssassin
-  include: spamassassin.yml
-- name: Configure Antivirus
-  include: antivirus.yml
-- name: Configure Redis
-  include: redis.yml
-- name: Configure Postfix
-  include: postfix.yml
-- name: Configure Dovecot
-  include: dovecot.yml
-- name: Set up DKIM
-  include: dkim.yml
-- name: Set up DMARC
-  include: dmarc.yml
+  import_tasks: httpd.yml
+# - name: Set up SPAMAssassin
+#   import_tasks: spamassassin.yml
+# - name: Configure Antivirus
+#   import_tasks: antivirus.yml
+# - name: Configure Redis
+#   import_tasks: redis.yml
+# - name: Configure Postfix
+#   import_tasks: postfix.yml
+# - name: Configure Dovecot
+#   import_tasks: dovecot.yml
+# - name: Set up DKIM
+#   import_tasks: dkim.yml
+# - name: Set up DMARC
+#   import_tasks: dmarc.yml
 # - name: Set up MongoDB
-#   include: mongodb.yml
+#   import_tasks: mongodb.yml
+- name: Set up WebDav
+  import_tasks: webdav.yml
+- name: Set up WireGuard
+  import_tasks: wireguard.yml
 - name: Set up backups
-  include: backups.yml
-- name: Configure fail2ban
-  include: fail2ban.yml
+  import_tasks: backups.yml
+# - name: Configure fail2ban
+#   import_tasks: fail2ban.yml

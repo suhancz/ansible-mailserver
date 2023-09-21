@@ -1,6 +1,7 @@
 [Unit]
 Description=LDAP backup
 After="dirsrv@{{ mailserver_hostname }}.{{ mailserver_domain.split('.')[0] }}.service"
+After=backup.mount
 Requires="dirsrv@{{ mailserver_hostname }}.{{ mailserver_domain.split('.')[0] }}.service"
 
 [Service]

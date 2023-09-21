@@ -1,5 +1,6 @@
+---
 # - name: Open firewall
-#   include: firewall.yml
+#   import_tasks: firewall.yml
 #   vars:
 #     port: "{{ item }}"
 #   loop:
@@ -27,9 +28,7 @@
     owner: root
     group: root
     backup: yes
-  notify: Restart systemd service
-  vars:
-    service_to_restart: "dirsrv@{{ mailserver_hostname }}"
+  notify: "Restart dirsrv@{{ mailserver_hostname }}"
 - name: Apply LDAP server configuration
   block:
     - name: Configure LDAP server
@@ -75,7 +74,7 @@
 - name: Start LDAP server
   command: "dsctl {{ mailserver_hostname }} start"
 - name: Import TLS certificate for LDAP
-  command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/live/{{ mailserver_domain }}/privkey.pem"
+  command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
 - name: Enable LDAP plugins
   command: "dsconf {{ mailserver_hostname }} plugin {{ item }} enable"
   loop:

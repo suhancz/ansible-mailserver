@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+import requests
+import socket
+from unittest.mock import patch
+from requests.auth import HTTPBasicAuth
+
+# change these values if not given by arguments to the script
+login = "dyndns"
+password = "{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}"
+dyndns = socket.gethostname().split('.', 1)[0].lower() + ".dyndns.{{ mailserver_domain }}"
+dyndns_server = 'https://dyndns.{{ mailserver_domain }}'
+ip_lookup_url = 'https://clientip.{{ mailserver_domain }}'
+verbose = 1
+
+ipv4 = ''
+ipv6 = ''
+
+orig_getaddrinfo = socket.getaddrinfo
+def getaddrinfoIPv6(host, port, family=0, type=0, proto=0, flags=0):
+    return orig_getaddrinfo(host=host, port=port, family=socket.AF_INET6, type=type, proto=proto, flags=flags)
+
+def getaddrinfoIPv4(host, port, family=0, type=0, proto=0, flags=0):
+    return orig_getaddrinfo(host=host, port=port, family=socket.AF_INET, type=type, proto=proto, flags=flags)
+
+with patch('socket.getaddrinfo', side_effect=getaddrinfoIPv6):
+    r = requests.get(ip_lookup_url, allow_redirects=True)
+    ipv6 = r.text
+
+with patch('socket.getaddrinfo', side_effect=getaddrinfoIPv4):
+    r = requests.get(ip_lookup_url, allow_redirects=True)
+    ipv4 = r.text
+
+if verbose:
+    print ("Updating the IP address (" + ipv4 + ") now ...")
+response = requests.get(dyndns_server + "?hostname=" + dyndns + "&myip=" + ipv4 + "&verbose=" + str(verbose), auth = HTTPBasicAuth(login, password), allow_redirects=True)
+if verbose:
+    print ("Status: " + response.text)
+
+if verbose:
+    print ("Updating the IP address (" + ipv6 + ") now ...")
+response = requests.get(dyndns_server + "?hostname=" + dyndns + "&myip=" + ipv6 + "&verbose=" + str(verbose), auth = HTTPBasicAuth(login, password), allow_redirects=True)
+if verbose:
+    print ("Status: " + response.text)

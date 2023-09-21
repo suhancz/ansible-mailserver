@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Akos Balla
   description: Mail server suite on RPM-based distros
@@ -55,3 +56,4 @@ collections:
   - community.general
   - community.dns
   - community.mysql
+  - community.docker

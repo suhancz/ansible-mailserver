@@ -1,0 +1,33 @@
+---
+- name: Create WebDAV directory
+  file:
+    path: /var/www/html/webdav
+    state: directory
+    owner: apache
+    group: apache
+    mode: u=rwX,og=rX
+- name: Ensure WebDav certificate directory exists
+  file:
+    path: /var/www/html/webdav/.certificates
+    owner: apache
+    group: apache
+    state: directory
+  become: true
+  become_user: apache
+- name: BindFS mount SSL certificates to WebDav
+  mount:
+    path: /var/www/html/webdav/.certificates
+    src: /etc/letsencrypt/certificates
+    opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
+    state: mounted
+    fstype: fuse.bindfs
+- name: Set up SELinux rules for WebDAV
+  when: "{{ getenforce.stdout != 'Disabled' }}"
+  block:
+    - name: Set SELinux context on WebDAV directory
+      sefcontext:
+        target: '/var/www/html/webdav(/.*)?'
+        setype: httpd_sys_rw_content_t
+        state: present
+    - name: Apply SELinux file context on WebDAV directory
+      command: restorecon -irv /var/www/html/webdav

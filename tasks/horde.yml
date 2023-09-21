@@ -1,3 +1,4 @@
+---
 - name: Increase upload size and execution time
   lineinfile:
     path: '{{ item.file }}'
@@ -18,9 +19,7 @@
     - { file: '/etc/php.ini', key: 'max_execution_time', value: '300' }
     - { file: '/etc/opt/remi/php56/php.ini', key: 'max_execution_time', value: '300' }
     - { file: '/etc/opt/remi/php74/php.ini', key: 'max_execution_time', value: '300' }
-  notify: Restart systemd service
-  vars:
-    service_to_restart: php-fpm
+  notify: Restart php-fpm
 - name: Upload complex Horde configs
   copy:
     dest: "/etc/horde/{{ item }}/conf.php"
@@ -50,7 +49,7 @@
     - { app: '', mode: 'ug=rw' }
     # - { app: 'kronolith', mode: 'u=rw' }
 - name: Create horde DB schema
-  include_tasks: create_mariadb_schema.yml
+  import_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: horde
 - name: Set up Horde DB privileges

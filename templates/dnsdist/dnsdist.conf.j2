@@ -1,7 +1,14 @@
 setLocal('127.0.0.1:53')
 addLocal('::1')
 addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}')
-addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}')
+
+{# addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}') #}
+{% if wireguard is defined %}
+addLocal('{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}')
+
+{# addLocal('{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':1') }}') #}
+{% endif %}
+
 setACL({'0.0.0.0/0', '::/0'}) -- Allow all IPs access
 
 newServer({address='127.0.0.1:5300', pool='auth'})
@@ -12,6 +19,10 @@ recursive_ips:addMask('10.0.0.0/8') -- These network masks are the ones from all
 recursive_ips:addMask('172.16.0.0/12')
 recursive_ips:addMask('192.168.0.0/16')
 recursive_ips:addMask('127.0.0.0/8')
+{% if wireguard is defined %}
+recursive_ips:addMask('{{ wireguard.ipv4_pool }}')
+{# recursive_ips:addMask('{{ wireguard.ipv6_pool }}') #}
+{% endif %}
 
 addAction(NetmaskGroupRule(recursive_ips), PoolAction('recursor'))
 addAction(AllRule(), PoolAction('auth'))

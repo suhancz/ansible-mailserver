@@ -1,24 +1,11 @@
-<VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
-  ServerName {{ mailserver_domain }}
-  ServerAlias {% for custom_domain in custom_domains %}{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
-
-  DocumentRoot /var/www/html/
+<VirtualHost *:80>
+  # ServerName {{ mailserver_domain }}
+  # ServerAlias {% for custom_domain in custom_domains %}{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
 
   ErrorLog /var/log/httpd/wildcard_error.log
   CustomLog /var/log/httpd/wildcard_access.log combined
 
-  <Directory />
-    Options FollowSymLinks
-    AllowOverride All
-  </Directory>
+  RewriteEngine on
+  RewriteRule ^ https://youtu.be/LLFhKaqnWwk [END,NE,R=permanent]
 
-RewriteEngine on
-{% for custom_domain in [mailserver_domain] + custom_domains %}
-RewriteCond %{SERVER_NAME} ={{ custom_domain }}
-{%- if loop.index != loop.length %}
- [OR]
-{% endif %}
-{% endfor %}
-
-RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>

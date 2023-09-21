@@ -23,14 +23,14 @@ DROP TABLE IF EXISTS `comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `comments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `domain_id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `type` varchar(10) NOT NULL,
-  `modified_at` int(11) NOT NULL,
-  `account` varchar(40) CHARACTER SET utf8 DEFAULT NULL,
-  `comment` text CHARACTER SET utf8 NOT NULL,
-  PRIMARY KEY (`id`),
+  id                    INT AUTO_INCREMENT,
+  domain_id             INT NOT NULL,
+  name                  VARCHAR(255) NOT NULL,
+  type                  VARCHAR(10) NOT NULL,
+  modified_at           INT NOT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' DEFAULT NULL,
+  comment               TEXT CHARACTER SET 'utf8' NOT NULL,
+  PRIMARY KEY (id),
   KEY `comments_name_type_idx` (`name`,`type`),
   KEY `comments_order_idx` (`domain_id`,`modified_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -44,13 +44,13 @@ DROP TABLE IF EXISTS `cryptokeys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `cryptokeys` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `domain_id` int(11) NOT NULL,
-  `flags` int(11) NOT NULL,
-  `active` tinyint(1) DEFAULT NULL,
-  `published` tinyint(1) DEFAULT 1,
-  `content` text DEFAULT NULL,
-  PRIMARY KEY (`id`),
+  id                    INT AUTO_INCREMENT,
+  domain_id             INT NOT NULL,
+  flags                 INT NOT NULL,
+  active                BOOL,
+  published             BOOL DEFAULT 1,
+  content               TEXT,
+  PRIMARY KEY(id),
   KEY `domainidindex` (`domain_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -63,11 +63,11 @@ DROP TABLE IF EXISTS `domainmetadata`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `domainmetadata` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `domain_id` int(11) NOT NULL,
-  `kind` varchar(32) DEFAULT NULL,
-  `content` text DEFAULT NULL,
-  PRIMARY KEY (`id`),
+  id                    INT AUTO_INCREMENT,
+  domain_id             INT NOT NULL,
+  kind                  VARCHAR(32),
+  content               TEXT,
+  PRIMARY KEY (id),
   KEY `domainmetadata_idx` (`domain_id`,`kind`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -79,16 +79,19 @@ CREATE TABLE `domainmetadata` (
 DROP TABLE IF EXISTS `domains`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `domains` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `master` varchar(128) DEFAULT NULL,
-  `last_check` int(11) DEFAULT NULL,
-  `type` varchar(6) NOT NULL,
-  `notified_serial` int(10) unsigned DEFAULT NULL,
-  `account` varchar(40) CHARACTER SET utf8 DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name_index` (`name`)
+CREATE TABLE domains (
+  id                    INT AUTO_INCREMENT,
+  name                  VARCHAR(255) NOT NULL,
+  master                VARCHAR(128) DEFAULT NULL,
+  last_check            INT DEFAULT NULL,
+  type                  VARCHAR(8) NOT NULL,
+  notified_serial       INT UNSIGNED DEFAULT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' DEFAULT NULL,
+  options               VARCHAR(64000) DEFAULT NULL,
+  catalog               VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY `name_index` (`name`),
+  KEY `catalog_idx` (`catalog`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -158,17 +161,17 @@ DROP TABLE IF EXISTS `records`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `records` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `domain_id` int(11) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `type` varchar(10) DEFAULT NULL,
-  `content` varchar(64000) DEFAULT NULL,
-  `ttl` int(11) DEFAULT NULL,
-  `prio` int(11) DEFAULT NULL,
-  `disabled` tinyint(1) DEFAULT 0,
-  `ordername` varchar(255) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  `auth` tinyint(1) DEFAULT 1,
-  PRIMARY KEY (`id`),
+  id                    BIGINT AUTO_INCREMENT,
+  domain_id             INT DEFAULT NULL,
+  name                  VARCHAR(255) DEFAULT NULL,
+  type                  VARCHAR(10) DEFAULT NULL,
+  content               VARCHAR(64000) DEFAULT NULL,
+  ttl                   INT DEFAULT NULL,
+  prio                  INT DEFAULT NULL,
+  disabled              TINYINT(1) DEFAULT 0,
+  ordername             VARCHAR(255) BINARY DEFAULT NULL,
+  auth                  TINYINT(1) DEFAULT 1,
+  PRIMARY KEY (id),
   KEY `nametype_index` (`name`,`type`),
   KEY `domain_id` (`domain_id`),
   KEY `ordername` (`ordername`)
@@ -197,10 +200,10 @@ DROP TABLE IF EXISTS `supermasters`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `supermasters` (
-  `ip` varchar(64) NOT NULL,
-  `nameserver` varchar(255) NOT NULL,
-  `account` varchar(40) CHARACTER SET utf8 NOT NULL,
-  PRIMARY KEY (`ip`,`nameserver`)
+  ip                    VARCHAR(64) NOT NULL,
+  nameserver            VARCHAR(255) NOT NULL,
+  account               VARCHAR(40) CHARACTER SET 'utf8' NOT NULL,
+  PRIMARY KEY (ip, nameserver)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -212,11 +215,11 @@ DROP TABLE IF EXISTS `tsigkeys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `tsigkeys` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `algorithm` varchar(50) DEFAULT NULL,
-  `secret` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`),
+  id                    INT AUTO_INCREMENT,
+  name                  VARCHAR(255),
+  algorithm             VARCHAR(50),
+  secret                VARCHAR(255),
+  PRIMARY KEY (id),
   UNIQUE KEY `namealgoindex` (`name`,`algorithm`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
