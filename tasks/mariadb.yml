@@ -1,3 +1,4 @@
+---
 - name: Make sure MariaDB is running
   systemd:
     name: mariadb

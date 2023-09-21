@@ -1,0 +1,13 @@
+$TTL 2h;
+$ORIGIN {{ mailserver_domain }}.
+@          SOA ns.{{ mailserver_domain }} hostmaster\.{{ mailserver_domain }} 0 10800 3600 604800 3600
+           NS ns.{{ mailserver_domain }}. 
+; begin RPZ RR definitions
+
+{% set subsites = ['postfixadmin', 'poweradmin']%}
+{% for subsite in subsites %}
+{{ subsite }}.{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '.1') }}{% else %}127.0.0.1{% endif %}
+
+# {{ subsite }}.{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', ':1') }}{% else %}::1{% endif %}
+
+{% endfor %}

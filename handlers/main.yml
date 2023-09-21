@@ -1,7 +1,146 @@
 ---
-- name: Restart systemd service
+- name: Restart amavisd
   systemd:
-    name: "{{ service_to_restart }}"
+    name: amavisd
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Restart clamav-freshclam
+  systemd:
+    name: clamav-freshclam
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: "Restart dirsrv@{{ mailserver_hostname }}"
+  systemd:
+    name: "dirsrv@{{ mailserver_hostname }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart dnsdist
+  systemd:
+    name: dnsdist
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart dovecot
+  systemd:
+    name: dovecot
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart fail2ban
+  systemd:
+    name: fail2ban
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart firewalld
+  systemd:
+    name: firewalld
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart httpd
+  systemd:
+    name: httpd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart mongod
+  systemd:
+    name: mongod
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart NetworkManager
+  systemd:
+    name: NetworkManager
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart opendkim
+  systemd:
+    name: opendkim
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart opendmarc
+  systemd:
+    name: opendmarc
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart pdns
+  systemd:
+    name: pdns
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart pdns-recursor
+  systemd:
+    name: pdns-recursor
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart php-fpm
+  systemd:
+    name: php-fpm
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart postfix
+  systemd:
+    name: postfix
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart postgrey
+  systemd:
+    name: postgrey
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart spamassassin
+  systemd:
+    name: spamassassin
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart spamass-milter
+  systemd:
+    name: spamass-milter
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart subspace
+  systemd:
+    name: podman-compose@subspace
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart systemd-resolved
+  systemd:
+    name: systemd-resolved
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart vsftpd
+  systemd:
+    name: vsftpd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart WireGuard
+  systemd:
+    name: "wg_vpn.{{ systemd_unit_type }}"
+    daemon_reload: yes
+    state: started
+  loop:
+    - path
+    - service
+  loop_control:
+    loop_var: systemd_unit_type
+- name: Warn on passwords
+  debug:
+    msg: "!!!WARNING!!! All web UI admin passwords are set to the same as your admin user's password. For your own safety, change them before going live"

@@ -1,6 +1,5 @@
-<VirtualHost {% for custom_domain in [mailserver_domain] + custom_domains %}postfixadmin.{{ custom_domain }}:80{% if loop.index != loop.length %} {% endif %}{% endfor %}>
-  ServerName postfixadmin.{{ mailserver_domain }}
-  ServerAlias {% for custom_domain in custom_domains %}postfixadmin.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+<VirtualHost *:80>
+  ServerName postfixadmin.vpn.{{ mailserver_domain }}
 
   DocumentRoot /var/www/postfixadmin/public/
 
@@ -10,22 +9,17 @@
   <Directory />
     Options FollowSymLinks
     AllowOverride All
+    Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
   </Directory>
 
   <Directory /var/www/postfixadmin/public/>
     Options FollowSymLinks MultiViews
     AllowOverride All
-    Order allow,deny
-    allow from all
+    Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
   </Directory>
 
 RewriteEngine on
-{% for custom_domain in [mailserver_domain] + custom_domains %}
-RewriteCond %{SERVER_NAME} =postfixadmin.{{ custom_domain }}
-{%- if loop.index != loop.length %}
- [OR]
-{% endif %}
-{% endfor %}
+RewriteCond %{SERVER_NAME} =postfixadmin.vpn.{{ mailserver_domain }}
 
 RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>

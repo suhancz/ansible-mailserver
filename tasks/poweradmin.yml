@@ -1,0 +1,116 @@
+---
+- name: Get latest PowerAdmin version
+  block:
+    - name: Get URL for latest release
+      uri:
+        url: https://github.com/poweradmin/poweradmin/releases/latest
+      register: poweradmin_download_site
+    - name: Parse version
+      set_fact:
+        poweradmin_version: "{{ poweradmin_download_site.url | replace('https://github.com/poweradmin/poweradmin/releases/tag/v','') }}"
+  when: 'public_dns == "yes"'
+- name: Unpack PowerAdmin
+  unarchive:
+    src: "https://github.com/poweradmin/poweradmin/archive/v{{ poweradmin_version }}.tar.gz"
+    dest: /var/www/
+    remote_src: yes
+  when: 'public_dns == "yes"'
+- name: Rename PowerAdmin directory
+  command: "mv /var/www/poweradmin-{{ poweradmin_version }} /var/www/poweradmin"
+  args:
+    creates: /var/www/poweradmin
+  when: 'public_dns == "yes"'
+- name: Set up PowerAdmin permissions
+  file:
+    path: /var/www/poweradmin
+    state: directory
+    owner: apache
+    group: apache
+    recurse: yes
+  when: 'public_dns == "yes"'
+- name: Generate PowerAdmin session key
+  set_fact:
+    poweradmin_session_key: "{{ poweradmin_session_key | default(lookup('password', '/tmp/ansible-mailserver-install.poweradmin_session_key chars=ascii_lowercase,ascii_uppercase,digits,@,#,$,%,^,*,(,),_,-,! length=46')) }}"
+  no_log: yes
+  when: 'public_dns == "yes"'
+- name: "Add PowerAdmin user"
+  mysql_user:
+    name: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+    priv: 'powerdnsdb.*:SELECT,INSERT,UPDATE,DELETE'
+    host: localhost
+    login_user: root
+    login_password: '{{ mysql_root_password }}'
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Warn on passwords
+- name: Fill PowerDNS DB with PowerAdmin data
+  block:
+    - name: Fill PowerDNS DB with PowerAdmin data using Blowfish 2y ident
+      mysql_query:
+        login_db: powerdnsdb
+        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+        login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+        query:
+          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41,	'zone_master_add',	'User is allowed to add new master zones.'), (42,	'zone_slave_add',	'User is allowed to add new slave zones.'), (43,	'zone_content_view_own',	'User is allowed to see the content and meta data of zones he owns.'), (44,	'zone_content_edit_own',	'User is allowed to edit the content of zones he owns.'), (45,	'zone_meta_edit_own',	'User is allowed to edit the meta data of zones he owns.'), (46,	'zone_content_view_others',	'User is allowed to see the content and meta data of zones he does not own.'), (47,	'zone_content_edit_others',	'User is allowed to edit the content of zones he does not own.'), (48,	'zone_meta_edit_others',	'User is allowed to edit the meta data of zones he does not own.'), (49,	'search',	'User is allowed to perform searches.'), (50,	'supermaster_view',	'User is allowed to view supermasters.'), (51,	'supermaster_add',	'User is allowed to add new supermasters.'), (52,	'supermaster_edit',	'User is allowed to edit supermasters.'), (53,	'user_is_ueberuser',	'User has full access. God-like. Redeemer.'), (54,	'user_view_others',	'User is allowed to see other users and their details.'), (55,	'user_add_new',	'User is allowed to add new users.'), (56,	'user_edit_own',	'User is allowed to edit their own details.'), (57,	'user_edit_others',	'User is allowed to edit other users.'), (58,	'user_passwd_edit_others',	'User is allowed to edit the password of other users.'), (59,	'user_edit_templ_perm',	'User is allowed to change the permission template that is assigned to a user.'), (60,	'templ_perm_add',	'User is allowed to add new permission templates.'), (61,	'templ_perm_edit',	'User is allowed to edit existing permission templates.'), (62,	'zone_content_edit_own_as_client',	'User is allowed to edit record, but not SOA and NS.');
+          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
+          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (2,	'Dynamic',	'For DNS updates')
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (2,	2,	44)
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (3,	2,	43)
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (4,	2,	41)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'dyndns', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Dynamic DNS', 'dyndns@{{ mailserver_domain }}', 'User for dynamic DNS updates', 2, 1, 0)
+          - "REPLACE INTO `zones` (`id`, `domain_id`, `owner`, `comment`, `zonr_templ_id`) SELECT 1, domain_id, 2, '', 0 FROM domains WHERE name = 'dyndns.{{ mailserver_domain }}'"
+      # no_log: yes
+      when: 'public_dns == "yes"'
+      notify: Warn on passwords
+  rescue:
+    - name: Fill PowerDNS DB with PowerAdmin data replacing Blowfish 2b ident with 2y
+      mysql_query:
+        login_db: powerdnsdb
+        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+        login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+        query:
+          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41,	'zone_master_add',	'User is allowed to add new master zones.'), (42,	'zone_slave_add',	'User is allowed to add new slave zones.'), (43,	'zone_content_view_own',	'User is allowed to see the content and meta data of zones he owns.'), (44,	'zone_content_edit_own',	'User is allowed to edit the content of zones he owns.'), (45,	'zone_meta_edit_own',	'User is allowed to edit the meta data of zones he owns.'), (46,	'zone_content_view_others',	'User is allowed to see the content and meta data of zones he does not own.'), (47,	'zone_content_edit_others',	'User is allowed to edit the content of zones he does not own.'), (48,	'zone_meta_edit_others',	'User is allowed to edit the meta data of zones he does not own.'), (49,	'search',	'User is allowed to perform searches.'), (50,	'supermaster_view',	'User is allowed to view supermasters.'), (51,	'supermaster_add',	'User is allowed to add new supermasters.'), (52,	'supermaster_edit',	'User is allowed to edit supermasters.'), (53,	'user_is_ueberuser',	'User has full access. God-like. Redeemer.'), (54,	'user_view_others',	'User is allowed to see other users and their details.'), (55,	'user_add_new',	'User is allowed to add new users.'), (56,	'user_edit_own',	'User is allowed to edit their own details.'), (57,	'user_edit_others',	'User is allowed to edit other users.'), (58,	'user_passwd_edit_others',	'User is allowed to edit the password of other users.'), (59,	'user_edit_templ_perm',	'User is allowed to change the permission template that is assigned to a user.'), (60,	'templ_perm_add',	'User is allowed to add new permission templates.'), (61,	'templ_perm_edit',	'User is allowed to edit existing permission templates.'), (62,	'zone_content_edit_own_as_client',	'User is allowed to edit record, but not SOA and NS.');
+          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1,	'Administrator',	'Administrator template with full rights.')
+          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (2,	'Dynamic',	'For DNS updates')
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1,	1,	53)
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (2,	2,	44)
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (3,	2,	43)
+          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (4,	2,	41)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'dyndns', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Dynamic DNS', 'dyndns@{{ mailserver_domain }}', 'User for dynamic DNS updates', 2, 1, 0)
+          - "REPLACE INTO `zones` (`id`, `domain_id`, `owner`, `comment`, `zonr_templ_id`) SELECT 1, domain_id, 2, '', 0 FROM domains WHERE name = 'dyndns.{{ mailserver_domain }}'"
+      # no_log: yes
+      when: 'public_dns == "yes"'
+      notify: Warn on passwords
+- name: Check if DynDNS .htaccess exists
+  stat:
+    path: /var/www/poweradmin/.htaccess
+  register: htaccess_exists
+  when: 'public_dns == "yes"'
+- name: Set up DynDNS .htaccess
+  copy:
+    src: /var/www/poweradmin/install/htaccess.dist
+    dest: /var/www/poweradmin/.htaccess
+    remote_src: yes
+    owner: apache
+    group: apache
+    mode: ug=rw,o=r
+  when: 'public_dns == "yes" and not htaccess_exists.stat.exists'
+- name: Render PowerAdmin config
+  template:
+    src: poweradmin/config.inc.php.j2
+    dest: /var/www/poweradmin/inc/config.inc.php
+    mode: ug=rw,o=r
+    owner: apache
+    group: apache
+    backup: yes
+  no_log: yes
+  when: 'public_dns == "yes"'
+- name: Remove install directory
+  file:
+    path: /var/www/poweradmin/install/
+    state: absent
+  when: 'public_dns == "yes"'

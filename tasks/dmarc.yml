@@ -1,3 +1,4 @@
+---
 - name: Configure OpenDMARC
   lineinfile:
     regexp: '\b{{ item.key }}\b'
@@ -23,11 +24,9 @@
     - { key: "RequiredHeaders", value: "true", comment: false }
     - { key: "SPFIgnoreResults", value: "false", comment: false }
     - { key: "SPFSelfValidate", value: "true", comment: false }
-  notify: Restart systemd service
-  vars:
-    service_to_restart: opendmarc
+  notify: Restart opendmarc
 - name: Set up DMARC TXT records
-  include: add_dns_record.yml
+  include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ item }}"

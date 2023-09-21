@@ -2,6 +2,7 @@
 Description={{ item.name }} backup
 {% if item.service is defined and item.service %}
 After={{ item.name }}.service
+After=backup.mount
 Requires={{ item.name }}.service
 {% endif %}
 

@@ -1,5 +1,6 @@
+---
 # - name: Open firewall
-#   include: firewall.yml
+#   import_tasks: firewall.yml
 #   vars:
 #     port: 8891/tcp
 - name: Configure OpenDKIM
@@ -22,9 +23,7 @@
     - { key: "InternalHosts", value: "refile:/etc/opendkim/TrustedHosts", comment: false }
     - { key: "Selector", value: "{{ dkim_selector }}", comment: false }
     - { key: "RequireSafeKeys", value: "false", comment: false}
-  notify: Restart systemd service
-  vars:
-    service_to_restart: opendkim
+  notify: Restart opendkim
 - name: Configure OpenDKIM key table
   lineinfile:
     regexp: '{{ item }}'
@@ -36,9 +35,7 @@
     state: present
     backup: yes
   loop: "{{ [mailserver_domain] + custom_domains }}"
-  notify: Restart systemd service
-  vars:
-    service_to_restart: opendkim
+  notify: Restart opendkim
 - name: Configure OpenDKIM trusted hosts
   lineinfile:
     regexp: '{{ item }}'
@@ -50,9 +47,7 @@
     state: present
     backup: yes
   loop: "{{ [mailserver_domain] + custom_domains }}"
-  notify: Restart systemd service
-  vars:
-    service_to_restart: opendkim
+  notify: Restart opendkim
 - name: Configure OpenDKIM signing table
   lineinfile:
     regexp: '{{ item }}'
@@ -64,9 +59,7 @@
     state: present
     backup: yes
   loop: "{{ [mailserver_domain] + custom_domains }}"
-  notify: Restart systemd service
-  vars:
-    service_to_restart: opendkim
+  notify: Restart opendkim
 - name: Create OpenDKIM key directories
   file:
     state: directory
@@ -81,9 +74,7 @@
   args:
     creates: "/etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.private"
   loop: "{{ [mailserver_domain] + custom_domains }}"
-  notify: Restart systemd service
-  vars:
-    service_to_restart: opendkim
+  notify: Restart opendkim
 - name: Ensure OpenDKIM key directory permissions
   file:
     state: directory

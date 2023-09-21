@@ -1,0 +1,23 @@
+[Interface]
+{% if wireguard.mtu is defined %}
+MTU = {{ wireguard.mtu }}
+{% endif %}
+Address = {{ wg_configs[wg_client]['cidr'] }}
+PrivateKey = {{ wg_configs[wg_client]['privatekey'] }}
+{% if wireguard.nameservers is defined %}
+DNS = {{ wireguard.nameservers|join(', ') }}
+{% endif %}
+{% if wireguard.listen_port is defined %}
+ListenPort = {{ wireguard.listen_port }}
+{% endif %}
+
+[Peer]
+PublicKey = {{ wg_configs.server.publickey }}
+Endpoint = vpn.{{ mailserver_domain }}:{{ wireguard.listen_port }}
+AllowedIPs = {{ wireguard.allowed_ips|join(', ') }}
+{% if wg_configs[wg_client]['psk'] is defined %}
+PresharedKey = {{ wg_configs[wg_client]['psk'] }}
+{% endif %}
+{% if wireguard.keepalive is defined %}
+PersistentKeepalive = {{ wireguard.keepalive }}
+{% endif %}

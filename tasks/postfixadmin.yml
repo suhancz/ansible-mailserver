@@ -1,3 +1,4 @@
+---
 - name: Get latest postfixadmin version
   block:
     - name: Get URL for latest release
@@ -23,7 +24,7 @@
     setype: httpd_sys_rw_content_t
     recurse: yes
 - name: Create postfixadmin DB schema
-  include_tasks: create_mariadb_schema.yml
+  import_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: postfixadmin
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
@@ -38,7 +39,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Fill postfixadmin DB with data
-  include_tasks: fill_mariadb_data.yml
+  import_tasks: fill_mariadb_data.yml
   vars:
     mariadb_database:
       db: postfixadmin
@@ -46,6 +47,7 @@
       password: "{{ postfixadmin_db_password }}"
   when: mariadb_schema_created.changed
   no_log: yes
+  notify: Warn on passwords
 - name: Generate PostfixAdmin PHP password
   command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password
