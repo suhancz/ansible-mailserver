@@ -259,6 +259,30 @@
       content: "{{ (wg_configs[item]['cidr'].split(', ')|last).split('/')|first }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
+- name: Add admin VPN A records
+  include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "vpn.{{ mailserver_domain }}"
+      name: "{{ item }}"
+      ttl: "3600"
+      type: A
+      content: "{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}"
+  loop:
+    - postfixadmin
+    - poweradmin
+- name: Add admin VPN AAAA records
+  include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "vpn.{{ mailserver_domain }}"
+      name: "{{ item }}"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':1') }}"
+  loop:
+    - postfixadmin
+    - poweradmin
 - name: Generate BASH DynDNS clients
   template:
     src: dyndns/dynamic_dns_client.sh.j2
