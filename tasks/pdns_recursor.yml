@@ -36,12 +36,12 @@
   notify: Restart pdns-recursor
 - name: Add VPN addresses to hosts file
   lineinfile:
-    line: "{{ item }} postfixadmin.{{ mailserver_domain }} poweradmin.{{ mailserver_domain }}"
+    line: "{{ item }} postfixadmin.vpn.{{ mailserver_domain }} poweradmin.vpn.{{ mailserver_domain }}"
     path: /etc/hosts
     backup: yes
   loop:
     - "{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\\.0$', '\.1') }}"
-    # - "{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}"
+    - "{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', '\:1') }}"
   when: wireguard is defined
   notify: Restart pdns-recursor
 - name: Configure PowerDNS recursor to forward custom domains
