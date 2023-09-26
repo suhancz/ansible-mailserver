@@ -1,8 +1,0 @@
----
-- name: Configure DNSDist
-  template:
-    src: dnsdist/dnsdist.conf.j2
-    dest: /etc/dnsdist/dnsdist.conf
-    backup: yes
-  when: 'public_dns == "yes"'
-  notify: Restart dnsdist
