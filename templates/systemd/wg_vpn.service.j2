@@ -8,3 +8,5 @@ ExecStart=/usr/bin/sh -c '/usr/bin/systemctl restart wg-quick@wg0.service ; /usr
 
 [Install]
 RequiredBy=wg_vpn.path
+
+Type=oneshot
