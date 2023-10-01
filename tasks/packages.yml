@@ -317,6 +317,7 @@
       - python3-pyyaml
       - python3-jinja2
       - qrencode
+      - python3-pip
     state: latest
 - name: Install Remi packages
   dnf:
@@ -414,3 +415,17 @@
     dest: /usr/local/bin/
     remote_src: yes
     backup: yes
+- name: Install Python packages
+  pip:
+    name:
+      - offlineimap
+    state: latest
+- name: Download as-is executables
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: u=rwx,go=rx
+    force: yes
+    backup: yes
+  loop:
+    - { url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py", dest: "/usr/local/bin/imapdedup.py" }

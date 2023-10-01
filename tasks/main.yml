@@ -46,6 +46,12 @@
   import_tasks: postfix.yml
 - name: Configure Dovecot
   import_tasks: dovecot.yml
+- name: Sync old IMAP account
+  import_tasks: offlineimap.yml
+  when: "{{ item.old_imap_mail is defined }}"
+  loop: "{{ users }}"
+  become: yes
+  become_user: "{{ item.name }}"
 - name: Set up DKIM
   import_tasks: dkim.yml
 - name: Set up DMARC
