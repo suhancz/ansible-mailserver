@@ -24,6 +24,7 @@
     - { key: "RequiredHeaders", value: "true", comment: false }
     - { key: "SPFIgnoreResults", value: "false", comment: false }
     - { key: "SPFSelfValidate", value: "true", comment: false }
+    - { key: "IgnoreMailFrom", value: "{{ undeliverable_exceptions | join(',') }}", comment: false }
   notify: Restart opendmarc
 - name: Set up DMARC TXT records
   include_tasks: add_dns_record.yml
