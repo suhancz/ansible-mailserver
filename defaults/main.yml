@@ -3,8 +3,7 @@ authorized_submit_users:
   - root
   - www-data
   - apache
-undeliverable_exceptions:
-  - mailserver_domain
+undeliverable_exceptions: "{{ [mailserver_domain] + custom_domains }}"
 dkim_selector: 20220222
 public_dns: no
 reset: no
