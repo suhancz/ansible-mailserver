@@ -3,6 +3,8 @@
   set_fact:
     old_imap_fingerprint: ''
 - name: Generate config and sync old IMAP contents
+  become: yes
+  become_user: "{{ item.name }}"
   block:
     - name: Create offlineimap config
       template:
@@ -27,6 +29,8 @@
     - name: Sync old IMAP for the first time (this might tale a while...)
       command: offlineimap
 - name: Sync old IMAP account
+  become: yes
+  become_user: "{{ item.name }}"
   cron:
     name: "Sync old IMAP account {{ item.old_imap_mail.user }} at {{ item.old_imap_mail.host }} for {{ item.name }}"
     special_time: daily
@@ -34,6 +38,8 @@
     backup: yes
     user: "{{ item.name }}"
 - name: De-duplicate IMAP mail
+  become: yes
+  become_user: "{{ item.name }}"
   cron:
     name: De-duplicate IMAP mail
     special_time: daily
