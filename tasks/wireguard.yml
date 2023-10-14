@@ -187,7 +187,7 @@
       name: "@"
       ttl: "3600"
       type: A
-      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+      content: "{{ ansible_default_ipv4.address }}"
 - name: Add DynDNS root AAAA record
   import_tasks: add_dns_record.yml
   vars:
@@ -196,7 +196,7 @@
       name: "@"
       ttl: "3600"
       type: AAAA
-      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
+      content: "{{ ansible_default_ipv6.address }}"
 - name: Add DynDNS A records
   include_tasks: add_dns_record.yml
   vars:
@@ -227,7 +227,7 @@
       name: "@"
       ttl: "3600"
       type: A
-      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+      content: "{{ ansible_default_ipv4.address }}"
 - name: Add VPN root AAAA record
   import_tasks: add_dns_record.yml
   vars:
@@ -236,7 +236,7 @@
       name: "@"
       ttl: "3600"
       type: AAAA
-      content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
+      content: "{{ ansible_default_ipv6.address }}"
 - name: Add VPN A records
   include_tasks: add_dns_record.yml
   vars:

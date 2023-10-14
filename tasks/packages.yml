@@ -124,7 +124,12 @@
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable DNF modules
-  command: dnf module enable php:remi-7.4 389-directory-server:stable/default go-toolset -y
+  command: dnf module enable php:remi-7.4 go-toolset -y
+- name: Enable the COPR repositories
+  command: "dnf copr enable -y {{ item }}"
+  loop:
+    - "@389ds/389-directory-server"
+    - "eclipseo/golang-ng custom-1-x86_64"
 - name: Install packages
   package:
     name:
@@ -306,7 +311,7 @@
       - mod_authnz_pam
       - mod_authnz_external
       - pwauth
-      - kmod-wireguard
+      # - kmod-wireguard
       - wireguard-tools
       - bindfs
       - golang
@@ -318,6 +323,7 @@
       - python3-jinja2
       - qrencode
       - python3-pip
+      - golang-github-acme-lego
     state: latest
 - name: Install Remi packages
   dnf:
@@ -405,16 +411,16 @@
   pear:
     name: pear.horde.org/Horde_ActiveSync
     state: latest
-- name: Install go package
-  command: "go install {{ item }}"
-  loop:
-    - github.com/go-acme/lego/v4/cmd/lego@latest
-- name: Copy GO binaries to /usr/local/bin
-  copy:
-    src: "{{ ansible_env.HOME }}/go/bin/"
-    dest: /usr/local/bin/
-    remote_src: yes
-    backup: yes
+# - name: Install go packages
+#   command: "go install {{ item }}"
+#   loop:
+#     - github.com/go-acme/lego/v4/cmd/lego@latest
+# - name: Copy GO binaries to /usr/local/bin
+#   copy:
+#     src: "{{ ansible_env.HOME }}/go/bin/"
+#     dest: /usr/local/bin/
+#     remote_src: yes
+#     backup: yes
 - name: Install Python packages
   pip:
     name:
