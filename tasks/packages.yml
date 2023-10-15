@@ -1,9 +1,36 @@
 ---
+- name: Set up UEK repository (for wireguard support)
+  tags: wireguard
+  blockinfile:
+    path: /etc/yum.repos.d/uek-ol8.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Unbreakable Enterprise Kernel Release 7 for Oracle Linux repository"
+    block: |
+      [ol8_UEKR7]
+      name=Latest Unbreakable Enterprise Kernel Release 7 for Oracle Linux $releasever ($basearch)
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR7/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8
+      gpgcheck=1
+      enabled=1
+
+      [ol8_baseos_latest]
+      name=Oracle Linux 8 BaseOS Latest ($basearch)
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8
+      gpgcheck=1
+      enabled=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
 - name: Set up Remi repository
+  tags: horde
   dnf:
     name: "https://rpms.remirepo.net/enterprise/remi-release-{{ hostvars[inventory_hostname].ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
 - name: Set up ElasticSearch repository
+  tags: elasticsearch
   blockinfile:
     path: /etc/yum.repos.d/elastic.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK ElasticSearch 8.x repository"
@@ -39,6 +66,7 @@
     backup: yes
     create: yes
 - name: Set up PowerDNS repository
+  tags: dns
   blockinfile:
     path: /etc/yum.repos.d/powerdns.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK PowerDNS repository"
@@ -124,9 +152,13 @@
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
 - name: Enable DNF modules
+  tags: horde
   command: dnf module enable php:remi-7.4 go-toolset -y
 - name: Enable the COPR repositories
   command: "dnf copr enable -y {{ item }}"
+  tags:
+    - ldap
+    - dns
   loop:
     - "@389ds/389-directory-server"
     - "eclipseo/golang-ng custom-1-x86_64"
@@ -311,7 +343,6 @@
       - mod_authnz_pam
       - mod_authnz_external
       - pwauth
-      # - kmod-wireguard
       - wireguard-tools
       - bindfs
       - golang
@@ -326,6 +357,7 @@
       - golang-github-acme-lego
     state: latest
 - name: Install Remi packages
+  tags: horde
   dnf:
     name:
       - php-channel-horde
@@ -407,7 +439,28 @@
       - getmail
     enablerepo: epel-el7
     state: latest
+- name: Enable WireGuard kernel module
+  tags: wireguard
+  block:
+    - name: Load the WireGuard kernel module
+      modprobe:
+        name: wireguard
+  rescue:
+    - name: Install UEK packages
+      dnf:
+        name:
+          - kmod-wireguard
+        enablerepo: ol8_baseos_latest
+        state: latest
+    - name: Reboot to pick up changes
+      reboot:
+        reboot_timeout: 600
+        msg: "Reboot initiated by Ansible to enable WireGuard"
+    - name: Load the WireGuard kernel module
+      modprobe:
+        name: wireguard
 - name: Install PEAR packages
+  tags: horde
   pear:
     name: pear.horde.org/Horde_ActiveSync
     state: latest
@@ -415,6 +468,7 @@
 #   command: "go install {{ item }}"
 #   loop:
 #     - github.com/go-acme/lego/v4/cmd/lego@latest
+#   tags: ssl
 # - name: Copy GO binaries to /usr/local/bin
 #   copy:
 #     src: "{{ ansible_env.HOME }}/go/bin/"
@@ -422,12 +476,14 @@
 #     remote_src: yes
 #     backup: yes
 - name: Install Python packages
+  tags: imapsync
   pip:
     name:
       - imaplib2
       - "git+https://github.com/OfflineIMAP/offlineimap3"
     state: latest
 - name: Download as-is executables
+  tags: imapsync
   get_url:
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"

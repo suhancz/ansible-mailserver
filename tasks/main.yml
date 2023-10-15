@@ -11,56 +11,87 @@
     mariabackup_password: "{{ mariabackup_password | default(lookup('password', '/tmp/ansible-mailserver-install.mariabackup_password chars=ascii_letters,digits')) }}"
     horde_secret_key: "{{ horde_secret_key | default(lookup('password', '/tmp/ansible-mailserver-install.horde_secret_key chars=ascii_letters,digits')) }}"
   no_log: yes
+  tags: always
 - name: Fill authorized submit user list
   set_fact:
     authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
   loop: "{{ users }}"
   no_log: yes
+  tags: always
 - name: Configure OS
   import_tasks: os.yml
+  tags: os
 - name: Configure MariaDB
   import_tasks: mariadb.yml
+  tags: mariadb
 - name: Configure DNS
   import_tasks: dns.yml
+  tags:
+    - always
+    - dns
 - name: Configure PostfixAdmin
   import_tasks: postfixadmin.yml
+  tags: postfixadmin
 - name: Set up SSL
   import_tasks: ssl.yml
+  tags: ssl
 - name: Configure LDAP
   import_tasks: ldap.yml
+  tags: ldap
 - name: Set up Horde
   import_tasks: horde.yml
+  tags: horde
 - name: Set up ElasticSearch
   import_tasks: elasticsearch.yml
+  tags: elasticsearch
 - name: Set up FTP
   import_tasks: ftp.yml
+  tags: ftp
 - name: Configure Apache
   import_tasks: httpd.yml
+  tags:
+    - httpd
 - name: Set up SPAMAssassin
   import_tasks: spamassassin.yml
+  tags: spamassassin
 - name: Configure Antivirus
   import_tasks: antivirus.yml
+  tags: antivirus
 - name: Configure Redis
   import_tasks: redis.yml
+  tags: redis
 - name: Configure Postfix
   import_tasks: postfix.yml
+  tags: postfix
 - name: Configure Dovecot
   import_tasks: dovecot.yml
+  tags: dovecot
 - name: Sync old IMAP account
   include_tasks: offlineimap.yml
-  when: "{{ item.old_imap_mail is defined }}"
-  loop: "{{ users }}"
+  loop: users
+  loop_control:
+    loop_var: current_user
+  tags: imapsync
 - name: Set up DKIM
   import_tasks: dkim.yml
+  tags:
+    - always
+    - dkim
 - name: Set up DMARC
   import_tasks: dmarc.yml
+  tags: dmarc
 - name: Set up MongoDB
   import_tasks: mongodb.yml
+  tags: mongodb
 - name: Set up WebDav
   import_tasks: webdav.yml
+  tags: webdav
 - name: Set up WireGuard
   import_tasks: wireguard.yml
+  tags: wireguard
 - name: Set up backups
   import_tasks: backups.yml
+  tags: backup
 - name: Configure fail2ban
   import_tasks: fail2ban.yml
+  tags: fail2ban

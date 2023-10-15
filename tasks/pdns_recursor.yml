@@ -35,6 +35,7 @@
   when: 'public_dns == "yes"'
   notify: Restart pdns-recursor
 - name: Add VPN addresses to hosts file
+  tags: wireguard
   lineinfile:
     line: "{{ item }} postfixadmin.vpn.{{ mailserver_domain }} poweradmin.vpn.{{ mailserver_domain }}"
     path: /etc/hosts
