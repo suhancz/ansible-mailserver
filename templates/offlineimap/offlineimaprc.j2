@@ -17,7 +17,7 @@ type = IMAP
 remotehost = {{ item.old_imap_mail.host }}
 remoteuser = {{ item.old_imap_mail.user }}
 remotepass = {{ item.old_imap_mail.password }}
-{% if (not item.old_imap_mail.ssl_verify) and (old_imap_fingerprint is defined and 'Fingerprint=' in old_imap_fingerprint) %}
+{% if (not item.old_imap_mail.ssl_verify) and (old_imap_fingerprint is defined and 'Fingerprint=' in old_imap_fingerprint.stdout) %}
 cert_fingerprint = {{ old_imap_fingerprint.stdout | trim | split('Fingerprint=') | last }}
 
 {% else %}
