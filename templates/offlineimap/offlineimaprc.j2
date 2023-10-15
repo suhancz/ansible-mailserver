@@ -8,8 +8,8 @@ remoterepository = oldimap
 [Repository newimap]
 type = IMAP
 remotehost = {{ mailserver_domain }}
-remoteuser = {{ item.name }}@{{ mailserver_domain }}
-remotepass = {{ item.password }}
+remoteuser = {{ current_user.name }}@{{ mailserver_domain }}
+remotepass = {{ current_user.password }}
 sslcacertfile = /etc/ssl/certs/ca-bundle.trust.crt
 
 [Repository oldimap]
