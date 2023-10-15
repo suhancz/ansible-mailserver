@@ -11,6 +11,8 @@ remotehost = {{ mailserver_domain }}
 remoteuser = {{ current_user.name }}@{{ mailserver_domain }}
 remotepass = {{ current_user.password }}
 sslcacertfile = /etc/ssl/certs/ca-bundle.trust.crt
+nametrans = lambda folder: folder if folder in re.search('(.*\.Junk$|.*\.Sent$|.*\.Spam$|.*\.Trash$)', folder) else 'INBOX.' + folder
+folderfilter = lambda folder: not re.search('(^Trash$|Del)', folder)
 
 [Repository oldimap]
 type = IMAP
@@ -19,7 +21,8 @@ remoteuser = {{ current_user.old_imap_mail.user }}
 remotepass = {{ current_user.old_imap_mail.password }}
 # The below will put all folders as sub-folders of the 'local' INBOX,
 # assuming that your path separator on 'local' is a dot.
-nametrans = lambda x: 'INBOX.' + x
+# top-level folders ['Drafts', 'Junk', 'Sent', 'Spam', 'Trash'] are excluded
+nametrans = lambda folder: 'INBOX.' + folder if folder not in re.search('(.*\.Junk$|.*\.Sent$|.*\.Spam$|.*\.Trash$)', folder) else folder
 {% if (not current_user.old_imap_mail.ssl_verify) or ((current_user.old_imap_mail.ssl_verify | lower) == 'no') or ((current_user.old_imap_mail.ssl_verify | lower) == 'false') or (current_user.old_imap_mail.ssl_verify == 0) %}
 # old IMAP certifcates are not verified
 {% if old_imap_fingerprint is defined %}
