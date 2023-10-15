@@ -477,13 +477,6 @@
 #     dest: /usr/local/bin/
 #     remote_src: yes
 #     backup: yes
-- name: Install Python packages
-  tags: imapsync
-  pip:
-    name:
-      - imaplib2
-      - "git+https://github.com/OfflineIMAP/offlineimap3"
-    state: latest
 - name: Download as-is executables
   tags: imapsync
   get_url:
