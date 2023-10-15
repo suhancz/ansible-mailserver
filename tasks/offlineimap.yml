@@ -29,6 +29,8 @@
             dest: "/home/{{ current_user.name }}/.offlineimaprc"
             owner: "{{ current_user.name }}"
             backup: yes
+          vars:
+            old_imap_fingerprint: "{{ old_imap_fingerprint }}"
           no_log: yes
         - name: Sync old IMAP for the first time (this might tale a while...)
           command: /usr/local/bin/offlineimap
