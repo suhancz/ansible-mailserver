@@ -20,10 +20,14 @@ remotepass = {{ current_user.old_imap_mail.password }}
 # The below will put all folders as sub-folders of the 'local' INBOX,
 # assuming that your path separator on 'local' is a dot.
 nametrans = lambda x: 'INBOX.' + x
-{% if (not current_user.old_imap_mail.ssl_verify) and (old_imap_fingerprint is defined and ((old_imap_fingerprint.stdout | regex_search('Fingerprint=')) | length > 0)) %}
+{% if (not current_user.old_imap_mail.ssl_verify) or ((current_user.old_imap_mail.ssl_verify | lower) == 'no') or ((current_user.old_imap_mail.ssl_verify | lower) == 'false') or (current_user.old_imap_mail.ssl_verify == 0) %}
+# old IMAP certifcates are not verified
+{% if old_imap_fingerprint is defined %}
+# so the SSL fingerprint of the OLD IMAP server is accepted below
+{% if (old_imap_fingerprint.stdout | regex_search('Fingerprint\=')) | length > 0 %}
 cert_fingerprint = {{ old_imap_fingerprint.stdout | regex_search('Fingerprint\=.*') | split('Fingerprint=') | last }}
-
+{% endif %}
+{% endif %}
 {% else %}
 sslcacertfile = /etc/ssl/certs/ca-bundle.trust.crt
-
 {% endif %}
