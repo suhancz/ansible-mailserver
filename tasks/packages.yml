@@ -355,6 +355,8 @@
       - qrencode
       - python3-pip
       - golang-github-acme-lego
+      - perl-Proc-ProcessTable
+      - imapsync
     state: latest
 - name: Install Remi packages
   tags: horde

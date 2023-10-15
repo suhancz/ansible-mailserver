@@ -64,7 +64,8 @@
   import_tasks: dovecot.yml
   tags: dovecot
 - name: Sync old IMAP account
-  include_tasks: offlineimap.yml
+  include_tasks: imapsync.yml
+  when: "{{ current_user.old_imap_mail is defined }}"
   loop: "{{ users }}"
   loop_control:
     loop_var: current_user
