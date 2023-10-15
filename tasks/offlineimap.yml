@@ -17,7 +17,7 @@
       command: offlineimap
   rescue:
     - name: Fetch old IMAPS fingerprint
-      command: "openssl s_client -connect {{ item.old_imap_mail.host }}:993 < /dev/null 2>/dev/null | openssl x509 -fingerprint -noout -in /dev/stdin"
+      shell: "openssl s_client -connect {{ item.old_imap_mail.host }}:993 < /dev/null 2>/dev/null | openssl x509 -fingerprint -noout -in /dev/stdin"
       register: old_imap_fingerprint
     - name: Create offlineimap config
       template:
