@@ -1,5 +1,6 @@
 ---
 - name: Sync from old IMAP account
+  tags: imapsync
   when: "{{ current_user.old_imap_mail is defined }}"
   block:
     - name: Empty old IMAP fingerprint

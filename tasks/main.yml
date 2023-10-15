@@ -68,6 +68,8 @@
   loop: "{{ users }}"
   loop_control:
     loop_var: current_user
+  vars:
+    current_user: "{{ current_user }}"
   tags: imapsync
 - name: Set up DKIM
   import_tasks: dkim.yml
