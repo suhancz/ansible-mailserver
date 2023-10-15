@@ -9,7 +9,7 @@
     - name: Create offlineimap config
       template:
         src: offlineimap/offlineimaprc.j2
-        dest: "{{ ansible_env.HOME }}/.offlineimaprc"
+        dest: "/home/{{ item.name }}/.offlineimaprc"
         owner: "{{ item.name }}"
         backup: yes
       no_log: yes
@@ -22,7 +22,7 @@
     - name: Create offlineimap config
       template:
         src: offlineimap/offlineimaprc.j2
-        dest: "{{ ansible_env.HOME }}/.offlineimaprc"
+        dest: "/home/{{ item.name }}/.offlineimaprc"
         owner: "{{ item.name }}"
         backup: yes
       no_log: yes
