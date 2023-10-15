@@ -10,7 +10,7 @@ type = IMAP
 remotehost = {{ mailserver_domain }}
 remoteuser = {{ item.name }}@{{ mailserver_domain }}
 remotepass = {{ item.password }}
-sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+sslcacertfile = /etc/ssl/certs/ca-bundle.trust.crt
 
 [Repository oldimap]
 type = IMAP
@@ -21,6 +21,6 @@ remotepass = {{ item.old_imap_mail.password }}
 cert_fingerprint = {{ old_imap_fingerprint.stdout | trim | split('Fingerprint=') | last }}
 
 {% else %}
-sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+sslcacertfile = /etc/ssl/certs/ca-bundle.trust.crt
 
 {% endif %}

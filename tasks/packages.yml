@@ -424,7 +424,8 @@
 - name: Install Python packages
   pip:
     name:
-      - offlineimap
+      - imaplib2
+      - "git+https://github.com/OfflineIMAP/offlineimap3"
     state: latest
 - name: Download as-is executables
   get_url:
