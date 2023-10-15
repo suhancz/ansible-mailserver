@@ -21,7 +21,7 @@ remotepass = {{ item.old_imap_mail.password }}
 # assuming that your path separator on 'local' is a dot.
 nametrans = lambda x: 'INBOX.' + x
 {% if (not item.old_imap_mail.ssl_verify) and (old_imap_fingerprint is defined and 'Fingerprint=' in old_imap_fingerprint.stdout) %}
-cert_fingerprint = {{ old_imap_fingerprint.stdout | trim | split('Fingerprint=') | last }}
+cert_fingerprint = {{ old_imap_fingerprint.stdout | split('Fingerprint=') | last }}
 
 {% else %}
 sslcacertfile = /etc/ssl/certs/ca-bundle.trust.crt
