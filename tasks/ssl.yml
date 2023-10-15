@@ -115,14 +115,16 @@
     EXEC_PROPAGATION_TIMEOUT: 4242
     PDNS_API_URL: http://127.0.0.1:8081/
     PDNS_API_KEY: "{{ powerdns_api_key }}"
-- name: Create symlink to the Let's Encrypt content
+- name: Create symlink to the full certificate chain
   file:
-    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/{{ item }}.pem"
-    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.{{ 'pem' if item == 'fullchain' else 'key' }}"
+    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem"
+    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
     state: link
-  loop:
-    - privkey
-    - fullchain
+- name: Create symlink to the private key
+  file:
+    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.key"
+    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
+    state: link
 - name: Allow Apache to reach letsencrypt keys
   acl:
     path: "{{ item.path }}"
