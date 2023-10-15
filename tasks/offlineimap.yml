@@ -14,7 +14,7 @@
         backup: yes
       no_log: yes
     - name: Sync old IMAP for the first time (this might tale a while...)
-      command: offlineimap
+      command: /usr/local/bin/offlineimap
   rescue:
     - name: Fetch old IMAPS fingerprint
       shell: "openssl s_client -connect {{ item.old_imap_mail.host }}:993 < /dev/null 2>/dev/null | openssl x509 -fingerprint -noout -in /dev/stdin"
@@ -27,14 +27,14 @@
         backup: yes
       no_log: yes
     - name: Sync old IMAP for the first time (this might tale a while...)
-      command: offlineimap
+      command: /usr/local/bin/offlineimap
 - name: Sync old IMAP account
   become: yes
   become_user: "{{ item.name }}"
   cron:
     name: "Sync old IMAP account {{ item.old_imap_mail.user }} at {{ item.old_imap_mail.host }} for {{ item.name }}"
     special_time: daily
-    job: offlineimap
+    job: /usr/local/bin/offlineimap
     backup: yes
     user: "{{ item.name }}"
 - name: De-duplicate IMAP mail
