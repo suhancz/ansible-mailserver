@@ -9,7 +9,9 @@
         IMAPSYNC_PASSWORD1: "{{ current_user.old_imap_mail.password }}"
         IMAPSYNC_PASSWORD2: "{{ current_user.password }}"
       no_log: yes
-    - name: Set up password environment variables
+    - name: Set up password environment variables for cron jobs
+      become: yes
+      become_user: "{{ current_user.name }}"
       cron:
         backup: yes
         env: yes
@@ -36,7 +38,7 @@
       cron:
         name: De-duplicate IMAP mail
         special_time: daily
-        job: "/usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w {{ current_user.password }} INBOX"
+        job: "/usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w $IMAPSYNC_PASSWORD2 INBOX"
         backup: yes
         user: "{{ current_user.name }}"
       no_log: yes
