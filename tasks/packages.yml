@@ -1,5 +1,5 @@
 ---
-- name: Set up UEK repository (for wireguard support)
+- name: Set up UEK repository
   tags: wireguard
   blockinfile:
     path: /etc/yum.repos.d/uek-ol8.repo

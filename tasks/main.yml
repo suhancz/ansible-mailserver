@@ -26,9 +26,7 @@
   tags: mariadb
 - name: Configure DNS
   import_tasks: dns.yml
-  tags:
-    - always
-    - dns
+  tags: dns
 - name: Configure PostfixAdmin
   import_tasks: postfixadmin.yml
   tags: postfixadmin
@@ -49,8 +47,7 @@
   tags: ftp
 - name: Configure Apache
   import_tasks: httpd.yml
-  tags:
-    - httpd
+  tags: httpd
 - name: Set up SPAMAssassin
   import_tasks: spamassassin.yml
   tags: spamassassin
@@ -68,10 +65,9 @@
   tags: dovecot
 - name: Sync old IMAP account
   include_tasks: offlineimap.yml
-  loop: users
+  loop: "{{ users }}"
   loop_control:
     loop_var: current_user
-  tags: imapsync
 - name: Set up DKIM
   import_tasks: dkim.yml
   tags:
