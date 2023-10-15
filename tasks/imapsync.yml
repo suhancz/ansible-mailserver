@@ -4,8 +4,22 @@
   tags: imapsync
   block:
     - name: Sync old IMAP for the first time (this might tale a while...)
-      command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --password1 {{ current_user.old_imap_mail.password }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --password2 {{ current_user.password }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+      command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+      environment:
+        IMAPSYNC_PASSWORD1: "{{ current_user.old_imap_mail.password }}"
+        IMAPSYNC_PASSWORD2: "{{ current_user.password }}"
       no_log: yes
+    - name: Set up password environment variables
+      cron:
+        backup: yes
+        env: yes
+        name: "{{ IMAPSYNC_PASSWORD ~ (((imapsync_password_index | int) + 1) | string) }}"
+        job: "{{ item }}"
+      loop:
+        - "{{ current_user.old_imap_mail.password }}"
+        - "{{ current_user.password }}"
+      loop_control:
+        index_var: imapsync_password_index
     - name: Sync old IMAP account
       become: yes
       become_user: "{{ current_user.name }}"
