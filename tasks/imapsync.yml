@@ -1,5 +1,6 @@
 ---
 - name: Sync old IMAP account to the current mailbox
+  no_log: yes
   when: "{{ current_user.old_imap_mail is defined }}"
   tags: imapsync
   block:
@@ -8,7 +9,6 @@
       environment:
         IMAPSYNC_PASSWORD1: "{{ current_user.old_imap_mail.password }}"
         IMAPSYNC_PASSWORD2: "{{ current_user.password }}"
-      no_log: yes
     - name: Set up password environment variables for cron jobs
       become: yes
       become_user: "{{ current_user.name }}"
@@ -31,7 +31,6 @@
         job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --password1 {{ current_user.old_imap_mail.password }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --password2 {{ current_user.password }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
         backup: yes
         user: "{{ current_user.name }}"
-      no_log: yes
     - name: De-duplicate IMAP mail
       become: yes
       become_user: "{{ current_user.name }}"
@@ -41,4 +40,3 @@
         job: "/usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w $IMAPSYNC_PASSWORD2 INBOX"
         backup: yes
         user: "{{ current_user.name }}"
-      no_log: yes
