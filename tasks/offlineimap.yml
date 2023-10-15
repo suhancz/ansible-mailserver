@@ -16,30 +16,20 @@
             dest: "/home/{{ current_user.name }}/.offlineimaprc"
             owner: "{{ current_user.name }}"
             backup: yes
-          # no_log: yes
+          no_log: yes
         - name: Sync old IMAP for the first time (this might tale a while...)
           command: /usr/local/bin/offlineimap
       rescue:
         - name: Fetch old IMAPS fingerprint
           shell: "openssl s_client -connect {{ current_user.old_imap_mail.host }}:993 < /dev/null 2>/dev/null | openssl x509 -fingerprint -noout -in /dev/stdin"
           register: old_imap_fingerprint
-        - debug:
-            msg: "{{ debug_item }}"
-          loop:
-            - "{{ old_imap_fingerprint }}"
-            - "{{ old_imap_fingerprint.stdout }}"
-            - "{{ old_imap_fingerprint.stdout | regex_search('Fingerprint\\=.*') }}"
-            - "{{ old_imap_fingerprint.stdout | regex_search('Fingerprint\\=.*') | split('Fingerprint=') }}"
-            - "{{ old_imap_fingerprint.stdout | regex_search('Fingerprint\\=.*') | split('Fingerprint=') | last }}"
-          loop_control:
-            loop_var: debug_item
         - name: Create offlineimap config
           template:
             src: offlineimap/offlineimaprc.j2
             dest: "/home/{{ current_user.name }}/.offlineimaprc"
             owner: "{{ current_user.name }}"
             backup: yes
-          # no_log: yes
+          no_log: yes
         - name: Sync old IMAP for the first time (this might tale a while...)
           command: /usr/local/bin/offlineimap
     - name: Sync old IMAP account

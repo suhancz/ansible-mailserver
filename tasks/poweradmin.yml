@@ -62,7 +62,7 @@
           - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
           - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'dyndns', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Dynamic DNS', 'dyndns@{{ mailserver_domain }}', 'User for dynamic DNS updates', 2, 1, 0)
           - "REPLACE INTO `zones` (`id`, `domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT 1, id, 2, '', 0 FROM domains WHERE name = 'dyndns.{{ mailserver_domain }}'"
-      # no_log: yes
+      no_log: yes
       when: 'public_dns == "yes"'
       notify: Warn on passwords
   rescue:
@@ -82,7 +82,7 @@
           - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
           - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'dyndns', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password|password_hash("blowfish")|replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Dynamic DNS', 'dyndns@{{ mailserver_domain }}', 'User for dynamic DNS updates', 2, 1, 0)
           - "REPLACE INTO `zones` (`id`, `domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT 1, id, 2, '', 0 FROM domains WHERE name = 'dyndns.{{ mailserver_domain }}'"
-      # no_log: yes
+      no_log: yes
       when: 'public_dns == "yes"'
       notify: Warn on passwords
 - name: Check if DynDNS .htaccess exists

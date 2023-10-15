@@ -20,6 +20,6 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
     target: "/tmp/ansible-mailserver-install.{{ mariadb_database }}_schema.sql"
-  # no_log: yes
+  no_log: yes
   when: "mariadb_database_exists.changed or (mariadb_state is defined and mariadb_state == 'import')"
   register: mariadb_schema_created
