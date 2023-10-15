@@ -117,6 +117,11 @@
     PDNS_API_KEY: "{{ powerdns_api_key }}"
 - name: Create symlink to the full certificate chain
   file:
+    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem"
+    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.crt"
+    state: link
+- name: Create symlink to the main certificate
+  file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem"
     src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
     state: link
