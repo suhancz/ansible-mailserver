@@ -11,6 +11,8 @@ remotehost = {{ mailserver_domain }}
 remoteuser = {{ current_user.name }}@{{ mailserver_domain }}
 remotepass = {{ current_user.password }}
 sslcacertfile = /etc/ssl/certs/ca-bundle.trust.crt
+nametrans = lambda folder: folder if folder in re.search('(.*\.Junk$|.*\.Sent$|.*\.Spam$|.*\.Trash$)', folder) else 'INBOX.' + folder
+folderfilter = lambda folder: not re.search('(^Trash$|Del)', folder)
 
 [Repository oldimap]
 type = IMAP
