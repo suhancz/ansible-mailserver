@@ -91,14 +91,23 @@
   register: htaccess_exists
   when: 'public_dns == "yes"'
 - name: Set up DynDNS .htaccess
-  copy:
-    src: /var/www/poweradmin/install/htaccess.dist
-    dest: /var/www/poweradmin/.htaccess
-    remote_src: yes
-    owner: apache
-    group: apache
-    mode: ug=rw,o=r
   when: 'public_dns == "yes" and not htaccess_exists.stat.exists'
+  block:
+    - name: Set up DynDNS .htaccess from installer files
+      copy:
+        src: /var/www/poweradmin/install/htaccess.dist
+        dest: /var/www/poweradmin/.htaccess
+        remote_src: yes
+        owner: apache
+        group: apache
+        mode: ug=rw,o=r
+    - name: Set up DynDNS .htaccess from repository
+      copy:
+        src: poweradmin/htaccess.dist
+        dest: /var/www/poweradmin/.htaccess
+        owner: apache
+        group: apache
+        mode: ug=rw,o=r
 - name: Render PowerAdmin config
   template:
     src: poweradmin/config.inc.php.j2
