@@ -70,9 +70,7 @@
     loop_var: current_user
 - name: Set up DKIM
   import_tasks: dkim.yml
-  tags:
-    - always
-    - dkim
+  tags: dkim
 - name: Set up DMARC
   import_tasks: dmarc.yml
   tags: dmarc
