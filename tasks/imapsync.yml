@@ -1,24 +1,27 @@
 ---
-- name: Sync old IMAP for the first time (this might tale a while...)
-  command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --password1 {{ current_user.old_imap_mail.password }} --host2 {{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --password2 {{ current_user.password }}} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
-  no_log: yes
-- name: Sync old IMAP account
-  become: yes
-  become_user: "{{ current_user.name }}"
-  cron:
-    name: "Sync old IMAP account {{ current_user.old_imap_mail.user }} at {{ current_user.old_imap_mail.host }} for {{ current_user.name }}"
-    special_time: daily
-    job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --password1 {{ current_user.old_imap_mail.password }} --host2 {{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --password2 {{ current_user.password }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
-    backup: yes
-    user: "{{ current_user.name }}"
-  no_log: yes
-- name: De-duplicate IMAP mail
-  become: yes
-  become_user: "{{ current_user.name }}"
-  cron:
-    name: De-duplicate IMAP mail
-    special_time: daily
-    job: "/usr/local/bin/imapdedup.py -s {{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w {{ current_user.password }} INBOX"
-    backup: yes
-    user: "{{ current_user.name }}"
-  no_log: yes
+- name: Sync old IMAP account to the current mailbox
+  when: "{{ current_user.old_imap_mail is defined }}"
+  block:
+    - name: Sync old IMAP for the first time (this might tale a while...)
+      command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --password1 {{ current_user.old_imap_mail.password }} --host2 {{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --password2 {{ current_user.password }}} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+      no_log: yes
+    - name: Sync old IMAP account
+      become: yes
+      become_user: "{{ current_user.name }}"
+      cron:
+        name: "Sync old IMAP account {{ current_user.old_imap_mail.user }} at {{ current_user.old_imap_mail.host }} for {{ current_user.name }}"
+        special_time: daily
+        job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --password1 {{ current_user.old_imap_mail.password }} --host2 {{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --password2 {{ current_user.password }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+        backup: yes
+        user: "{{ current_user.name }}"
+      no_log: yes
+    - name: De-duplicate IMAP mail
+      become: yes
+      become_user: "{{ current_user.name }}"
+      cron:
+        name: De-duplicate IMAP mail
+        special_time: daily
+        job: "/usr/local/bin/imapdedup.py -s {{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w {{ current_user.password }} INBOX"
+        backup: yes
+        user: "{{ current_user.name }}"
+      no_log: yes
