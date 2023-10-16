@@ -15,7 +15,7 @@
       cron:
         backup: yes
         env: yes
-        name: "{{ IMAPSYNC_PASSWORD ~ (((imapsync_password_index | int) + 1) | string) }}"
+        name: "IMAPSYNC_PASSWORD{{ imapsync_password_index + 1 }}"
         job: "{{ item }}"
       loop:
         - "{{ current_user.old_imap_mail.password }}"
@@ -28,7 +28,7 @@
       cron:
         name: "Sync old IMAP account {{ current_user.old_imap_mail.user }} at {{ current_user.old_imap_mail.host }} for {{ current_user.name }}"
         special_time: daily
-        job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --password1 {{ current_user.old_imap_mail.password }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --password2 {{ current_user.password }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+        job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
         backup: yes
         user: "{{ current_user.name }}"
     - name: De-duplicate IMAP mail
