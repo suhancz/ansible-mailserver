@@ -150,23 +150,35 @@
   become_user: "{{ wg_configs[item]['owner'] }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
-- name: Allow access to VPN configs
+- name: Create user VPN config dirs
   file:
-    src: "{{ wireguard.config_dir }}/clients/{{ item }}"
-    dest: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
+    path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
+    state: directory
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
-    state: link
-  become: true
-  become_user: "{{ wg_configs[item]['owner'] }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
+- name: Allow access to VPN configs
+  mount:
+    src: "{{ wireguard.config_dir }}/clients/{{ item }}"
+    path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
+    opts: "force-user={{ wg_configs[item]['owner'] }},force-group={{ wg_configs[item]['owner'] }},perms=u=rwX:g=rwX"
+    state: mounted
+    fstype: fuse.bindfs
+  no_log: true
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate QR codes
-  shell: "cat {{ wireguard.config_dir }}/clients/{{ item }}/wg0.conf | qrencode -o {{ wireguard.config_dir }}/clients/{{ item }}/wg0.png"
+  shell: "cat {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.conf | qrencode -o {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
-  become: yes
-  become_user: "{{ wg_configs[item]['owner'] }}"
+- name: Allow access to QR codes
+  file:
+    path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
+    owner: "{{ wg_configs[item]['owner'] }}"
+    group: "{{ wg_configs[item]['owner'] }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: item != "server"
 - name: Add DynDNS NS records
   include_tasks: add_dns_record.yml
   vars:
