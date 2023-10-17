@@ -1,8 +1,8 @@
 setLocal('127.0.0.1:53')
 addLocal('::1')
-addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}')
+addLocal('{{ ansible_default_ipv4.address }}')
 
-{# addLocal('{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}') #}
+{# addLocal('{{ ansible_default_ipv6.address }}') #}
 {% if wireguard is defined %}
 addLocal('{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}')
 

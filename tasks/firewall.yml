@@ -1,4 +1,10 @@
 ---
+- name: Ensure firewall is enabled
+  systemd:
+    name: firewalld
+    daemon_reload: yes
+    enabled: yes
+    state: started
 - name: "Open Firewall for {{ port }}"
   block:
     - name: "Open firewall for numeric port {{ port }}"
