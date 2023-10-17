@@ -119,6 +119,18 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Default to localhost in resolv.conf
+  copy:
+    dest: /etc/resolv.conf
+    content: |
+      nameserver 127.0.0.1
+      nameserver ::1
+      search {{ ([mailserver_domain] + custom_domains)|join(' ') }}
+    backup: true
+    force: true
+    owner: root
+    group: root
+    mode: 0644
 - name: Restart systemd-resolved
   systemd:
     name: systemd-resolved

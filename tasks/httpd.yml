@@ -113,7 +113,7 @@
   mount:
     path: "~{{ item.name }}/public_html/.certificates"
     src: /etc/letsencrypt/certificates
-    opts: "map=root/{{ item.name }}:@root/@apache,perms=u=rwX:g=rwX,"
+    opts: "map=root/{{ item.name }}:@root/@apache,perms=u=rwX:g=rwX"
     state: mounted
     fstype: fuse.bindfs
   loop: "{{ users }}"

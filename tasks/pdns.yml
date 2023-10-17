@@ -4,7 +4,6 @@
   vars:
     mariadb_database: powerdnsdb
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
-  register: powerdns_db_state
   when: 'public_dns == "yes"'
 - name: Set up PowerDNS DB privileges
   mysql_user:
@@ -23,7 +22,6 @@
 #       db: powerdnsdb
 #       user: powerdns
 #       password: "{{ powerdns_db_password }}"
-#   when: powerdns_db_state.changed
 - name: Configure PowerDNS authoritative server
   lineinfile:
     path: /etc/pdns/pdns.conf
@@ -60,4 +58,3 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
-  when: powerdns_db_state.changed
