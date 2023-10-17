@@ -105,33 +105,33 @@ spamassassin_rules:
   - { type: "meta", key: "NO_DOMAIN_IN_TO", value: "!__DOMAIN_IN_TO" }
   - { type: "score", key: "NO_DOMAIN_IN_TO", value: "3.0" }
 default_dns_records:
-  - { type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
-  - { type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
-  - { name: "{{ mailserver_hostname }}", type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
-  - { name: "{{ mailserver_hostname }}", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
-  - { name: "ns", type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
-  - { name: "ns", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
+  - { type: "A", content: "{{ ansible_default_ipv4.address }}" }
+  - { type: "AAAA", content: "{{ ansible_default_ipv6.address }}" }
+  - { name: "{{ mailserver_hostname }}", type: "A", content: "{{ ansible_default_ipv4.address }}" }
+  - { name: "{{ mailserver_hostname }}", type: "AAAA", content: "{{ ansible_default_ipv6.address }}" }
+  - { name: "ns", type: "A", content: "{{ ansible_default_ipv4.address }}" }
+  - { name: "ns", type: "AAAA", content: "{{ ansible_default_ipv6.address }}" }
   - { type: "MX", content: "1 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
   - { type: "TXT", content: "v=spf1 mx ~all" }
   - { name: "mail", type: "MX", content: "1 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
   - { name: "mail2", type: "MX", content: "5 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
   - { name: "smtp", type: "MX", content: "10 {{ mailserver_hostname }}.{{ mailserver_domain }}" }
-  - { name: "mail", type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
-  - { name: "mail2", type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
-  - { name: "smtp", type: "A", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
-  - { name: "mail", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
-  - { name: "mail2", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
-  - { name: "smtp", type: "AAAA", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}" }
-  - { type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
-  - { name: "mail", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
-  - { name: "mail2", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
-  - { name: "smtp", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
-  - { type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
-  - { name: "mail", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
-  - { name: "mail2", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
-  - { name: "smtp", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
-  - { name: "{{ mailserver_hostname }}", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}", append: yes }
-  - { name: "{{ mailserver_hostname }}", type: "PTR", content: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}", append: yes }
+  - { name: "mail", type: "A", content: "{{ ansible_default_ipv4.address }}" }
+  - { name: "mail2", type: "A", content: "{{ ansible_default_ipv4.address }}" }
+  - { name: "smtp", type: "A", content: "{{ ansible_default_ipv4.address }}" }
+  - { name: "mail", type: "AAAA", content: "{{ ansible_default_ipv6.address }}" }
+  - { name: "mail2", type: "AAAA", content: "{{ ansible_default_ipv6.address }}" }
+  - { name: "smtp", type: "AAAA", content: "{{ ansible_default_ipv6.address }}" }
+  - { type: "PTR", content: "{{ ansible_default_ipv4.address }}", append: yes }
+  - { name: "mail", type: "PTR", content: "{{ ansible_default_ipv4.address }}", append: yes }
+  - { name: "mail2", type: "PTR", content: "{{ ansible_default_ipv4.address }}", append: yes }
+  - { name: "smtp", type: "PTR", content: "{{ ansible_default_ipv4.address }}", append: yes }
+  - { type: "PTR", content: "{{ ansible_default_ipv6.address }}", append: yes }
+  - { name: "mail", type: "PTR", content: "{{ ansible_default_ipv6.address }}", append: yes }
+  - { name: "mail2", type: "PTR", content: "{{ ansible_default_ipv6.address }}", append: yes }
+  - { name: "smtp", type: "PTR", content: "{{ ansible_default_ipv6.address }}", append: yes }
+  - { name: "{{ mailserver_hostname }}", type: "PTR", content: "{{ ansible_default_ipv4.address }}", append: yes }
+  - { name: "{{ mailserver_hostname }}", type: "PTR", content: "{{ ansible_default_ipv6.address }}", append: yes }
 httpd_pam_deny_users:
   - root
 wireguard:
@@ -142,8 +142,8 @@ wireguard:
   nameservers:
     - 10.42.42.1
     - fd00::10:42:1
-  #   # - "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-  #   # - "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
+  #   # - "{{ ansible_default_ipv4.address }}"
+  #   # - "{{ ansible_default_ipv6.address }}"
   listen_port: 25472
   allowed_ips:
     # - 0.0.0.0/5

@@ -1,0 +1,42 @@
+---
+- name: Sync old IMAP account to the current mailbox
+  no_log: yes
+  when: "{{ current_user.old_imap_mail is defined }}"
+  tags: imapsync
+  block:
+    - name: Sync old IMAP for the first time (this might tale a while...)
+      command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+      environment:
+        IMAPSYNC_PASSWORD1: "{{ current_user.old_imap_mail.password }}"
+        IMAPSYNC_PASSWORD2: "{{ current_user.password }}"
+    - name: Set up password environment variables for cron jobs
+      become: yes
+      become_user: "{{ current_user.name }}"
+      cron:
+        backup: yes
+        env: yes
+        name: "IMAPSYNC_PASSWORD{{ imapsync_password_index + 1 }}"
+        job: "{{ item }}"
+      loop:
+        - "{{ current_user.old_imap_mail.password }}"
+        - "{{ current_user.password }}"
+      loop_control:
+        index_var: imapsync_password_index
+    - name: Sync old IMAP account
+      become: yes
+      become_user: "{{ current_user.name }}"
+      cron:
+        name: "Sync old IMAP account {{ current_user.old_imap_mail.user }} at {{ current_user.old_imap_mail.host }} for {{ current_user.name }}"
+        special_time: daily
+        job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+        backup: yes
+        user: "{{ current_user.name }}"
+    - name: De-duplicate IMAP mail
+      become: yes
+      become_user: "{{ current_user.name }}"
+      cron:
+        name: De-duplicate IMAP mail
+        special_time: daily
+        job: "/usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w $IMAPSYNC_PASSWORD2 INBOX"
+        backup: yes
+        user: "{{ current_user.name }}"

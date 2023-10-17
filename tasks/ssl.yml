@@ -109,19 +109,27 @@
     - { key: "PDNS_API_KEY", value: "{{ powerdns_api_key }}" }
 
 - name: Generate LetsEncrypt certificates
-  command: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
+  # command: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
+  command: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
   environment:
     EXEC_PROPAGATION_TIMEOUT: 4242
     PDNS_API_URL: http://127.0.0.1:8081/
     PDNS_API_KEY: "{{ powerdns_api_key }}"
-- name: Create symlink to the Let's Encrypt content
+- name: Create symlink to the full certificate chain
   file:
-    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/{{ item }}.pem"
-    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.{{ 'pem' if item == 'fullchain' else 'key' }}"
+    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem"
+    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.crt"
     state: link
-  loop:
-    - privkey
-    - fullchain
+- name: Create symlink to the main certificate
+  file:
+    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem"
+    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
+    state: link
+- name: Create symlink to the private key
+  file:
+    path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.key"
+    src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
+    state: link
 - name: Allow Apache to reach letsencrypt keys
   acl:
     path: "{{ item.path }}"
@@ -164,5 +172,6 @@
     name: certificate-auto-renewal
     special_time: monthly
     # job: certbot renew --quiet && systemctl reload postfix dovecot httpd
-    job: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew --days 90 --must-staple --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
+    # job: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew --days 90 --must-staple --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
+    job: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew --days 90 --must-staple --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
     backup: yes
