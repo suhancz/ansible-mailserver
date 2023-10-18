@@ -843,6 +843,7 @@ CREATE TABLE `horde_perms` (
 
 LOCK TABLES `horde_perms` WRITE;
 /*!40000 ALTER TABLE `horde_perms` DISABLE KEYS */;
+REPLACE INTO `horde_perms` (`perm_id`, `perm_name`, `perm_parents`, `perm_data`) VALUES (3,'wicked',NULL,'a:2:{s:4:\"type\";s:6:\"matrix\";s:7:\"default\";i:14;}'),(4,'wicked:pages',':3','a:1:{s:4:\"type\";s:6:\"matrix\";}'),(5,'wicked:pages:AllPages',':3:4','a:1:{s:4:\"type\";s:6:\"matrix\";}'),(6,'horde',NULL,'a:1:{s:4:\"type\";s:6:\"matrix\";}'),(7,'horde:activesync',':6','a:2:{s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:1;}'),(8,'horde:activesync:provisioning',':6:7','a:3:{s:4:\"type\";s:4:\"enum\";s:6:\"params\";a:1:{i:0;a:4:{i:0;s:0:\"\";s:4:\"true\";s:6:\"Enable\";s:5:\"allow\";s:31:\"Allow non-provisionable devices\";s:5:\"false\";s:25:\"Disable (not recommended)\";}}s:7:\"default\";s:5:\"allow\";}');
 /*!40000 ALTER TABLE `horde_perms` ENABLE KEYS */;
 UNLOCK TABLES;
 
