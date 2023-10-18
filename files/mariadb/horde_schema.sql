@@ -1699,7 +1699,6 @@ CREATE TABLE `kronolith_events` (
   `event_keywords` text DEFAULT NULL,
   `event_exceptions` text DEFAULT NULL,
   `event_title` varchar(255) DEFAULT NULL,
-  `event_category` varchar(80) DEFAULT NULL,
   `event_recurtype` int(11) DEFAULT 0,
   `event_recurinterval` int(11) DEFAULT NULL,
   `event_recurdays` int(11) DEFAULT NULL,
@@ -1716,9 +1715,11 @@ CREATE TABLE `kronolith_events` (
   `event_baseid` varchar(255) DEFAULT '',
   `event_exceptionoriginaldate` datetime DEFAULT NULL,
   `event_resources` text DEFAULT NULL,
+  `event_timezone` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`event_id`),
   KEY `index_kronolith_events_on_calendar_id` (`calendar_id`),
-  KEY `index_kronolith_events_on_event_uid` (`event_uid`)
+  KEY `index_kronolith_events_on_event_uid` (`event_uid`),
+  KEY `index_kronolith_events_on_event_baseid` (`event_baseid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1753,6 +1754,30 @@ CREATE TABLE `kronolith_events_geo` (
 LOCK TABLES `kronolith_events_geo` WRITE;
 /*!40000 ALTER TABLE `kronolith_events_geo` DISABLE KEYS */;
 /*!40000 ALTER TABLE `kronolith_events_geo` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `kronolith_events_mysqlgeo`
+--
+
+DROP TABLE IF EXISTS `kronolith_events_mysqlgeo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `kronolith_events_mysqlgeo` (
+  `event_id` varchar(32) NOT NULL,
+  `event_coordinates` point NOT NULL,
+  `event_zoom` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`event_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `kronolith_events_mysqlgeo`
+--
+
+LOCK TABLES `kronolith_events_mysqlgeo` WRITE;
+/*!40000 ALTER TABLE `kronolith_events_mysqlgeo` DISABLE KEYS */;
+/*!40000 ALTER TABLE `kronolith_events_mysqlgeo` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1804,7 +1829,7 @@ CREATE TABLE `kronolith_schema_info` (
 
 LOCK TABLES `kronolith_schema_info` WRITE;
 /*!40000 ALTER TABLE `kronolith_schema_info` DISABLE KEYS */;
-REPLACE INTO `kronolith_schema_info` (`version`) VALUES (17);
+REPLACE INTO `kronolith_schema_info` (`version`) VALUES (23);
 /*!40000 ALTER TABLE `kronolith_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1826,7 +1851,7 @@ CREATE TABLE `kronolith_shares` (
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
   `attribute_color` varchar(7) DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_kronolith_shares_on_share_name` (`share_name`),
   KEY `index_kronolith_shares_on_share_owner` (`share_owner`),
@@ -1931,7 +1956,7 @@ CREATE TABLE `kronolith_sharesng` (
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
   `attribute_color` varchar(7) DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_kronolith_sharesng_on_share_name` (`share_name`),
   KEY `index_kronolith_sharesng_on_share_owner` (`share_owner`),
@@ -1950,7 +1975,7 @@ CREATE TABLE `kronolith_sharesng` (
   KEY `index_kronolith_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_kronolith_sharesng_on_perm_guest_16` (`perm_guest_16`),
   KEY `index_kronolith_sharesng_on_perm_guest_1024` (`perm_guest_1024`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2068,9 +2093,8 @@ CREATE TABLE `mnemo_memos` (
   `memo_owner` varchar(255) NOT NULL,
   `memo_id` varchar(32) NOT NULL,
   `memo_uid` varchar(255) NOT NULL,
-  `memo_desc` varchar(64) NOT NULL,
+  `memo_desc` varchar(255) NOT NULL,
   `memo_body` text DEFAULT NULL,
-  `memo_category` varchar(80) DEFAULT NULL,
   `memo_private` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`memo_owner`,`memo_id`),
   KEY `index_mnemo_memos_on_memo_owner` (`memo_owner`),
@@ -2105,7 +2129,7 @@ CREATE TABLE `mnemo_schema_info` (
 
 LOCK TABLES `mnemo_schema_info` WRITE;
 /*!40000 ALTER TABLE `mnemo_schema_info` DISABLE KEYS */;
-REPLACE INTO `mnemo_schema_info` (`version`) VALUES (5);
+REPLACE INTO `mnemo_schema_info` (`version`) VALUES (8);
 /*!40000 ALTER TABLE `mnemo_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2126,7 +2150,7 @@ CREATE TABLE `mnemo_shares` (
   `perm_guest` int(11) NOT NULL DEFAULT 0,
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_mnemo_shares_on_share_name` (`share_name`),
   KEY `index_mnemo_shares_on_share_owner` (`share_owner`),
@@ -2227,7 +2251,7 @@ CREATE TABLE `mnemo_sharesng` (
   `perm_guest_16` tinyint(1) NOT NULL DEFAULT 0,
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_mnemo_sharesng_on_share_name` (`share_name`),
   KEY `index_mnemo_sharesng_on_share_owner` (`share_owner`),
@@ -2243,7 +2267,7 @@ CREATE TABLE `mnemo_sharesng` (
   KEY `index_mnemo_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_mnemo_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_mnemo_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2337,7 +2361,7 @@ CREATE TABLE `nag_schema_info` (
 
 LOCK TABLES `nag_schema_info` WRITE;
 /*!40000 ALTER TABLE `nag_schema_info` DISABLE KEYS */;
-REPLACE INTO `nag_schema_info` (`version`) VALUES (9);
+REPLACE INTO `nag_schema_info` (`version`) VALUES (14);
 /*!40000 ALTER TABLE `nag_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2359,7 +2383,9 @@ CREATE TABLE `nag_shares` (
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
   `attribute_color` varchar(7) DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
+  `attribute_issmart` int(11) DEFAULT 0,
+  `attribute_search` varchar(4000) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_nag_shares_on_share_name` (`share_name`),
   KEY `index_nag_shares_on_share_owner` (`share_owner`),
@@ -2457,7 +2483,9 @@ CREATE TABLE `nag_sharesng` (
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
   `attribute_color` varchar(7) DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
+  `attribute_issmart` int(11) DEFAULT 0,
+  `attribute_search` text DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_nag_sharesng_on_share_name` (`share_name`),
   KEY `index_nag_sharesng_on_share_owner` (`share_owner`),
@@ -2473,7 +2501,7 @@ CREATE TABLE `nag_sharesng` (
   KEY `index_nag_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_nag_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_nag_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2569,7 +2597,6 @@ CREATE TABLE `nag_tasks` (
   `task_due` int(11) DEFAULT NULL,
   `task_priority` int(11) NOT NULL DEFAULT 0,
   `task_estimate` float DEFAULT NULL,
-  `task_category` varchar(80) DEFAULT NULL,
   `task_completed` int(1) NOT NULL DEFAULT 0,
   `task_completed_date` int(11) DEFAULT NULL,
   `task_alarm` int(11) NOT NULL DEFAULT 0,
@@ -2710,7 +2737,7 @@ CREATE TABLE `rampage_types` (
   `type_name` varchar(255) NOT NULL,
   PRIMARY KEY (`type_id`),
   UNIQUE KEY `rampage_objects_type_name` (`type_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2759,7 +2786,7 @@ CREATE TABLE `rampage_users` (
   `user_name` varchar(255) NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `rampage_users_user_name` (`user_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2818,7 +2845,6 @@ CREATE TABLE `turba_objects` (
   `object_logo` longblob DEFAULT NULL,
   `object_logotype` varchar(10) DEFAULT NULL,
   `object_company` varchar(255) DEFAULT NULL,
-  `object_category` varchar(80) DEFAULT NULL,
   `object_notes` text DEFAULT NULL,
   `object_url` varchar(255) DEFAULT NULL,
   `object_freebusyurl` varchar(255) DEFAULT NULL,
@@ -2885,7 +2911,7 @@ CREATE TABLE `turba_schema_info` (
 
 LOCK TABLES `turba_schema_info` WRITE;
 /*!40000 ALTER TABLE `turba_schema_info` DISABLE KEYS */;
-REPLACE INTO `turba_schema_info` (`version`) VALUES (9);
+REPLACE INTO `turba_schema_info` (`version`) VALUES (11);
 /*!40000 ALTER TABLE `turba_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2907,7 +2933,7 @@ CREATE TABLE `turba_shares` (
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
   `attribute_params` text DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_turba_shares_on_share_name` (`share_name`),
   KEY `index_turba_shares_on_share_owner` (`share_owner`),
@@ -3009,7 +3035,7 @@ CREATE TABLE `turba_sharesng` (
   `attribute_name` varchar(255) NOT NULL,
   `attribute_desc` varchar(255) DEFAULT NULL,
   `attribute_params` text DEFAULT NULL,
-  `share_parents` text DEFAULT NULL,
+  `share_parents` varchar(4000) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `index_turba_sharesng_on_share_name` (`share_name`),
   KEY `index_turba_sharesng_on_share_owner` (`share_owner`),
@@ -3025,7 +3051,7 @@ CREATE TABLE `turba_sharesng` (
   KEY `index_turba_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_turba_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_turba_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3246,4 +3272,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-18 22:25:24
+-- Dump completed on 2023-10-18 22:26:49
