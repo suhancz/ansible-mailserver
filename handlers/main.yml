@@ -113,12 +113,6 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
-- name: Restart subspace
-  systemd:
-    name: podman-compose@subspace
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
 - name: Default to localhost in resolv.conf
   copy:
     dest: /etc/resolv.conf
