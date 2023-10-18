@@ -303,6 +303,16 @@ CREATE TABLE `horde_activesync_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_activesync_schema_info`
+--
+
+LOCK TABLES `horde_activesync_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_activesync_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_activesync_schema_info` VALUES (23);
+/*!40000 ALTER TABLE `horde_activesync_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_activesync_state`
 --
 
