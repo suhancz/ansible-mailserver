@@ -100,9 +100,3 @@
     create: yes
     backup: yes
   tags: ssl
-# - name: Create Podman Compose service
-#   copy:
-#     dest: '/etc/systemd/system/podman-compose@.service'
-#     src: 'systemd/podman-compose@.service'
-#     backup: yes
-#   notify: Restart subspace

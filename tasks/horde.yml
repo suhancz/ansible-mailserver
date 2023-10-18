@@ -52,6 +52,7 @@
   import_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: horde
+    mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
 - name: Set up Horde DB privileges
   mysql_user:
     name: hordeuser
