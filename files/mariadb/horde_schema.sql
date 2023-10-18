@@ -33,7 +33,7 @@ CREATE TABLE `content_schema_info` (
 
 LOCK TABLES `content_schema_info` WRITE;
 /*!40000 ALTER TABLE `content_schema_info` DISABLE KEYS */;
-REPLACE INTO `content_schema_info` VALUES (2);
+REPLACE INTO `content_schema_info` (`version`) VALUES (2);
 /*!40000 ALTER TABLE `content_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -197,7 +197,7 @@ CREATE TABLE `horde_activesync_schema_info` (
 
 LOCK TABLES `horde_activesync_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_activesync_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_activesync_schema_info` VALUES (23);
+REPLACE INTO `horde_activesync_schema_info` (`version`) VALUES (23);
 /*!40000 ALTER TABLE `horde_activesync_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -250,7 +250,7 @@ CREATE TABLE `horde_alarm_schema_info` (
 
 LOCK TABLES `horde_alarm_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_alarm_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_alarm_schema_info` VALUES (2);
+REPLACE INTO `horde_alarm_schema_info` (`version`) VALUES (2);
 /*!40000 ALTER TABLE `horde_alarm_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -312,7 +312,7 @@ CREATE TABLE `horde_auth_schema_info` (
 
 LOCK TABLES `horde_auth_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_auth_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_auth_schema_info` VALUES (1);
+REPLACE INTO `horde_auth_schema_info` (`version`) VALUES (1);
 /*!40000 ALTER TABLE `horde_auth_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -359,7 +359,7 @@ CREATE TABLE `horde_cache_schema_info` (
 
 LOCK TABLES `horde_cache_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_cache_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_cache_schema_info` VALUES (2);
+REPLACE INTO `horde_cache_schema_info` (`version`) VALUES (2);
 /*!40000 ALTER TABLE `horde_cache_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -381,7 +381,7 @@ CREATE TABLE `horde_core_schema_info` (
 
 LOCK TABLES `horde_core_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_core_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_core_schema_info` VALUES (1);
+REPLACE INTO `horde_core_schema_info` (`version`) VALUES (1);
 /*!40000 ALTER TABLE `horde_core_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -456,7 +456,7 @@ CREATE TABLE `horde_dav_schema_info` (
 
 LOCK TABLES `horde_dav_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_dav_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_dav_schema_info` VALUES (2);
+REPLACE INTO `horde_dav_schema_info` (`version`) VALUES (2);
 /*!40000 ALTER TABLE `horde_dav_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -478,7 +478,7 @@ CREATE TABLE `horde_group_schema_info` (
 
 LOCK TABLES `horde_group_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_group_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_group_schema_info` VALUES (3);
+REPLACE INTO `horde_group_schema_info` (`version`) VALUES (3);
 /*!40000 ALTER TABLE `horde_group_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -606,7 +606,7 @@ CREATE TABLE `horde_history_schema_info` (
 
 LOCK TABLES `horde_history_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_history_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_history_schema_info` VALUES (6);
+REPLACE INTO `horde_history_schema_info` (`version`) VALUES (6);
 /*!40000 ALTER TABLE `horde_history_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -704,7 +704,7 @@ CREATE TABLE `horde_imap_client_schema_info` (
 
 LOCK TABLES `horde_imap_client_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_imap_client_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_imap_client_schema_info` VALUES (2);
+REPLACE INTO `horde_imap_client_schema_info` (`version`) VALUES (2);
 /*!40000 ALTER TABLE `horde_imap_client_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -726,7 +726,7 @@ CREATE TABLE `horde_lock_schema_info` (
 
 LOCK TABLES `horde_lock_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_lock_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_lock_schema_info` VALUES (3);
+REPLACE INTO `horde_lock_schema_info` (`version`) VALUES (3);
 /*!40000 ALTER TABLE `horde_lock_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -864,7 +864,7 @@ CREATE TABLE `horde_perms_schema_info` (
 
 LOCK TABLES `horde_perms_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_perms_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_perms_schema_info` VALUES (3);
+REPLACE INTO `horde_perms_schema_info` (`version`) VALUES (3);
 /*!40000 ALTER TABLE `horde_perms_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -913,7 +913,7 @@ CREATE TABLE `horde_prefs_schema_info` (
 
 LOCK TABLES `horde_prefs_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_prefs_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_prefs_schema_info` VALUES (3);
+REPLACE INTO `horde_prefs_schema_info` (`version`) VALUES (3);
 /*!40000 ALTER TABLE `horde_prefs_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -935,7 +935,7 @@ CREATE TABLE `horde_queue_schema_info` (
 
 LOCK TABLES `horde_queue_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_queue_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_queue_schema_info` VALUES (1);
+REPLACE INTO `horde_queue_schema_info` (`version`) VALUES (1);
 /*!40000 ALTER TABLE `horde_queue_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -981,7 +981,7 @@ CREATE TABLE `horde_service_weather_schema_info` (
 
 LOCK TABLES `horde_service_weather_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_service_weather_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_service_weather_schema_info` VALUES (2);
+REPLACE INTO `horde_service_weather_schema_info` (`version`) VALUES (2);
 /*!40000 ALTER TABLE `horde_service_weather_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1028,7 +1028,7 @@ CREATE TABLE `horde_sessionhandler_schema_info` (
 
 LOCK TABLES `horde_sessionhandler_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_sessionhandler_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_sessionhandler_schema_info` VALUES (2);
+REPLACE INTO `horde_sessionhandler_schema_info` (`version`) VALUES (2);
 /*!40000 ALTER TABLE `horde_sessionhandler_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1134,7 +1134,7 @@ CREATE TABLE `horde_syncml_schema_info` (
 
 LOCK TABLES `horde_syncml_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_syncml_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_syncml_schema_info` VALUES (1);
+REPLACE INTO `horde_syncml_schema_info` (`version`) VALUES (1);
 /*!40000 ALTER TABLE `horde_syncml_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1156,7 +1156,7 @@ CREATE TABLE `horde_token_schema_info` (
 
 LOCK TABLES `horde_token_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_token_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_token_schema_info` VALUES (1);
+REPLACE INTO `horde_token_schema_info` (`version`) VALUES (1);
 /*!40000 ALTER TABLE `horde_token_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1257,7 +1257,7 @@ CREATE TABLE `horde_vfs_schema_info` (
 
 LOCK TABLES `horde_vfs_schema_info` WRITE;
 /*!40000 ALTER TABLE `horde_vfs_schema_info` DISABLE KEYS */;
-REPLACE INTO `horde_vfs_schema_info` VALUES (4);
+REPLACE INTO `horde_vfs_schema_info` (`version`) VALUES (4);
 /*!40000 ALTER TABLE `horde_vfs_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1279,7 +1279,7 @@ CREATE TABLE `imp_schema_info` (
 
 LOCK TABLES `imp_schema_info` WRITE;
 /*!40000 ALTER TABLE `imp_schema_info` DISABLE KEYS */;
-REPLACE INTO `imp_schema_info` VALUES (3);
+REPLACE INTO `imp_schema_info` (`version`) VALUES (3);
 /*!40000 ALTER TABLE `imp_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1412,7 +1412,7 @@ CREATE TABLE `ingo_schema_info` (
 
 LOCK TABLES `ingo_schema_info` WRITE;
 /*!40000 ALTER TABLE `ingo_schema_info` DISABLE KEYS */;
-REPLACE INTO `ingo_schema_info` VALUES (7);
+REPLACE INTO `ingo_schema_info` (`version`) VALUES (7);
 /*!40000 ALTER TABLE `ingo_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1804,7 +1804,7 @@ CREATE TABLE `kronolith_schema_info` (
 
 LOCK TABLES `kronolith_schema_info` WRITE;
 /*!40000 ALTER TABLE `kronolith_schema_info` DISABLE KEYS */;
-REPLACE INTO `kronolith_schema_info` VALUES (17);
+REPLACE INTO `kronolith_schema_info` (`version`) VALUES (17);
 /*!40000 ALTER TABLE `kronolith_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2105,7 +2105,7 @@ CREATE TABLE `mnemo_schema_info` (
 
 LOCK TABLES `mnemo_schema_info` WRITE;
 /*!40000 ALTER TABLE `mnemo_schema_info` DISABLE KEYS */;
-REPLACE INTO `mnemo_schema_info` VALUES (5);
+REPLACE INTO `mnemo_schema_info` (`version`) VALUES (5);
 /*!40000 ALTER TABLE `mnemo_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2337,7 +2337,7 @@ CREATE TABLE `nag_schema_info` (
 
 LOCK TABLES `nag_schema_info` WRITE;
 /*!40000 ALTER TABLE `nag_schema_info` DISABLE KEYS */;
-REPLACE INTO `nag_schema_info` VALUES (9);
+REPLACE INTO `nag_schema_info` (`version`) VALUES (9);
 /*!40000 ALTER TABLE `nag_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2885,7 +2885,7 @@ CREATE TABLE `turba_schema_info` (
 
 LOCK TABLES `turba_schema_info` WRITE;
 /*!40000 ALTER TABLE `turba_schema_info` DISABLE KEYS */;
-REPLACE INTO `turba_schema_info` VALUES (9);
+REPLACE INTO `turba_schema_info` (`version`) VALUES (9);
 /*!40000 ALTER TABLE `turba_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3233,7 +3233,7 @@ CREATE TABLE `wicked_schema_info` (
 
 LOCK TABLES `wicked_schema_info` WRITE;
 /*!40000 ALTER TABLE `wicked_schema_info` DISABLE KEYS */;
-REPLACE INTO `wicked_schema_info` VALUES (6);
+REPLACE INTO `wicked_schema_info` (`version`) VALUES (6);
 /*!40000 ALTER TABLE `wicked_schema_info` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -3246,4 +3246,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-10-18 21:52:32
+-- Dump completed on 2023-10-18 22:25:24
