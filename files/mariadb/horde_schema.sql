@@ -28,6 +28,16 @@ CREATE TABLE `content_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `content_schema_info`
+--
+
+LOCK TABLES `content_schema_info` WRITE;
+/*!40000 ALTER TABLE `content_schema_info` DISABLE KEYS */;
+REPLACE INTO `content_schema_info` VALUES (2);
+/*!40000 ALTER TABLE `content_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_activesync_cache`
 --
 
@@ -137,6 +147,16 @@ CREATE TABLE `horde_activesync_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_activesync_schema_info`
+--
+
+LOCK TABLES `horde_activesync_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_activesync_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_activesync_schema_info` VALUES (23);
+/*!40000 ALTER TABLE `horde_activesync_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_activesync_state`
 --
 
@@ -169,6 +189,16 @@ CREATE TABLE `horde_alarm_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horde_alarm_schema_info`
+--
+
+LOCK TABLES `horde_alarm_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_alarm_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_alarm_schema_info` VALUES (2);
+/*!40000 ALTER TABLE `horde_alarm_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `horde_alarms`
@@ -214,6 +244,16 @@ CREATE TABLE `horde_auth_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_auth_schema_info`
+--
+
+LOCK TABLES `horde_auth_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_auth_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_auth_schema_info` VALUES (1);
+/*!40000 ALTER TABLE `horde_auth_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_cache`
 --
 
@@ -242,6 +282,16 @@ CREATE TABLE `horde_cache_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_cache_schema_info`
+--
+
+LOCK TABLES `horde_cache_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_cache_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_cache_schema_info` VALUES (2);
+/*!40000 ALTER TABLE `horde_cache_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_core_schema_info`
 --
 
@@ -252,6 +302,16 @@ CREATE TABLE `horde_core_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horde_core_schema_info`
+--
+
+LOCK TABLES `horde_core_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_core_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_core_schema_info` VALUES (1);
+/*!40000 ALTER TABLE `horde_core_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `horde_dav_collections`
@@ -301,6 +361,16 @@ CREATE TABLE `horde_dav_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_dav_schema_info`
+--
+
+LOCK TABLES `horde_dav_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_dav_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_dav_schema_info` VALUES (2);
+/*!40000 ALTER TABLE `horde_dav_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_group_schema_info`
 --
 
@@ -311,6 +381,16 @@ CREATE TABLE `horde_group_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horde_group_schema_info`
+--
+
+LOCK TABLES `horde_group_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_group_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_group_schema_info` VALUES (3);
+/*!40000 ALTER TABLE `horde_group_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `horde_groups`
@@ -395,6 +475,16 @@ CREATE TABLE `horde_history_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_history_schema_info`
+--
+
+LOCK TABLES `horde_history_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_history_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_history_schema_info` VALUES (6);
+/*!40000 ALTER TABLE `horde_history_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_imap_client_data`
 --
 
@@ -456,6 +546,16 @@ CREATE TABLE `horde_imap_client_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_imap_client_schema_info`
+--
+
+LOCK TABLES `horde_imap_client_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_imap_client_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_imap_client_schema_info` VALUES (2);
+/*!40000 ALTER TABLE `horde_imap_client_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_lock_schema_info`
 --
 
@@ -466,6 +566,16 @@ CREATE TABLE `horde_lock_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horde_lock_schema_info`
+--
+
+LOCK TABLES `horde_lock_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_lock_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_lock_schema_info` VALUES (3);
+/*!40000 ALTER TABLE `horde_lock_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `horde_locks`
@@ -560,6 +670,16 @@ CREATE TABLE `horde_perms_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_perms_schema_info`
+--
+
+LOCK TABLES `horde_perms_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_perms_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_perms_schema_info` VALUES (3);
+/*!40000 ALTER TABLE `horde_perms_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_prefs`
 --
 
@@ -590,6 +710,16 @@ CREATE TABLE `horde_prefs_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_prefs_schema_info`
+--
+
+LOCK TABLES `horde_prefs_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_prefs_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_prefs_schema_info` VALUES (3);
+/*!40000 ALTER TABLE `horde_prefs_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_queue_schema_info`
 --
 
@@ -600,6 +730,16 @@ CREATE TABLE `horde_queue_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horde_queue_schema_info`
+--
+
+LOCK TABLES `horde_queue_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_queue_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_queue_schema_info` VALUES (1);
+/*!40000 ALTER TABLE `horde_queue_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `horde_queue_tasks`
@@ -629,6 +769,16 @@ CREATE TABLE `horde_service_weather_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_service_weather_schema_info`
+--
+
+LOCK TABLES `horde_service_weather_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_service_weather_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_service_weather_schema_info` VALUES (2);
+/*!40000 ALTER TABLE `horde_service_weather_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_sessionhandler`
 --
 
@@ -655,6 +805,16 @@ CREATE TABLE `horde_sessionhandler_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horde_sessionhandler_schema_info`
+--
+
+LOCK TABLES `horde_sessionhandler_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_sessionhandler_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_sessionhandler_schema_info` VALUES (2);
+/*!40000 ALTER TABLE `horde_sessionhandler_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `horde_signups`
@@ -726,6 +886,16 @@ CREATE TABLE `horde_syncml_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_syncml_schema_info`
+--
+
+LOCK TABLES `horde_syncml_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_syncml_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_syncml_schema_info` VALUES (1);
+/*!40000 ALTER TABLE `horde_syncml_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `horde_token_schema_info`
 --
 
@@ -736,6 +906,16 @@ CREATE TABLE `horde_token_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horde_token_schema_info`
+--
+
+LOCK TABLES `horde_token_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_token_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_token_schema_info` VALUES (1);
+/*!40000 ALTER TABLE `horde_token_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `horde_tokens`
@@ -802,6 +982,16 @@ CREATE TABLE `horde_vfs_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `horde_vfs_schema_info`
+--
+
+LOCK TABLES `horde_vfs_schema_info` WRITE;
+/*!40000 ALTER TABLE `horde_vfs_schema_info` DISABLE KEYS */;
+REPLACE INTO `horde_vfs_schema_info` VALUES (4);
+/*!40000 ALTER TABLE `horde_vfs_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `imp_schema_info`
 --
 
@@ -812,6 +1002,16 @@ CREATE TABLE `imp_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `imp_schema_info`
+--
+
+LOCK TABLES `imp_schema_info` WRITE;
+/*!40000 ALTER TABLE `imp_schema_info` DISABLE KEYS */;
+REPLACE INTO `imp_schema_info` VALUES (3);
+/*!40000 ALTER TABLE `imp_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `imp_sentmail`
@@ -899,6 +1099,16 @@ CREATE TABLE `ingo_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ingo_schema_info`
+--
+
+LOCK TABLES `ingo_schema_info` WRITE;
+/*!40000 ALTER TABLE `ingo_schema_info` DISABLE KEYS */;
+REPLACE INTO `ingo_schema_info` VALUES (7);
+/*!40000 ALTER TABLE `ingo_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `ingo_shares`
@@ -1184,6 +1394,16 @@ CREATE TABLE `kronolith_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `kronolith_schema_info`
+--
+
+LOCK TABLES `kronolith_schema_info` WRITE;
+/*!40000 ALTER TABLE `kronolith_schema_info` DISABLE KEYS */;
+REPLACE INTO `kronolith_schema_info` VALUES (17);
+/*!40000 ALTER TABLE `kronolith_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `kronolith_shares`
 --
 
@@ -1403,6 +1623,16 @@ CREATE TABLE `mnemo_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `mnemo_schema_info`
+--
+
+LOCK TABLES `mnemo_schema_info` WRITE;
+/*!40000 ALTER TABLE `mnemo_schema_info` DISABLE KEYS */;
+REPLACE INTO `mnemo_schema_info` VALUES (5);
+/*!40000 ALTER TABLE `mnemo_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `mnemo_shares`
 --
 
@@ -1569,6 +1799,16 @@ CREATE TABLE `nag_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `nag_schema_info`
+--
+
+LOCK TABLES `nag_schema_info` WRITE;
+/*!40000 ALTER TABLE `nag_schema_info` DISABLE KEYS */;
+REPLACE INTO `nag_schema_info` VALUES (9);
+/*!40000 ALTER TABLE `nag_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `nag_shares`
@@ -1974,6 +2214,16 @@ CREATE TABLE `turba_schema_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `turba_schema_info`
+--
+
+LOCK TABLES `turba_schema_info` WRITE;
+/*!40000 ALTER TABLE `turba_schema_info` DISABLE KEYS */;
+REPLACE INTO `turba_schema_info` VALUES (9);
+/*!40000 ALTER TABLE `turba_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `turba_shares`
 --
 
@@ -2220,6 +2470,17 @@ CREATE TABLE `wicked_schema_info` (
   `version` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `wicked_schema_info`
+--
+
+LOCK TABLES `wicked_schema_info` WRITE;
+/*!40000 ALTER TABLE `wicked_schema_info` DISABLE KEYS */;
+REPLACE INTO `wicked_schema_info` VALUES (6);
+/*!40000 ALTER TABLE `wicked_schema_info` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
