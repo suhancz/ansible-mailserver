@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.28-MariaDB, for Linux (x86_64)
+-- MySQL dump 10.19  Distrib 10.3.39-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: horde
 -- ------------------------------------------------------
--- Server version	10.3.28-MariaDB
+-- Server version	10.3.39-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `content_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `content_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,7 +36,7 @@ DROP TABLE IF EXISTS `gollem_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `gollem_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -62,7 +62,7 @@ CREATE TABLE `gollem_shares` (
   KEY `index_gollem_shares_on_perm_creator` (`perm_creator`),
   KEY `index_gollem_shares_on_perm_default` (`perm_default`),
   KEY `index_gollem_shares_on_perm_guest` (`perm_guest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -81,7 +81,7 @@ CREATE TABLE `gollem_shares_groups` (
   KEY `index_gollem_shares_groups_on_share_id` (`share_id`),
   KEY `index_gollem_shares_groups_on_group_uid` (`group_uid`),
   KEY `index_gollem_shares_groups_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,7 +100,7 @@ CREATE TABLE `gollem_shares_users` (
   KEY `index_gollem_shares_users_on_share_id` (`share_id`),
   KEY `index_gollem_shares_users_on_user_uid` (`user_uid`),
   KEY `index_gollem_shares_users_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -144,7 +144,7 @@ CREATE TABLE `gollem_sharesng` (
   KEY `index_gollem_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_gollem_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_gollem_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -167,7 +167,7 @@ CREATE TABLE `gollem_sharesng_groups` (
   KEY `index_gollem_sharesng_groups_on_perm_4` (`perm_4`),
   KEY `index_gollem_sharesng_groups_on_perm_8` (`perm_8`),
   KEY `index_gollem_sharesng_groups_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +190,138 @@ CREATE TABLE `gollem_sharesng_users` (
   KEY `index_gollem_sharesng_users_on_perm_4` (`perm_4`),
   KEY `index_gollem_sharesng_users_on_perm_8` (`perm_8`),
   KEY `index_gollem_sharesng_users_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `horde_activesync_cache`
+--
+
+DROP TABLE IF EXISTS `horde_activesync_cache`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `horde_activesync_cache` (
+  `cache_devid` varchar(255) DEFAULT NULL,
+  `cache_user` varchar(255) DEFAULT NULL,
+  `cache_data` mediumtext DEFAULT NULL,
+  KEY `index_horde_activesync_cache_on_cache_devid` (`cache_devid`),
+  KEY `index_horde_activesync_cache_on_cache_user` (`cache_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `horde_activesync_device`
+--
+
+DROP TABLE IF EXISTS `horde_activesync_device`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `horde_activesync_device` (
+  `device_id` varchar(255) NOT NULL,
+  `device_type` varchar(255) NOT NULL,
+  `device_agent` varchar(255) NOT NULL,
+  `device_supported` text DEFAULT NULL,
+  `device_rwstatus` int(11) DEFAULT NULL,
+  `device_properties` text DEFAULT NULL,
+  PRIMARY KEY (`device_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `horde_activesync_device_users`
+--
+
+DROP TABLE IF EXISTS `horde_activesync_device_users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `horde_activesync_device_users` (
+  `device_id` varchar(255) NOT NULL,
+  `device_user` varchar(255) NOT NULL,
+  `device_policykey` bigint(20) DEFAULT 0,
+  KEY `index_horde_activesync_device_users_on_device_user` (`device_user`),
+  KEY `index_horde_activesync_device_users_on_device_id` (`device_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `horde_activesync_mailmap`
+--
+
+DROP TABLE IF EXISTS `horde_activesync_mailmap`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `horde_activesync_mailmap` (
+  `message_uid` int(11) NOT NULL DEFAULT 0,
+  `sync_key` varchar(255) NOT NULL,
+  `sync_devid` varchar(255) NOT NULL,
+  `sync_folderid` varchar(255) NOT NULL,
+  `sync_user` varchar(255) DEFAULT NULL,
+  `sync_read` tinyint(1) DEFAULT NULL,
+  `sync_deleted` tinyint(1) DEFAULT NULL,
+  `sync_flagged` tinyint(1) DEFAULT NULL,
+  `sync_changed` tinyint(1) DEFAULT NULL,
+  `sync_category` varchar(255) DEFAULT NULL,
+  `sync_draft` tinyint(1) DEFAULT NULL,
+  KEY `index_horde_activesync_mailmap_on_message_uid` (`message_uid`),
+  KEY `index_horde_activesync_mailmap_on_sync_devid` (`sync_devid`),
+  KEY `index_horde_activesync_mailmap_on_sync_folderid` (`sync_folderid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `horde_activesync_map`
+--
+
+DROP TABLE IF EXISTS `horde_activesync_map`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `horde_activesync_map` (
+  `message_uid` varchar(255) NOT NULL,
+  `sync_modtime` int(11) DEFAULT NULL,
+  `sync_key` varchar(255) NOT NULL,
+  `sync_devid` varchar(255) NOT NULL,
+  `sync_folderid` varchar(255) NOT NULL,
+  `sync_user` varchar(255) DEFAULT NULL,
+  `sync_clientid` varchar(255) DEFAULT NULL,
+  `sync_deleted` tinyint(1) DEFAULT NULL,
+  KEY `index_horde_activesync_map_on_sync_devid` (`sync_devid`),
+  KEY `index_horde_activesync_map_on_message_uid` (`message_uid`),
+  KEY `index_horde_activesync_map_on_sync_user` (`sync_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `horde_activesync_schema_info`
+--
+
+DROP TABLE IF EXISTS `horde_activesync_schema_info`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `horde_activesync_schema_info` (
+  `version` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `horde_activesync_state`
+--
+
+DROP TABLE IF EXISTS `horde_activesync_state`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `horde_activesync_state` (
+  `sync_mod` int(11) DEFAULT NULL,
+  `sync_key` varchar(255) NOT NULL,
+  `sync_data` longblob DEFAULT NULL,
+  `sync_devid` varchar(255) DEFAULT NULL,
+  `sync_folderid` varchar(255) DEFAULT NULL,
+  `sync_user` varchar(255) DEFAULT NULL,
+  `sync_pending` mediumtext DEFAULT NULL,
+  `sync_timestamp` int(11) DEFAULT NULL,
+  PRIMARY KEY (`sync_key`),
+  KEY `index_horde_activesync_state_on_sync_folderid` (`sync_folderid`),
+  KEY `index_horde_activesync_state_on_sync_devid` (`sync_devid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -202,7 +333,7 @@ DROP TABLE IF EXISTS `horde_alarm_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_alarm_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -233,7 +364,7 @@ CREATE TABLE `horde_alarms` (
   KEY `index_horde_alarms_on_alarm_end` (`alarm_end`),
   KEY `index_horde_alarms_on_alarm_snooze` (`alarm_snooze`),
   KEY `index_horde_alarms_on_alarm_dismissed` (`alarm_dismissed`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -245,7 +376,7 @@ DROP TABLE IF EXISTS `horde_auth_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_auth_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -261,7 +392,7 @@ CREATE TABLE `horde_cache` (
   `cache_expiration` bigint(20) NOT NULL,
   `cache_data` longblob DEFAULT NULL,
   PRIMARY KEY (`cache_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -273,7 +404,7 @@ DROP TABLE IF EXISTS `horde_cache_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_cache_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -285,7 +416,7 @@ DROP TABLE IF EXISTS `horde_core_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_core_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -302,7 +433,7 @@ CREATE TABLE `horde_dav_collections` (
   UNIQUE KEY `index_horde_dav_collections_on_id_external` (`id_external`),
   KEY `index_horde_dav_collections_on_id_interface` (`id_interface`),
   KEY `index_horde_dav_collections_on_id_internal` (`id_internal`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -320,7 +451,7 @@ CREATE TABLE `horde_dav_objects` (
   UNIQUE KEY `index_horde_dav_objects_on_id_external_and_id_collection` (`id_external`,`id_collection`),
   KEY `index_horde_dav_objects_on_id_collection` (`id_collection`),
   KEY `index_horde_dav_objects_on_id_external` (`id_external`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -332,7 +463,7 @@ DROP TABLE IF EXISTS `horde_dav_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_dav_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -344,7 +475,7 @@ DROP TABLE IF EXISTS `horde_group_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_group_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -361,7 +492,7 @@ CREATE TABLE `horde_groups` (
   `group_email` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`group_uid`),
   UNIQUE KEY `index_horde_groups_on_group_name` (`group_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -376,7 +507,7 @@ CREATE TABLE `horde_groups_members` (
   `user_uid` varchar(255) NOT NULL,
   KEY `index_horde_groups_members_on_group_uid` (`group_uid`),
   KEY `index_horde_groups_members_on_user_uid` (`user_uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -400,7 +531,7 @@ CREATE TABLE `horde_histories` (
   KEY `index_horde_histories_on_history_ts` (`history_ts`),
   KEY `index_horde_histories_on_history_modseq` (`history_modseq`),
   KEY `index_horde_histories_on_object_uid` (`object_uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -414,7 +545,7 @@ CREATE TABLE `horde_histories_modseq` (
   `history_modseq` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `history_modseqempty` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`history_modseq`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -426,7 +557,7 @@ DROP TABLE IF EXISTS `horde_history_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_history_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -445,7 +576,7 @@ CREATE TABLE `horde_imap_client_data` (
   `username` varchar(255) NOT NULL,
   PRIMARY KEY (`messageid`),
   KEY `index_horde_imap_client_data_on_hostspec_and_mailbox_and_port_an` (`hostspec`,`mailbox`,`port`,`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -460,7 +591,7 @@ CREATE TABLE `horde_imap_client_message` (
   `msguid` varchar(255) NOT NULL,
   `messageid` bigint(20) NOT NULL,
   KEY `index_horde_imap_client_message_on_msguid_and_messageid` (`msguid`,`messageid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -475,7 +606,7 @@ CREATE TABLE `horde_imap_client_metadata` (
   `field` varchar(255) NOT NULL,
   `messageid` bigint(20) NOT NULL,
   KEY `index_horde_imap_client_metadata_on_messageid` (`messageid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -487,7 +618,7 @@ DROP TABLE IF EXISTS `horde_imap_client_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_imap_client_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -499,7 +630,7 @@ DROP TABLE IF EXISTS `horde_lock_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_lock_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -519,7 +650,7 @@ CREATE TABLE `horde_locks` (
   `lock_expiry_timestamp` bigint(20) NOT NULL,
   `lock_type` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`lock_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -540,7 +671,7 @@ CREATE TABLE `horde_metar_airports` (
   `longitude` float DEFAULT 0,
   `elevation` float DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -562,7 +693,7 @@ CREATE TABLE `horde_muvfs` (
   PRIMARY KEY (`vfs_id`),
   KEY `index_horde_muvfs_on_vfs_path` (`vfs_path`),
   KEY `index_horde_muvfs_on_vfs_name` (`vfs_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -579,7 +710,7 @@ CREATE TABLE `horde_perms` (
   `perm_data` text DEFAULT NULL,
   PRIMARY KEY (`perm_id`),
   UNIQUE KEY `index_horde_perms_on_perm_name` (`perm_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -591,7 +722,7 @@ DROP TABLE IF EXISTS `horde_perms_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_perms_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -609,7 +740,7 @@ CREATE TABLE `horde_prefs` (
   PRIMARY KEY (`pref_uid`,`pref_scope`,`pref_name`),
   KEY `index_horde_prefs_on_pref_uid` (`pref_uid`),
   KEY `index_horde_prefs_on_pref_scope` (`pref_scope`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -621,7 +752,7 @@ DROP TABLE IF EXISTS `horde_prefs_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_prefs_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -633,7 +764,7 @@ DROP TABLE IF EXISTS `horde_queue_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_queue_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -648,7 +779,7 @@ CREATE TABLE `horde_queue_tasks` (
   `task_queue` varchar(255) NOT NULL,
   `task_fields` text NOT NULL,
   PRIMARY KEY (`task_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -660,7 +791,7 @@ DROP TABLE IF EXISTS `horde_service_weather_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_service_weather_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -676,7 +807,7 @@ CREATE TABLE `horde_sessionhandler` (
   `session_data` longblob DEFAULT NULL,
   PRIMARY KEY (`session_id`),
   KEY `index_horde_sessionhandler_on_session_lastmodified` (`session_lastmodified`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -688,7 +819,7 @@ DROP TABLE IF EXISTS `horde_sessionhandler_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_sessionhandler_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -704,7 +835,7 @@ CREATE TABLE `horde_signups` (
   `signup_host` varchar(255) NOT NULL,
   `signup_data` text NOT NULL,
   PRIMARY KEY (`user_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -723,7 +854,7 @@ CREATE TABLE `horde_syncml_anchors` (
   KEY `index_horde_syncml_anchors_on_syncml_syncpartner` (`syncml_syncpartner`),
   KEY `index_horde_syncml_anchors_on_syncml_db` (`syncml_db`),
   KEY `index_horde_syncml_anchors_on_syncml_uid` (`syncml_uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -745,7 +876,7 @@ CREATE TABLE `horde_syncml_map` (
   KEY `index_horde_syncml_map_on_syncml_uid` (`syncml_uid`),
   KEY `index_horde_syncml_map_on_syncml_cuid` (`syncml_cuid`),
   KEY `index_horde_syncml_map_on_syncml_suid` (`syncml_suid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -757,7 +888,7 @@ DROP TABLE IF EXISTS `horde_syncml_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_syncml_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -769,7 +900,7 @@ DROP TABLE IF EXISTS `horde_token_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_token_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -784,7 +915,7 @@ CREATE TABLE `horde_tokens` (
   `token_id` varchar(32) NOT NULL,
   `token_timestamp` bigint(20) NOT NULL,
   PRIMARY KEY (`token_address`,`token_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -800,7 +931,7 @@ CREATE TABLE `horde_users` (
   `user_soft_expiration_date` int(11) DEFAULT NULL,
   `user_hard_expiration_date` int(11) DEFAULT NULL,
   PRIMARY KEY (`user_uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -821,7 +952,7 @@ CREATE TABLE `horde_vfs` (
   PRIMARY KEY (`vfs_id`),
   KEY `index_horde_vfs_on_vfs_path` (`vfs_path`),
   KEY `index_horde_vfs_on_vfs_name` (`vfs_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -833,7 +964,7 @@ DROP TABLE IF EXISTS `horde_vfs_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `horde_vfs_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -845,7 +976,7 @@ DROP TABLE IF EXISTS `imp_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `imp_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -867,7 +998,7 @@ CREATE TABLE `imp_sentmail` (
   KEY `index_imp_sentmail_on_sentmail_ts` (`sentmail_ts`),
   KEY `index_imp_sentmail_on_sentmail_who` (`sentmail_who`),
   KEY `index_imp_sentmail_on_sentmail_success` (`sentmail_success`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -881,7 +1012,7 @@ CREATE TABLE `ingo_forwards` (
   `forward_owner` varchar(255) NOT NULL,
   `forward_addresses` text DEFAULT NULL,
   `forward_keep` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -896,7 +1027,7 @@ CREATE TABLE `ingo_lists` (
   `list_blacklist` int(11) DEFAULT 0,
   `list_address` varchar(255) NOT NULL,
   KEY `index_ingo_lists_on_list_owner_and_list_blacklist` (`list_owner`,`list_blacklist`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -920,7 +1051,7 @@ CREATE TABLE `ingo_rules` (
   `rule_order` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`rule_id`),
   KEY `index_ingo_rules_on_rule_owner` (`rule_owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -932,7 +1063,7 @@ DROP TABLE IF EXISTS `ingo_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ingo_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -959,7 +1090,7 @@ CREATE TABLE `ingo_shares` (
   KEY `index_ingo_shares_on_perm_creator` (`perm_creator`),
   KEY `index_ingo_shares_on_perm_default` (`perm_default`),
   KEY `index_ingo_shares_on_perm_guest` (`perm_guest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -978,7 +1109,7 @@ CREATE TABLE `ingo_shares_groups` (
   KEY `index_ingo_shares_groups_on_share_id` (`share_id`),
   KEY `index_ingo_shares_groups_on_group_uid` (`group_uid`),
   KEY `index_ingo_shares_groups_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -997,7 +1128,7 @@ CREATE TABLE `ingo_shares_users` (
   KEY `index_ingo_shares_users_on_share_id` (`share_id`),
   KEY `index_ingo_shares_users_on_user_uid` (`user_uid`),
   KEY `index_ingo_shares_users_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1042,7 +1173,7 @@ CREATE TABLE `ingo_sharesng` (
   KEY `index_ingo_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_ingo_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_ingo_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1065,7 +1196,7 @@ CREATE TABLE `ingo_sharesng_groups` (
   KEY `index_ingo_sharesng_groups_on_perm_4` (`perm_4`),
   KEY `index_ingo_sharesng_groups_on_perm_8` (`perm_8`),
   KEY `index_ingo_sharesng_groups_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1088,7 +1219,7 @@ CREATE TABLE `ingo_sharesng_users` (
   KEY `index_ingo_sharesng_users_on_perm_4` (`perm_4`),
   KEY `index_ingo_sharesng_users_on_perm_8` (`perm_8`),
   KEY `index_ingo_sharesng_users_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1103,7 +1234,7 @@ CREATE TABLE `ingo_spam` (
   `spam_level` int(11) DEFAULT 5,
   `spam_folder` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`spam_owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1124,7 +1255,7 @@ CREATE TABLE `ingo_vacations` (
   `vacation_excludes` text DEFAULT NULL,
   `vacation_ignorelists` int(11) DEFAULT 1,
   PRIMARY KEY (`vacation_owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1167,7 +1298,7 @@ CREATE TABLE `kronolith_events` (
   KEY `index_kronolith_events_on_calendar_id` (`calendar_id`),
   KEY `index_kronolith_events_on_event_uid` (`event_uid`),
   KEY `index_kronolith_events_on_event_baseid` (`event_baseid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1183,7 +1314,7 @@ CREATE TABLE `kronolith_events_geo` (
   `event_lon` varchar(32) NOT NULL,
   `event_zoom` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`event_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1198,7 +1329,7 @@ CREATE TABLE `kronolith_events_mysqlgeo` (
   `event_coordinates` point NOT NULL,
   `event_zoom` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`event_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1220,7 +1351,7 @@ CREATE TABLE `kronolith_resources` (
   PRIMARY KEY (`resource_id`),
   KEY `index_kronolith_resources_on_resource_calendar` (`resource_calendar`),
   KEY `index_kronolith_resources_on_resource_type` (`resource_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1232,7 +1363,7 @@ DROP TABLE IF EXISTS `kronolith_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `kronolith_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1260,7 +1391,7 @@ CREATE TABLE `kronolith_shares` (
   KEY `index_kronolith_shares_on_perm_creator` (`perm_creator`),
   KEY `index_kronolith_shares_on_perm_default` (`perm_default`),
   KEY `index_kronolith_shares_on_perm_guest` (`perm_guest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1279,7 +1410,7 @@ CREATE TABLE `kronolith_shares_groups` (
   KEY `index_kronolith_shares_groups_on_share_id` (`share_id`),
   KEY `index_kronolith_shares_groups_on_group_uid` (`group_uid`),
   KEY `index_kronolith_shares_groups_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1298,7 +1429,7 @@ CREATE TABLE `kronolith_shares_users` (
   KEY `index_kronolith_shares_users_on_share_id` (`share_id`),
   KEY `index_kronolith_shares_users_on_user_uid` (`user_uid`),
   KEY `index_kronolith_shares_users_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1350,7 +1481,7 @@ CREATE TABLE `kronolith_sharesng` (
   KEY `index_kronolith_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_kronolith_sharesng_on_perm_guest_16` (`perm_guest_16`),
   KEY `index_kronolith_sharesng_on_perm_guest_1024` (`perm_guest_1024`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1375,7 +1506,7 @@ CREATE TABLE `kronolith_sharesng_groups` (
   KEY `index_kronolith_sharesng_groups_on_perm_8` (`perm_8`),
   KEY `index_kronolith_sharesng_groups_on_perm_16` (`perm_16`),
   KEY `index_kronolith_sharesng_groups_on_perm_1024` (`perm_1024`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1400,7 +1531,7 @@ CREATE TABLE `kronolith_sharesng_users` (
   KEY `index_kronolith_sharesng_users_on_perm_8` (`perm_8`),
   KEY `index_kronolith_sharesng_users_on_perm_16` (`perm_16`),
   KEY `index_kronolith_sharesng_users_on_perm_1024` (`perm_1024`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1418,7 +1549,7 @@ CREATE TABLE `kronolith_storage` (
   PRIMARY KEY (`id`),
   KEY `index_kronolith_storage_on_vfb_owner` (`vfb_owner`),
   KEY `index_kronolith_storage_on_vfb_email` (`vfb_email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1438,7 +1569,7 @@ CREATE TABLE `mnemo_memos` (
   PRIMARY KEY (`memo_owner`,`memo_id`),
   KEY `index_mnemo_memos_on_memo_owner` (`memo_owner`),
   KEY `index_mnemo_memos_on_memo_uid` (`memo_uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1450,7 +1581,7 @@ DROP TABLE IF EXISTS `mnemo_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mnemo_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1477,7 +1608,7 @@ CREATE TABLE `mnemo_shares` (
   KEY `index_mnemo_shares_on_perm_creator` (`perm_creator`),
   KEY `index_mnemo_shares_on_perm_default` (`perm_default`),
   KEY `index_mnemo_shares_on_perm_guest` (`perm_guest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1496,7 +1627,7 @@ CREATE TABLE `mnemo_shares_groups` (
   KEY `index_mnemo_shares_groups_on_share_id` (`share_id`),
   KEY `index_mnemo_shares_groups_on_group_uid` (`group_uid`),
   KEY `index_mnemo_shares_groups_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1515,7 +1646,7 @@ CREATE TABLE `mnemo_shares_users` (
   KEY `index_mnemo_shares_users_on_share_id` (`share_id`),
   KEY `index_mnemo_shares_users_on_user_uid` (`user_uid`),
   KEY `index_mnemo_shares_users_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1560,7 +1691,7 @@ CREATE TABLE `mnemo_sharesng` (
   KEY `index_mnemo_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_mnemo_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_mnemo_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1583,7 +1714,7 @@ CREATE TABLE `mnemo_sharesng_groups` (
   KEY `index_mnemo_sharesng_groups_on_perm_4` (`perm_4`),
   KEY `index_mnemo_sharesng_groups_on_perm_8` (`perm_8`),
   KEY `index_mnemo_sharesng_groups_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1606,7 +1737,7 @@ CREATE TABLE `mnemo_sharesng_users` (
   KEY `index_mnemo_sharesng_users_on_perm_4` (`perm_4`),
   KEY `index_mnemo_sharesng_users_on_perm_8` (`perm_8`),
   KEY `index_mnemo_sharesng_users_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1618,7 +1749,7 @@ DROP TABLE IF EXISTS `nag_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `nag_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1648,7 +1779,7 @@ CREATE TABLE `nag_shares` (
   KEY `index_nag_shares_on_perm_creator` (`perm_creator`),
   KEY `index_nag_shares_on_perm_default` (`perm_default`),
   KEY `index_nag_shares_on_perm_guest` (`perm_guest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1665,7 +1796,7 @@ CREATE TABLE `nag_shares_groups` (
   KEY `index_nag_shares_groups_on_share_id` (`share_id`),
   KEY `index_nag_shares_groups_on_group_uid` (`group_uid`),
   KEY `index_nag_shares_groups_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1682,7 +1813,7 @@ CREATE TABLE `nag_shares_users` (
   KEY `index_nag_shares_users_on_share_id` (`share_id`),
   KEY `index_nag_shares_users_on_user_uid` (`user_uid`),
   KEY `index_nag_shares_users_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1730,7 +1861,7 @@ CREATE TABLE `nag_sharesng` (
   KEY `index_nag_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_nag_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_nag_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1753,7 +1884,7 @@ CREATE TABLE `nag_sharesng_groups` (
   KEY `index_nag_sharesng_groups_on_perm_4` (`perm_4`),
   KEY `index_nag_sharesng_groups_on_perm_8` (`perm_8`),
   KEY `index_nag_sharesng_groups_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1776,7 +1907,7 @@ CREATE TABLE `nag_sharesng_users` (
   KEY `index_nag_sharesng_users_on_perm_4` (`perm_4`),
   KEY `index_nag_sharesng_users_on_perm_8` (`perm_8`),
   KEY `index_nag_sharesng_users_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1815,7 +1946,7 @@ CREATE TABLE `nag_tasks` (
   KEY `index_nag_tasks_on_task_owner` (`task_owner`),
   KEY `index_nag_tasks_on_task_uid` (`task_uid`),
   KEY `index_nag_tasks_on_task_start` (`task_start`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1831,7 +1962,7 @@ CREATE TABLE `rampage_objects` (
   `type_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`object_id`),
   UNIQUE KEY `rampage_objects_type_object_name` (`type_id`,`object_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1845,7 +1976,7 @@ CREATE TABLE `rampage_tag_stats` (
   `tag_id` int(10) unsigned NOT NULL,
   `count` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`tag_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1864,7 +1995,7 @@ CREATE TABLE `rampage_tagged` (
   KEY `rampage_tagged_object_id` (`object_id`),
   KEY `rampage_tagged_tag_id` (`tag_id`),
   KEY `rampage_tagged_created` (`created`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1879,7 +2010,7 @@ CREATE TABLE `rampage_tags` (
   `tag_name` varchar(255) NOT NULL,
   PRIMARY KEY (`tag_id`),
   UNIQUE KEY `rampage_tags_tag_name` (`tag_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1894,7 +2025,7 @@ CREATE TABLE `rampage_types` (
   `type_name` varchar(255) NOT NULL,
   PRIMARY KEY (`type_id`),
   UNIQUE KEY `rampage_objects_type_name` (`type_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1910,7 +2041,7 @@ CREATE TABLE `rampage_user_tag_stats` (
   `count` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`user_id`,`tag_id`),
   KEY `rampage_user_tag_stats_tag_id` (`tag_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1925,7 +2056,7 @@ CREATE TABLE `rampage_users` (
   `user_name` varchar(255) NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `rampage_users_user_name` (`user_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1948,7 +2079,7 @@ CREATE TABLE `trean_bookmarks` (
   PRIMARY KEY (`bookmark_id`),
   KEY `index_trean_bookmarks_on_bookmark_clicks` (`bookmark_clicks`),
   KEY `index_trean_bookmarks_on_user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1960,7 +2091,7 @@ DROP TABLE IF EXISTS `trean_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `trean_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2046,7 +2177,7 @@ CREATE TABLE `turba_objects` (
   KEY `index_turba_objects_on_object_email` (`object_email`),
   KEY `index_turba_objects_on_object_firstname` (`object_firstname`),
   KEY `index_turba_objects_on_object_lastname` (`object_lastname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2058,7 +2189,7 @@ DROP TABLE IF EXISTS `turba_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `turba_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2086,7 +2217,7 @@ CREATE TABLE `turba_shares` (
   KEY `index_turba_shares_on_perm_creator` (`perm_creator`),
   KEY `index_turba_shares_on_perm_default` (`perm_default`),
   KEY `index_turba_shares_on_perm_guest` (`perm_guest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2105,7 +2236,7 @@ CREATE TABLE `turba_shares_groups` (
   KEY `index_turba_shares_groups_on_share_id` (`share_id`),
   KEY `index_turba_shares_groups_on_group_uid` (`group_uid`),
   KEY `index_turba_shares_groups_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2124,7 +2255,7 @@ CREATE TABLE `turba_shares_users` (
   KEY `index_turba_shares_users_on_share_id` (`share_id`),
   KEY `index_turba_shares_users_on_user_uid` (`user_uid`),
   KEY `index_turba_shares_users_on_perm` (`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2170,7 +2301,7 @@ CREATE TABLE `turba_sharesng` (
   KEY `index_turba_sharesng_on_perm_guest_4` (`perm_guest_4`),
   KEY `index_turba_sharesng_on_perm_guest_8` (`perm_guest_8`),
   KEY `index_turba_sharesng_on_perm_guest_16` (`perm_guest_16`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2193,7 +2324,7 @@ CREATE TABLE `turba_sharesng_groups` (
   KEY `index_turba_sharesng_groups_on_perm_4` (`perm_4`),
   KEY `index_turba_sharesng_groups_on_perm_8` (`perm_8`),
   KEY `index_turba_sharesng_groups_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2216,7 +2347,7 @@ CREATE TABLE `turba_sharesng_users` (
   KEY `index_turba_sharesng_users_on_perm_4` (`perm_4`),
   KEY `index_turba_sharesng_users_on_perm_8` (`perm_8`),
   KEY `index_turba_sharesng_users_on_perm_16` (`perm_16`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2234,7 +2365,7 @@ CREATE TABLE `wicked_attachment_history` (
   `change_log` text DEFAULT NULL,
   `attachment_version` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`page_id`,`attachment_name`,`attachment_version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2253,7 +2384,7 @@ CREATE TABLE `wicked_attachments` (
   `change_log` text DEFAULT NULL,
   `attachment_version` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`page_id`,`attachment_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2273,7 +2404,7 @@ CREATE TABLE `wicked_history` (
   `page_version` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`page_id`,`page_version`),
   KEY `index_wicked_history_on_page_name` (`page_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2294,7 +2425,7 @@ CREATE TABLE `wicked_pages` (
   `page_version` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`page_id`),
   UNIQUE KEY `index_wicked_pages_on_page_name` (`page_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2306,7 +2437,7 @@ DROP TABLE IF EXISTS `wicked_schema_info`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `wicked_schema_info` (
   `version` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -2318,4 +2449,4 @@ CREATE TABLE `wicked_schema_info` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-03-07 20:03:15
+-- Dump completed on 2023-10-18 21:31:50
