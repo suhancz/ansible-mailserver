@@ -353,6 +353,7 @@
       - golang-github-acme-lego
       - perl-Proc-ProcessTable
       - imapsync
+      - php81
     state: latest
 - name: Install Remi packages
   tags: horde
