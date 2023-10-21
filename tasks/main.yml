@@ -52,7 +52,14 @@
   tags: ftp
 - name: Configure Apache
   import_tasks: httpd.yml
-  tags: httpd
+  tags:
+    - httpd
+    - dyndns
+    - horde
+    - postfixadmin
+    - poweradmin
+    - wireguard
+    - webdav
 - name: Set up SPAMAssassin
   import_tasks: spamassassin.yml
   tags: spamassassin
