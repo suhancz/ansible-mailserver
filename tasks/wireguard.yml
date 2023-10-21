@@ -180,6 +180,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS NS records
+  tags:
+    - wireguard
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -192,6 +195,9 @@
     - dyndns
     - vpn
 - name: Add DynDNS root A record
+  tags:
+    - wireguard
+    - poweradmin
   import_tasks: add_dns_record.yml
   vars:
     record:
@@ -201,6 +207,9 @@
       type: A
       content: "{{ ansible_default_ipv4.address }}"
 - name: Add DynDNS root AAAA record
+  tags:
+    - wireguard
+    - poweradmin
   import_tasks: add_dns_record.yml
   vars:
     record:
@@ -210,6 +219,9 @@
       type: AAAA
       content: "{{ ansible_default_ipv6.address }}"
 - name: Add DynDNS A records
+  tags:
+    - wireguard
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -221,6 +233,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS AAAA records
+  tags:
+    - wireguard
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -272,6 +287,10 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add admin VPN A records
+  tags:
+    - wireguard
+    - poweradmin
+    - postfixadmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -284,6 +303,10 @@
     - postfixadmin
     - poweradmin
 - name: Add admin VPN AAAA records
+  tags:
+    - wireguard
+    - poweradmin
+    - postfixadmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -296,6 +319,9 @@
     - postfixadmin
     - poweradmin
 - name: Generate BASH DynDNS clients
+  tags:
+    - wireguard
+    - poweradmin
   template:
     src: dyndns/dynamic_dns_client.sh.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.sh"
@@ -306,6 +332,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate Python DynDNS clients
+  tags:
+    - wireguard
+    - poweradmin
   template:
     src: dyndns/dynamic_dns_client.py.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.py"

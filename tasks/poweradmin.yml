@@ -1,5 +1,8 @@
 ---
 - name: Get latest PowerAdmin version
+  tags:
+    - dyndns
+    - poweradmin
   block:
     - name: Get URL for latest release
       uri:
@@ -10,17 +13,26 @@
         poweradmin_version: "{{ poweradmin_download_site.url | replace('https://github.com/poweradmin/poweradmin/releases/tag/v','') }}"
   when: 'public_dns == "yes"'
 - name: Unpack PowerAdmin
+  tags:
+    - dyndns
+    - poweradmin
   unarchive:
     src: "https://github.com/poweradmin/poweradmin/archive/v{{ poweradmin_version }}.tar.gz"
     dest: /var/www/
     remote_src: yes
   when: 'public_dns == "yes"'
 - name: Rename PowerAdmin directory
+  tags:
+    - dyndns
+    - poweradmin
   command: "mv /var/www/poweradmin-{{ poweradmin_version }} /var/www/poweradmin"
   args:
     creates: /var/www/poweradmin
   when: 'public_dns == "yes"'
 - name: Set up PowerAdmin permissions
+  tags:
+    - dyndns
+    - poweradmin
   file:
     path: /var/www/poweradmin
     state: directory
@@ -29,11 +41,17 @@
     recurse: yes
   when: 'public_dns == "yes"'
 - name: Generate PowerAdmin session key
+  tags:
+    - dyndns
+    - poweradmin
   set_fact:
     poweradmin_session_key: "{{ poweradmin_session_key | default(lookup('password', '/tmp/ansible-mailserver-install.poweradmin_session_key chars=ascii_lowercase,ascii_uppercase,digits,@,#,$,%,^,*,(,),_,-,! length=46')) }}"
   no_log: yes
   when: 'public_dns == "yes"'
 - name: "Add PowerAdmin user"
+  tags:
+    - dyndns
+    - poweradmin
   mysql_user:
     name: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
     password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
@@ -45,6 +63,9 @@
   when: 'public_dns == "yes"'
   notify: Warn on passwords
 - name: Fill PowerDNS DB with PowerAdmin data
+  tags:
+    - dyndns
+    - poweradmin
   block:
     - name: Fill PowerDNS DB with PowerAdmin data using Blowfish 2y ident
       mysql_query:
@@ -86,11 +107,17 @@
       when: 'public_dns == "yes"'
       notify: Warn on passwords
 - name: Check if DynDNS .htaccess exists
+  tags:
+    - dyndns
+    - poweradmin
   stat:
     path: /var/www/poweradmin/.htaccess
   register: htaccess_exists
   when: 'public_dns == "yes"'
 - name: Set up DynDNS .htaccess
+  tags:
+    - dyndns
+    - poweradmin
   when: 'public_dns == "yes" and not htaccess_exists.stat.exists'
   block:
     - name: Set up DynDNS .htaccess from installer files
@@ -110,6 +137,9 @@
         group: apache
         mode: ug=rw,o=r
 - name: Render PowerAdmin config
+  tags:
+    - dyndns
+    - poweradmin
   template:
     src: poweradmin/config.inc.php.j2
     dest: /var/www/poweradmin/inc/config.inc.php
@@ -120,6 +150,8 @@
   no_log: yes
   when: 'public_dns == "yes"'
 - name: Remove install directory
+  tags:
+    - poweradmin
   file:
     path: /var/www/poweradmin/install/
     state: absent

@@ -1,4 +1,13 @@
 ---
+- name: Install EL repositories
+  tags:
+    - always
+  package:
+    name:
+      - yum-utils
+      - epel-release
+      - elrepo-release
+    state: latest
 - name: Set up UEK repository
   tags: wireguard
   blockinfile:
@@ -131,29 +140,27 @@
     state: present
     backup: yes
     create: yes
-# - name: Set up MongoDB repository
-#   blockinfile:
-#     path: /etc/yum.repos.d/mongodb-org-5.0.repo
-#     marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
-#     block: |
-#       [mongodb-org-5.0]
-#       name=MongoDB 5.0 Repository
-#       baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
-#       gpgcheck=0
-#       enabled=1
-#     mode: u=rw,og=r
-#     owner: root
-#     group: root
-#     state: present
-#     backup: yes
-#     create: yes
+- name: Set up MongoDB repository
+  tags: mongodb
+  blockinfile:
+    path: /etc/yum.repos.d/mongodb-org-5.0.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
+    block: |
+      [mongodb-org-5.0]
+      name=MongoDB 5.0 Repository
+      baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
+      gpgcheck=0
+      enabled=1
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
 - name: Enable PowerTools
   command: dnf config-manager --set-enable powertools
-- name: Reset the PHP DNF module
-  command: dnf module reset php -y
-- name: Enable DNF modules
-  tags: horde
-  command: dnf module enable php:remi-7.4 go-toolset -y
+- name: Enable the go-toolset DNF module
+  command: dnf module enable go-toolset -y
 - name: Enable the COPR repositories
   command: "dnf copr enable -y {{ item }}"
   tags:
@@ -163,12 +170,12 @@
     - "@389ds/389-directory-server"
     - "eclipseo/golang-ng custom-1-x86_64"
 - name: Install packages
+  tags:
+    - always
   package:
     name:
       - postfix
       - mailx
-      - epel-release
-      - elrepo-release
       - certbot
       - httpd
       - python3-certbot-apache
@@ -178,25 +185,11 @@
       - python3-mysqlclient
       - wget
       - tar
-      - php-fpm
-      - php-imap
-      - php-mbstring
-      - php-mysqlnd
-      - php-gd
-      - php-opcache
-      - php-json
-      - php-curl
-      - php-zip
-      - php-xml
-      - php-bz2
-      - php-intl
-      - php-gmp
       - binutils
       - rpm-build
       - setools-console
       - policycoreutils-python3
       - policycoreutils-devel
-      - php-cli
       - postfix-mysql
       - dovecot-mysql
       - pypolicyd-spf
@@ -212,19 +205,9 @@
       - spamassassin
       - spamass-milter
       - dovecot-pigeonhole
-      - php-devel
-      - php74-php-devel
-      - php-pear
-      - php56-php-channel-horde
-      - php56-php-horde-horde-lz4
       - ImageMagick
-      - php-pecl-imagick
-      - php56-php-pecl-imagick
       - aspell
       - memcached
-      - php56-php-pecl-memcache
-      - php-pecl-memcache
-      - php-pecl-http
       - mod_ssl
       - php-bcmath
       - php56-php-bcmath
@@ -233,29 +216,15 @@
       - gettext-common-devel
       - gettext-devel
       - gettext-libs
-      - php56-php-xml
-      - php56-php-pecl-dom-varimport
-      - php-pecl-mysql
-      - php-pecl-mysql-xdevapi
-      - php56-php-mysqlnd
       - openldap
       - openldap-clients
       - openldap-devel
-      - php56-php-ldap
-      - phpldapadmin
-      - php56-php-mbstring
       - gd
       - gd-devel
-      - php56-php-gd
       - tidy
       - libtidy
       - libtidy-devel
-      - php-tidy
-      - php56-php-tidy
-      - php-pecl-crypto
-      - php56-php-pecl-crypto
       - intltool
-      - php56-php-intl
       - curl
       - libcurl
       - libcurl-devel
@@ -279,10 +248,6 @@
       - GeoIP
       - GeoIP-GeoLite-data
       - GeoIP-GeoLite-data-extra
-      - php-pecl-geoip
-      - php56-php-pecl-geoip
-      - php-pecl-pam
-      - php74-php-pecl-pam
       - libgweather
       - libgweather-devel
       - cyrus-sasl-ldap
@@ -293,7 +258,7 @@
       - sssd-ldap
       - 389-ds-base
       - fortune-mod
-      # - mongodb-org
+      - mongodb-org
       - fail2ban-all
       - fail2ban-firewalld
       - fail2ban-selinux
@@ -322,12 +287,6 @@
       - clamav-update
       - iptables-services
       - conntrack-tools
-      - php
-      - php-ldap
-      - php-mysql
-      - php-odbc
-      - php-mcrypt
-      - php-mhash
       - pdns
       - pdns-backend-mysql
       - pdns-recursor
@@ -353,12 +312,115 @@
       - golang-github-acme-lego
       - perl-Proc-ProcessTable
       - imapsync
-      - php81
+      - php56-php-channel-horde
+      - php56-php-horde-horde-lz4
+      - php56-php-xml
+      - php56-php-pecl-dom-varimport
+      - php56-php-mysqlnd
+      - php56-php-ldap
+      - php56-php-mbstring
+      - php56-php-gd
+      - php56-php-tidy
+      - php56-php-pecl-crypto
+      - php56-php-intl
+      - php56-php-pecl-geoip
+      - php56-php-pecl-imagick
+      - php56-php-pecl-memcache
     state: latest
-- name: Install Remi packages
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+  tags:
+    - wireguard
+    - dyndns
+- name: Enable the php:remi-8.1 DNF module
+  tags:
+    - wireguard
+    - dyndns
+  command: dnf module enable php:remi-8.1 -y
+- name: Install PHP 8.1 packages
+  tags:
+    - wireguard
+    - dyndns
+  package:
+    name:
+      - php81-php-fpm
+      - phpldapadmin
+      - php81-php-tidy
+      - php81-php
+      - php81-php-ldap
+      - php81-php-mysql
+      - php81-php-odbc
+      - php81-php-mcrypt
+      - php81-php-mhash
+      - php81-php-devel
+      - php81-php-imap
+      - php81-php-mbstring
+      - php81-php-mysqlnd
+      - php81-php-gd
+      - php81-php-opcache
+      - php81-php-json
+      - php81-php-curl
+      - php81-php-zip
+      - php81-php-xml
+      - php81-php-bz2
+      - php81-php-intl
+      - php81-php-gmp
+      - php81-php-cli
+    state: latest
+  register: php81_packages
+- name: Restart php81-php-fpm
+  when: php81_packages.changed
+  tags:
+    - wireguard
+    - dyndns
+  systemd:
+    name: php81-php-fpm
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+  tags:
+    - always
+- name: Enable the php:remi-7.4 DNF module
+  tags: horde
+  command: dnf module enable php:remi-7.4 -y
+- name: Install PHP 7.4 packages
   tags: horde
   dnf:
     name:
+      - phpunit7
+      - php74-php-fpm
+      - php74-php-pear
+      - php74-php-tidy
+      - php74-php
+      - php74-php-ldap
+      - php74-php-mysql
+      - php74-php-odbc
+      - php74-php-mcrypt
+      - php74-php-mhash
+      - php74-php-pecl-mysql
+      - php74-php-pecl-mysql-xdevapi
+      - php74-php-pecl-crypto
+      - php74-php-pecl-geoip
+      - php74-php-pecl-pam
+      - php74-php-pecl-imagick
+      - php74-php-pecl-memcache
+      - php74-php-pecl-http
+      - php74-php-devel
+      - php74-php-imap
+      - php74-php-mbstring
+      - php74-php-mysqlnd
+      - php74-php-gd
+      - php74-php-opcache
+      - php74-php-json
+      - php74-php-curl
+      - php74-php-zip
+      - php74-php-xml
+      - php74-php-bz2
+      - php74-php-intl
+      - php74-php-gmp
+      - php74-php-cli
       - php-channel-horde
       - php-horde-Horde-Alarm
       - php-horde-Horde-Argv
@@ -423,13 +485,22 @@
       - php-horde-imp
       - php-horde-kronolith
       - php-horde-turba
-      # - php-horde-Horde-Mongo
+      - php-horde-Horde-Mongo
       - php-horde-ingo
       - php-horde-mnemo
       - php-horde-wicked
       - php-pear-Text-Figlet
     enablerepo: remi
     state: latest
+  register: php74_packages
+- name: Restart php74-php-fpm
+  when: php74_packages.changed
+  tags: horde
+  systemd:
+    name: php74-php-fpm
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Install EL7 packages
   dnf:
     name:
@@ -484,3 +555,7 @@
     backup: yes
   loop:
     - { url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py", dest: "/usr/local/bin/imapdedup.py" }
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+  tags:
+    - always
