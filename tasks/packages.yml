@@ -161,7 +161,11 @@
   command: dnf config-manager --set-enable powertools
 - name: Enable the go-toolset DNF module
   command: dnf module enable go-toolset -y
+- name: Query DNF repo list
+  command: dnf repolist
+  register: dnf_repolist
 - name: Enable the COPR repositories
+  when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}"
   command: "dnf copr enable -y {{ item }}"
   tags:
     - ldap
@@ -327,6 +331,7 @@
       - php56-php-pecl-geoip
       - php56-php-pecl-imagick
       - php56-php-pecl-memcache
+      # - php-gettext-gettext
     state: latest
 - name: Reset the PHP DNF module
   command: dnf module reset php -y
@@ -346,7 +351,6 @@
     name:
       - php81-php-fpm
       - php81-php-intl
-      - php-gettext-gettext
       - php81-php-pecl-crypto
       - php81-php-pdo
       - php81-php-mysql
