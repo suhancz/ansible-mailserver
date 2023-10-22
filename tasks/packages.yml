@@ -311,6 +311,7 @@
       - python3-pip
       - golang-github-acme-lego
       - perl-Proc-ProcessTable
+      - perl-CGI
       - imapsync
       - php56-php-channel-horde
       - php56-php-horde-horde-lz4
