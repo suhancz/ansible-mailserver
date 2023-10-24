@@ -388,17 +388,17 @@
   command: dnf module reset php -y
   tags:
     - always
-- name: Enable the php:remi-7.4 DNF module
-  tags: horde
-  command: dnf module enable php:remi-7.4 -y
+# - name: Enable the php:remi-7.4 DNF module
+#   tags: horde
+#   command: dnf module enable php:remi-7.4 -y
 - name: Install PHP 7.4 packages
   tags: horde
   dnf:
     name:
       - phpldapadmin
       - phpunit7
-      - php74-php-fpm
-      - php74-php-pear
+      # - php74-php-fpm
+      # - php74-php-pear
       # - php74-php-tidy
       # - php74-php
       # - php74-php-ldap
