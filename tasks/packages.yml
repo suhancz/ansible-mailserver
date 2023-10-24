@@ -58,7 +58,7 @@
     block: |
       [elasticsearch]
       name=Elasticsearch repository for 8.x packages
-      baseurl=https://artifacts.elastic.co/packages/8.x/yum
+      baseurl=https://artifacts.elastic.co/packages/$releasever.x/yum
       gpgcheck=1
       gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
       enabled=1
