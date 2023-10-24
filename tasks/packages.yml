@@ -36,7 +36,12 @@
 - name: Set up Remi repository
   tags: horde
   dnf:
-    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ hostvars[inventory_hostname].ansible_distribution_major_version }}.rpm"
+    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
+    disable_gpg_check: yes
+- name: Set up Cheese repository
+  tags: horde
+  dnf:
+    name: "http://www.nosuchhost.net/~cheese/fedora/packages/epel-{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/cheese-release-8-1.el8.noarch.rpm"
     disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   tags: elasticsearch
@@ -373,17 +378,17 @@
   command: dnf module reset php -y
   tags:
     - always
-- name: Enable the php:remi-7.4 DNF module
-  tags: horde
-  command: dnf module enable php:remi-7.4 -y
+# - name: Enable the php:remi-7.4 DNF module
+#   tags: horde
+#   command: dnf module enable php:remi-7.4 -y
 - name: Install PHP 7.4 packages
   tags: horde
   dnf:
     name:
       - phpldapadmin
       - phpunit7
-      - php74-php-fpm
-      - php74-php-pear
+      # - php74-php-fpm
+      # - php74-php-pear
       # - php74-php-tidy
       # - php74-php
       # - php74-php-ldap
@@ -482,7 +487,8 @@
       - php-horde-mnemo
       - php-horde-wicked
       - php-pear-Text-Figlet
-    enablerepo: remi
+    # enablerepo: remi
+    enablerepo: cheese
     state: latest
   register: php74_packages
 - name: Restart php74-php-fpm
