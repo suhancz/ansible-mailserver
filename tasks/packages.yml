@@ -94,7 +94,7 @@
     block: |
       [powerdns-auth-master]
       name=PowerDNS repository for PowerDNS Authoritative Server – master branch
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/auth-master
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/auth-master
       gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
@@ -103,7 +103,7 @@
 
       [powerdns-auth-master-debuginfo]
       name=PowerDNS repository for PowerDNS Authoritative Server – master branch debug symbols
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/auth-master/debug
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/auth-master/debug
       gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
@@ -112,7 +112,7 @@
 
       [powerdns-recursor-master]
       name=PowerDNS repository for PowerDNS recursor – master branch
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/rec-master
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/rec-master
       gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
@@ -121,7 +121,7 @@
 
       [powerdns-recursor-master-debuginfo]
       name=PowerDNS repository for PowerDNS recursor – master branch debug symbols
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/rec-master/debug
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/rec-master/debug
       gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
@@ -130,7 +130,7 @@
 
       [dnsdist-auth-master]
       name=PowerDNS repository for DNSDist – master branch
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/dnsdist-master
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/dnsdist-master
       gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
@@ -139,7 +139,7 @@
 
       [dnsdist-auth-master-debuginfo]
       name=PowerDNS repository for DNSDist – master branch debug symbols
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/dnsdist-master/debug
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/dnsdist-master/debug
       gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
