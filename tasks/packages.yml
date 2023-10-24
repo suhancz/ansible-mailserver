@@ -16,15 +16,15 @@
     block: |
       [ol8_UEKR7]
       name=Latest Unbreakable Enterprise Kernel Release 7 for Oracle Linux $releasever ($basearch)
-      baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR7/$basearch/
-      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL$releasever/UEKR7/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol$releasever
       gpgcheck=1
       enabled=1
 
       [ol8_baseos_latest]
       name=Oracle Linux 8 BaseOS Latest ($basearch)
-      baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/$basearch/
-      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL$releasever/baseos/latest/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol$releasever
       gpgcheck=1
       enabled=0
     mode: u=rw,og=r
@@ -58,7 +58,7 @@
     block: |
       [elasticsearch]
       name=Elasticsearch repository for 8.x packages
-      baseurl=https://artifacts.elastic.co/packages/8.x/yum
+      baseurl=https://artifacts.elastic.co/packages/$releasever.x/yum
       gpgcheck=1
       gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
       enabled=1
