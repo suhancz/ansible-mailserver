@@ -95,7 +95,7 @@
       [powerdns-auth-master]
       name=PowerDNS repository for PowerDNS Authoritative Server – master branch
       baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/auth-master
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
       priority=90
@@ -104,7 +104,7 @@
       [powerdns-auth-master-debuginfo]
       name=PowerDNS repository for PowerDNS Authoritative Server – master branch debug symbols
       baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/auth-master/debug
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
       priority=90
@@ -113,7 +113,7 @@
       [powerdns-recursor-master]
       name=PowerDNS repository for PowerDNS recursor – master branch
       baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/rec-master
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
       priority=90
@@ -122,7 +122,7 @@
       [powerdns-recursor-master-debuginfo]
       name=PowerDNS repository for PowerDNS recursor – master branch debug symbols
       baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/rec-master/debug
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
       priority=90
@@ -131,7 +131,7 @@
       [dnsdist-auth-master]
       name=PowerDNS repository for DNSDist – master branch
       baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/dnsdist-master
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
       priority=90
@@ -140,7 +140,7 @@
       [dnsdist-auth-master-debuginfo]
       name=PowerDNS repository for DNSDist – master branch debug symbols
       baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/dnsdist-master/debug
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
       priority=90
