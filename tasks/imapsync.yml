@@ -37,6 +37,6 @@
       cron:
         name: De-duplicate IMAP mail
         special_time: daily
-        job: "/usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w $IMAPSYNC_PASSWORD2 INBOX"
+        job: "/usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w $IMAPSYNC_PASSWORD2 -c -r -m INBOX"
         backup: yes
         user: "{{ current_user.name }}"
