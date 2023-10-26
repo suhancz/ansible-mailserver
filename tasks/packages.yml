@@ -1,4 +1,13 @@
 ---
+- name: Install EL repositories
+  tags:
+    - always
+  package:
+    name:
+      - yum-utils
+      - epel-release
+      - elrepo-release
+    state: latest
 - name: Set up UEK repository
   tags: wireguard
   blockinfile:
@@ -7,15 +16,15 @@
     block: |
       [ol8_UEKR7]
       name=Latest Unbreakable Enterprise Kernel Release 7 for Oracle Linux $releasever ($basearch)
-      baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR7/$basearch/
-      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL$releasever/UEKR7/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol$releasever
       gpgcheck=1
       enabled=1
 
       [ol8_baseos_latest]
       name=Oracle Linux 8 BaseOS Latest ($basearch)
-      baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/$basearch/
-      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL$releasever/baseos/latest/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol$releasever
       gpgcheck=1
       enabled=0
     mode: u=rw,og=r
@@ -27,8 +36,20 @@
 - name: Set up Remi repository
   tags: horde
   dnf:
-    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ hostvars[inventory_hostname].ansible_distribution_major_version }}.rpm"
+    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
+# - name: Enable RPM Fusion
+#   tags: horde
+#   dnf:
+#     name:
+#       - "https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+#       - "https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+#     disable_gpg_check: yes
+# - name: Set up Cheese repository
+#   tags: horde
+#   dnf:
+#     name: "http://www.nosuchhost.net/~cheese/fedora/packages/epel-{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/cheese-release-8-1.el8.noarch.rpm"
+#     disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   tags: elasticsearch
   blockinfile:
@@ -71,55 +92,55 @@
     path: /etc/yum.repos.d/powerdns.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK PowerDNS repository"
     block: |
-      [powerdns-auth-47]
-      name=PowerDNS repository for PowerDNS Authoritative Server – 4.7 branch
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/auth-47
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      [powerdns-auth-master]
+      name=PowerDNS repository for PowerDNS Authoritative Server – master branch
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/auth-master
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
       priority=90
       includepkg=pdns*
 
-      [powerdns-auth-47-debuginfo]
-      name=PowerDNS repository for PowerDNS Authoritative Server – 4.7 branch debug symbols
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/auth-47/debug
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      [powerdns-auth-master-debuginfo]
+      name=PowerDNS repository for PowerDNS Authoritative Server – master branch debug symbols
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/auth-master/debug
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
       priority=90
       includepkg=pdns*
 
-      [powerdns-recursor-47]
-      name=PowerDNS repository for PowerDNS recursor – 4.7 branch
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/rec-47
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      [powerdns-recursor-master]
+      name=PowerDNS repository for PowerDNS recursor – master branch
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/rec-master
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
       priority=90
       includepkg=pdns*
 
-      [powerdns-recursor-47-debuginfo]
-      name=PowerDNS repository for PowerDNS recursor – 4.7 branch debug symbols
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/rec-47/debug
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      [powerdns-recursor-master-debuginfo]
+      name=PowerDNS repository for PowerDNS recursor – master branch debug symbols
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/rec-master/debug
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
       priority=90
       includepkg=pdns*
 
-      [dnsdist-auth-17]
-      name=PowerDNS repository for DNSDist – 1.7 branch
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/dnsdist-17
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      [dnsdist-auth-master]
+      name=PowerDNS repository for DNSDist – master branch
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/dnsdist-master
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=1
       priority=90
       includepkg=dnsdist*
 
-      [dnsdist-auth-17-debuginfo]
-      name=PowerDNS repository for DNSDist – 1.7 branch debug symbols
-      baseurl=http://repo.powerdns.com/centos/$basearch/$releasever/dnsdist-17/debug
-      gpgkey=https://repo.powerdns.com/FD380FBB-pub.asc
+      [dnsdist-auth-master-debuginfo]
+      name=PowerDNS repository for DNSDist – master branch debug symbols
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/dnsdist-master/debug
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
       gpgcheck=1
       enabled=0
       priority=90
@@ -131,30 +152,35 @@
     state: present
     backup: yes
     create: yes
-# - name: Set up MongoDB repository
-#   blockinfile:
-#     path: /etc/yum.repos.d/mongodb-org-5.0.repo
-#     marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
-#     block: |
-#       [mongodb-org-5.0]
-#       name=MongoDB 5.0 Repository
-#       baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
-#       gpgcheck=0
-#       enabled=1
-#     mode: u=rw,og=r
-#     owner: root
-#     group: root
-#     state: present
-#     backup: yes
-#     create: yes
+- name: Set up MongoDB repository
+  tags: mongodb
+  blockinfile:
+    path: /etc/yum.repos.d/mongodb-org-5.0.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
+    block: |
+      [mongodb-org-5.0]
+      name=MongoDB 5.0 Repository
+      baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
+      gpgcheck=0
+      enabled=1
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
 - name: Enable PowerTools
   command: dnf config-manager --set-enable powertools
-- name: Reset the PHP DNF module
-  command: dnf module reset php -y
-- name: Enable DNF modules
-  tags: horde
-  command: dnf module enable php:remi-7.4 go-toolset -y
+- name: Enable the go-toolset DNF module
+  command: dnf module enable go-toolset -y
+- name: Query DNF repo list
+  tags:
+    - ldap
+    - dns
+  command: dnf repolist
+  register: dnf_repolist
 - name: Enable the COPR repositories
+  when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}"
   command: "dnf copr enable -y {{ item }}"
   tags:
     - ldap
@@ -163,12 +189,12 @@
     - "@389ds/389-directory-server"
     - "eclipseo/golang-ng custom-1-x86_64"
 - name: Install packages
+  tags:
+    - always
   package:
     name:
       - postfix
       - mailx
-      - epel-release
-      - elrepo-release
       - certbot
       - httpd
       - python3-certbot-apache
@@ -178,25 +204,11 @@
       - python3-mysqlclient
       - wget
       - tar
-      - php-fpm
-      - php-imap
-      - php-mbstring
-      - php-mysqlnd
-      - php-gd
-      - php-opcache
-      - php-json
-      - php-curl
-      - php-zip
-      - php-xml
-      - php-bz2
-      - php-intl
-      - php-gmp
       - binutils
       - rpm-build
       - setools-console
       - policycoreutils-python3
       - policycoreutils-devel
-      - php-cli
       - postfix-mysql
       - dovecot-mysql
       - pypolicyd-spf
@@ -212,50 +224,25 @@
       - spamassassin
       - spamass-milter
       - dovecot-pigeonhole
-      - php-devel
-      - php74-php-devel
-      - php-pear
-      - php56-php-channel-horde
-      - php56-php-horde-horde-lz4
       - ImageMagick
-      - php-pecl-imagick
-      - php56-php-pecl-imagick
       - aspell
       - memcached
-      - php56-php-pecl-memcache
-      - php-pecl-memcache
-      - php-pecl-http
       - mod_ssl
       - php-bcmath
-      - php56-php-bcmath
       - libmemcached
       - gettext
       - gettext-common-devel
       - gettext-devel
       - gettext-libs
-      - php56-php-xml
-      - php56-php-pecl-dom-varimport
-      - php-pecl-mysql
-      - php-pecl-mysql-xdevapi
-      - php56-php-mysqlnd
       - openldap
       - openldap-clients
       - openldap-devel
-      - php56-php-ldap
-      - phpldapadmin
-      - php56-php-mbstring
       - gd
       - gd-devel
-      - php56-php-gd
       - tidy
       - libtidy
       - libtidy-devel
-      - php-tidy
-      - php56-php-tidy
-      - php-pecl-crypto
-      - php56-php-pecl-crypto
       - intltool
-      - php56-php-intl
       - curl
       - libcurl
       - libcurl-devel
@@ -279,10 +266,6 @@
       - GeoIP
       - GeoIP-GeoLite-data
       - GeoIP-GeoLite-data-extra
-      - php-pecl-geoip
-      - php56-php-pecl-geoip
-      - php-pecl-pam
-      - php74-php-pecl-pam
       - libgweather
       - libgweather-devel
       - cyrus-sasl-ldap
@@ -293,7 +276,7 @@
       - sssd-ldap
       - 389-ds-base
       - fortune-mod
-      # - mongodb-org
+      - mongodb-org
       - fail2ban-all
       - fail2ban-firewalld
       - fail2ban-selinux
@@ -322,12 +305,6 @@
       - clamav-update
       - iptables-services
       - conntrack-tools
-      - php
-      - php-ldap
-      - php-mysql
-      - php-odbc
-      - php-mcrypt
-      - php-mhash
       - pdns
       - pdns-backend-mysql
       - pdns-recursor
@@ -352,12 +329,105 @@
       - python3-pip
       - golang-github-acme-lego
       - perl-Proc-ProcessTable
+      - perl-CGI
       - imapsync
+      # - php56-php-bcmath
+      # - php56-php-channel-horde
+      # - php56-php-horde-horde-lz4
+      # - php56-php-xml
+      # - php56-php-pecl-dom-varimport
+      # - php56-php-mysqlnd
+      # - php56-php-ldap
+      # - php56-php-mbstring
+      # - php56-php-gd
+      # - php56-php-tidy
+      # - php56-php-pecl-crypto
+      # - php56-php-intl
+      # - php56-php-pecl-geoip
+      # - php56-php-pecl-imagick
+      # - php56-php-pecl-memcache
+      # - php-gettext-gettext
     state: latest
-- name: Install Remi packages
+# - name: Reset the PHP DNF module
+#   command: dnf module reset php -y
+#   tags:
+#     - wireguard
+#     - dyndns
+# - name: Enable the php:remi-8.1 DNF module
+#   tags:
+#     - wireguard
+#     - dyndns
+#   command: dnf module enable php:remi-8.1 -y
+# - name: Install PHP 8.1 packages
+#   tags:
+#     - wireguard
+#     - dyndns
+#   package:
+#     name:
+#       - php81-php-fpm
+#       - php81-php-intl
+#       - php81-php-pecl-crypto
+#       - php81-php-pdo
+#       - php81-php-mysql
+#       - php81-php-mysqlnd
+#       - php81-php-pecl-mysql-xdevapi
+#       - php81-php-ldap
+#     state: latest
+#   register: php81_packages
+# - name: Restart php81-php-fpm
+#   when: php81_packages.changed
+#   tags:
+#     - wireguard
+#     - dyndns
+#   systemd:
+#     name: php81-php-fpm
+#     daemon_reload: yes
+#     enabled: yes
+#     state: restarted
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+  tags:
+    - always
+- name: Enable the php:remi-7.4 DNF module
+  tags: horde
+  command: dnf module enable php:remi-7.4 -y
+- name: Install PHP 7.4 packages
   tags: horde
   dnf:
     name:
+      - phpldapadmin
+      - phpunit7
+      - php74-php-fpm
+      - php74-php-pear
+      - php74-php-tidy
+      - php74-php
+      - php74-php-ldap
+      - php74-php-mysql
+      - php74-php-odbc
+      - php74-php-mcrypt
+      - php74-php-mhash
+      - php74-php-pecl-mysql
+      - php74-php-pecl-mysql-xdevapi
+      - php74-php-pecl-crypto
+      - php74-php-pecl-geoip
+      - php74-php-pecl-pam
+      - php74-php-pecl-imagick
+      - php74-php-pecl-memcache
+      - php74-php-pecl-http
+      - php74-php-devel
+      - php74-php-imap
+      - php74-php-mbstring
+      - php74-php-mysqlnd
+      - php74-php-gd
+      - php74-php-opcache
+      - php74-php-json
+      - php74-php-curl
+      - php74-php-zip
+      - php74-php-xml
+      - php74-php-bz2
+      - php74-php-intl
+      - php74-php-gmp
+      - php74-php-cli
       - php-channel-horde
       - php-horde-Horde-Alarm
       - php-horde-Horde-Argv
@@ -422,13 +492,23 @@
       - php-horde-imp
       - php-horde-kronolith
       - php-horde-turba
-      # - php-horde-Horde-Mongo
+      - php-horde-Horde-Mongo
       - php-horde-ingo
       - php-horde-mnemo
       - php-horde-wicked
       - php-pear-Text-Figlet
     enablerepo: remi
+    # enablerepo: cheese
     state: latest
+  register: php74_packages
+- name: Restart php74-php-fpm
+  when: php74_packages.changed
+  tags: horde
+  systemd:
+    name: php74-php-fpm
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Install EL7 packages
   dnf:
     name:
@@ -483,3 +563,7 @@
     backup: yes
   loop:
     - { url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py", dest: "/usr/local/bin/imapdedup.py" }
+- name: Reset the PHP DNF module
+  command: dnf module reset php -y
+  tags:
+    - always

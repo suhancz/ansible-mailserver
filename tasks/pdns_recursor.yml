@@ -19,7 +19,7 @@
   lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "{{ item.key }}={{ item.value }}"
-    regex: "^{{ item.key }}"
+    regex: "^{{ item.key }}="
     state: present
     owner: pdns-recursor
     group: pdns-recursor
