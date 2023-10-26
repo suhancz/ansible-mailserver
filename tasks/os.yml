@@ -17,10 +17,14 @@
       loop:
         - "net.ipv6.conf.all.disable_ipv6"
         - "net.ipv6.conf.{{ ansible_default_ipv4.interface }}.disable_ipv6"
+      register: ipv6_enable
     - name: Reboot to pick up changes
+      when: ipv6_enable.changed
       reboot:
         reboot_timeout: 600
         msg: "Reboot initiated by Ansible to enable IPv6"
+    - name: Gather facts
+      setup:
 - name: Install requiremets
   block:
     - name: Install packages

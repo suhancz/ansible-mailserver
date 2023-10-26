@@ -1,5 +1,12 @@
 ---
 - name: Open firewall
+  tags:
+    - dyndns
+    - horde
+    - postfixadmin
+    - poweradmin
+    - wireguard
+    - webdav
   include_tasks: firewall.yml
   vars:
     port: "{{ item }}"
@@ -26,6 +33,13 @@
         ./httpd.sh
         ausearch -m AVC -ts recent | audit2allow -R
 - name: Render web config templates
+  tags:
+    - dyndns
+    - horde
+    - postfixadmin
+    - poweradmin
+    - wireguard
+    - webdav
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -54,6 +68,7 @@
     - { src: "httpd/wildcard-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
 - name: Deploy SSL config
+  tags: ssl
   copy:
     src: httpd/options-ssl-apache.conf
     dest: /etc/letsencrypt/options-ssl-apache.conf
@@ -63,6 +78,7 @@
     group: root
   notify: Restart httpd
 - name: Deploy Horde default config
+  tags: horde
   copy:
     src: httpd/php-horde-horde.conf
     dest: /etc/httpd/conf.d/php-horde-horde.conf
@@ -72,6 +88,10 @@
     group: root
   notify: Restart httpd
 - name: Serve user ~/public_html directories
+  tags:
+    - webdav
+    - ftp
+    - wireguard
   copy:
     src: httpd/userdir.conf
     dest: /etc/httpd/conf.d/userdir.conf
@@ -81,6 +101,10 @@
     group: root
   notify: Restart httpd
 - name: Set home directory permissions
+  tags:
+    - webdav
+    - ftp
+    - wireguard
   file:
     path: "~{{ item.name }}"
     state: directory
@@ -90,6 +114,10 @@
   loop: "{{ users }}"
   no_log: true
 - name: Set public_html directory permissions
+  tags:
+    - webdav
+    - ftp
+    - wireguard
   file:
     path: "~{{ item.name }}/public_html"
     state: directory
@@ -100,6 +128,7 @@
   loop: "{{ users }}"
   no_log: true
 - name: Ensure user certificate directories exist
+  tags: wireguard
   file:
     path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
     owner: "{{ item.name }}"
@@ -110,6 +139,7 @@
   loop: "{{ users }}"
   no_log: true
 - name: BindFS mount SSL certificates to user public_html
+  tags: ssl
   mount:
     path: "~{{ item.name }}/public_html/.certificates"
     src: /etc/letsencrypt/certificates
@@ -119,6 +149,7 @@
   loop: "{{ users }}"
   no_log: true
 - name: Set postfixadmin ACLs
+  tags: postfixadmin
   acl:
     path: /var/www/postfixadmin/templates_c
     entity: apache
@@ -137,6 +168,7 @@
     backup: yes
   notify: Restart httpd
 - name: Create PAM module for HTTPD auth
+  tags: webdav
   copy:
     src: pam/httpd-auth
     dest: /etc/pam.d/httpd-auth
@@ -157,12 +189,14 @@
   loop: "{{ httpd_pam_deny_users }}"
   notify: Restart httpd
 - name: Allow Apache read /etc/shadow
+  tags: webdav
   file:
     path: /etc/shadow
     state: file
     group: apache
     mode: ug=r
 - name: Enable HTTPD PAM auth
+  tags: webdav
   copy:
     src: httpd/55-authnz_pam.conf
     dest: /etc/httpd/conf.modules.d/55-authnz_pam.conf

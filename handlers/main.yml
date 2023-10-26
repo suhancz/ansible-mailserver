@@ -85,10 +85,15 @@
     state: restarted
 - name: Restart php-fpm
   systemd:
-    name: php-fpm
+    name: "{{ php_fpm_service }}"
     daemon_reload: yes
     enabled: yes
     state: restarted
+  loop:
+    - php74-php-fpm
+    # - php81-php-fpm
+  loop_control:
+    loop_var: php_fpm_service
 - name: Restart postfix
   systemd:
     name: postfix

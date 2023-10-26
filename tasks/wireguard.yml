@@ -180,6 +180,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS NS records
+  tags:
+    - dyndns
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -192,6 +195,9 @@
     - dyndns
     - vpn
 - name: Add DynDNS root A record
+  tags:
+    - dyndns
+    - poweradmin
   import_tasks: add_dns_record.yml
   vars:
     record:
@@ -201,6 +207,9 @@
       type: A
       content: "{{ ansible_default_ipv4.address }}"
 - name: Add DynDNS root AAAA record
+  tags:
+    - dyndns
+    - poweradmin
   import_tasks: add_dns_record.yml
   vars:
     record:
@@ -210,6 +219,9 @@
       type: AAAA
       content: "{{ ansible_default_ipv6.address }}"
 - name: Add DynDNS A records
+  tags:
+    - dyndns
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -221,6 +233,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS AAAA records
+  tags:
+    - dyndns
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -232,6 +247,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add VPN root A record
+  tags:
+    - wireguard
+    - poweradmin
   import_tasks: add_dns_record.yml
   vars:
     record:
@@ -241,6 +259,9 @@
       type: A
       content: "{{ ansible_default_ipv4.address }}"
 - name: Add VPN root AAAA record
+  tags:
+    - wireguard
+    - poweradmin
   import_tasks: add_dns_record.yml
   vars:
     record:
@@ -250,6 +271,9 @@
       type: AAAA
       content: "{{ ansible_default_ipv6.address }}"
 - name: Add VPN A records
+  tags:
+    - wireguard
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -261,6 +285,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add VPN AAAA records
+  tags:
+    - wireguard
+    - poweradmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -272,6 +299,10 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add admin VPN A records
+  tags:
+    - wireguard
+    - poweradmin
+    - postfixadmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -284,6 +315,10 @@
     - postfixadmin
     - poweradmin
 - name: Add admin VPN AAAA records
+  tags:
+    - wireguard
+    - poweradmin
+    - postfixadmin
   include_tasks: add_dns_record.yml
   vars:
     record:
@@ -295,7 +330,37 @@
   loop:
     - postfixadmin
     - poweradmin
+- name: Configure PowerDNS recursor to forward VPN domains
+  tags:
+    - wireguard
+    - poweradmin
+    - postfixadmin
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "forward-zones+=vpn.{{ mailserver_domain }}=127.0.0.1:5301"
+    regex: "^forward-zones+=vpn.{{ mailserver_domain }}="
+    state: present
+    backup: yes
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Restart pdns-recursor
+- name: Configure PowerDNS recursor to forward DynDNS domains
+  tags:
+    - dyndns
+    - poweradmin
+  lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "forward-zones+=dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
+    regex: "^forward-zones+=dyndns.{{ mailserver_domain }}="
+    state: present
+    backup: yes
+  no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Restart pdns-recursor
 - name: Generate BASH DynDNS clients
+  tags:
+    - dyndns
+    - poweradmin
   template:
     src: dyndns/dynamic_dns_client.sh.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.sh"
@@ -306,6 +371,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate Python DynDNS clients
+  tags:
+    - dyndns
+    - poweradmin
   template:
     src: dyndns/dynamic_dns_client.py.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.py"
@@ -316,17 +384,20 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Deploy WireGuard SystemD config path watcher
+  tags: wireguard
   copy:
     src: systemd/wg_vpn.path
     dest: /etc/systemd/system/wg_vpn.path
   notify: Restart WireGuard
 - name: Deploy WireGuard config loader SystemD service
+  tags: wireguard
   template:
     src: systemd/wg_vpn.service.j2
     dest: /etc/systemd/system/wg_vpn.service
     backup: yes
   notify: Restart WireGuard
 - name: Deploy WireGuard routing helper scripts
+  tags: wireguard
   template:
     src: wireguard/{{ item }}.j2
     dest: /etc/wireguard/helper/{{ item }}
@@ -337,11 +408,13 @@
     - remove-nat-routing.sh
   notify: Restart WireGuard
 - name: Enable WireGuard config watch
+  tags: wireguard
   systemd:
     name: wg_vpn.path
     daemon_reload: yes
     enabled: yes
 - name: Load WireGuard config loader
+  tags: wireguard
   systemd:
     name: wg_vpn.service
     daemon_reload: yes

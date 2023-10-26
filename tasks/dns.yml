@@ -36,3 +36,6 @@
   when: 'public_dns == "yes"'
 - name: Configure PowerAdmin
   import_tasks: poweradmin.yml
+  tags:
+    - dyndns
+    - poweradmin
