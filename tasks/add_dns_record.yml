@@ -18,3 +18,5 @@
   rescue:
     - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl|default("3600") }} IN {{ record.type }} {{ record.content }}'
       command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl|default('3600') }} '{{ record_content }}'"
+- name: Rectify all zones
+  command: pdnsutil rectify-all-zones
