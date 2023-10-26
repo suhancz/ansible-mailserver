@@ -35,7 +35,7 @@
     - name: "Save {{ current_user.old_imap_mail.user }}'s password in a file"
       lineinfile:
         path: '~{{ current_user.name }}/.cron_secrets'
-        line: 'IMAP_PASSWORD="{{ current_user.password }}"'
+        line: 'IMAP_PASSWORD={{ current_user.password }}'
         owner: '{{ current_user.name }}'
         group: '{{ current_user.name }}'
         mode: ug=rw,o=
