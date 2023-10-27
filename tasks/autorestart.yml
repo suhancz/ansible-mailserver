@@ -7,7 +7,7 @@
     owner: root
     group: root
 - name: "Deploy restart files for {{ service }}"
-  copy:
+  ansible.builtin.copy:
     src: systemd/restart.conf
     dest: "/etc/systemd/system/{{ service }}.service.d/restart.conf"
     mode: u=rw,og=r

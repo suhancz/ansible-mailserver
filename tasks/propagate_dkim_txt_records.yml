@@ -35,7 +35,7 @@
     - 5301
     - 53
 - name: "Warn user to set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record with the DKIM keys"
-  debug:
+  ansible.builtin.debug:
     msg:
       - ""
       - "Please, set up the following TXT record with your DNS provider if not done yet:"

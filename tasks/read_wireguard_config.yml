@@ -13,7 +13,7 @@
     - name: Gather WiregGuard config lines
       set_fact:
         wireguard_config_lines: "{{ wg_config_content.content|b64decode|split('\n') }}"
-    - debug:
+    - ansible.builtin.debug:
         var: wg_config_lines
     - name: Gather WireGuard config sections
       include_tasks: gather_wireguard_config_sections.yml

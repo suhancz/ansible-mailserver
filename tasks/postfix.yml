@@ -36,7 +36,7 @@
   vars:
     service: postfix
 - name: Deploy Postfix master config
-  copy:
+  ansible.builtin.copy:
     src: postfix/master.cf
     dest: /etc/postfix/master.cf
     mode: u=rw,og=r

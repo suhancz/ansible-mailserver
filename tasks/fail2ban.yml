@@ -1,6 +1,6 @@
 ---
 - name: Create custom fail2ban filters
-  copy:
+  ansible.builtin.copy:
     src: "fail2ban/{{ item }}"
     dest: "/etc/fail2ban/filter.d/{{ item }}"
   loop:

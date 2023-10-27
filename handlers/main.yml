@@ -119,7 +119,7 @@
     enabled: yes
     state: restarted
 - name: Default to localhost in resolv.conf
-  copy:
+  ansible.builtin.copy:
     dest: /etc/resolv.conf
     content: |
       nameserver 127.0.0.1
@@ -153,5 +153,5 @@
   loop_control:
     loop_var: systemd_unit_type
 - name: Warn on passwords
-  debug:
+  ansible.builtin.debug:
     msg: "!!!WARNING!!! All web UI admin passwords are set to the same as your admin user's password. For your own safety, change them before going live"

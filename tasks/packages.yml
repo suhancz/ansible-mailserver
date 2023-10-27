@@ -548,7 +548,7 @@
 #     - github.com/go-acme/lego/v4/cmd/lego@latest
 #   tags: ssl
 # - name: Copy GO binaries to /usr/local/bin
-#   copy:
+#   ansible.builtin.copy:
 #     src: "{{ ansible_env.HOME }}/go/bin/"
 #     dest: /usr/local/bin/
 #     remote_src: yes

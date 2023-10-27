@@ -49,7 +49,7 @@
   loop: "{{ spamassassin_rules }}"
   notify: Restart spamassassin
 - name: Upload sieve config
-  copy:
+  ansible.builtin.copy:
     dest: /var/mail/SpamToJunk.sieve
     src: spamassassin/SpamToJunk.sieve
     mode: u=rw,og=r

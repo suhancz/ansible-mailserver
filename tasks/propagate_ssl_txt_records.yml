@@ -18,7 +18,7 @@
     state: restarted
   when: 'public_dns == "yes"'
 - name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ challenge_item.key }}"
-  debug:
+  ansible.builtin.debug:
     msg:
       - ""
       - "Please, set up the following TXT record with your DNS provider if not done yet:"

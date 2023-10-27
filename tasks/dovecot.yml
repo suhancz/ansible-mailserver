@@ -64,7 +64,7 @@
     groups: mail,apache
     append: yes
 - name: Upload complex Dovecot configs
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/dovecot/conf.d/{{ item }}"
     src: "dovecot/{{ item }}"
     mode: u=rw,og=r

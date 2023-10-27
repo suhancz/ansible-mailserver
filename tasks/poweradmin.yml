@@ -126,7 +126,7 @@
   when: 'public_dns == "yes" and not htaccess_exists.stat.exists'
   block:
     - name: Set up DynDNS .htaccess from installer files
-      copy:
+      ansible.builtin.copy:
         src: /var/www/poweradmin/install/htaccess.dist
         dest: /var/www/poweradmin/.htaccess
         remote_src: yes
@@ -135,7 +135,7 @@
         mode: ug=rw,o=r
   rescue:
     - name: Set up DynDNS .htaccess from repository
-      copy:
+      ansible.builtin.copy:
         src: poweradmin/htaccess.dist
         dest: /var/www/poweradmin/.htaccess
         owner: apache

@@ -24,7 +24,7 @@
     # - { file: '/etc/opt/remi/php81/php.ini', key: 'max_execution_time', value: '300' }
   notify: Restart php-fpm
 - name: Upload complex Horde configs
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/horde/{{ item }}/conf.php"
     src: "horde/{{ item }}/conf.php"
     mode: u=rw

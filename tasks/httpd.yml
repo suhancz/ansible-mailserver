@@ -69,7 +69,7 @@
   notify: Restart httpd
 - name: Deploy SSL config
   tags: ssl
-  copy:
+  ansible.builtin.copy:
     src: httpd/options-ssl-apache.conf
     dest: /etc/letsencrypt/options-ssl-apache.conf
     mode: u=rw,og=r
@@ -79,7 +79,7 @@
   notify: Restart httpd
 - name: Deploy Horde default config
   tags: horde
-  copy:
+  ansible.builtin.copy:
     src: httpd/php-horde-horde.conf
     dest: /etc/httpd/conf.d/php-horde-horde.conf
     mode: u=rw,og=r
@@ -92,7 +92,7 @@
     - webdav
     - ftp
     - wireguard
-  copy:
+  ansible.builtin.copy:
     src: httpd/userdir.conf
     dest: /etc/httpd/conf.d/userdir.conf
     mode: u=rw,og=r
@@ -162,14 +162,14 @@
     path: /etc/systemd/system/httpd.service.d
     state: directory
 - name: Increase startup timeout
-  copy:
+  ansible.builtin.copy:
     src: systemd/httpd.timeout.conf
     dest: /etc/systemd/system/httpd.service.d/timeout.conf
     backup: yes
   notify: Restart httpd
 - name: Create PAM module for HTTPD auth
   tags: webdav
-  copy:
+  ansible.builtin.copy:
     src: pam/httpd-auth
     dest: /etc/pam.d/httpd-auth
     owner: root
@@ -197,7 +197,7 @@
     mode: ug=r
 - name: Enable HTTPD PAM auth
   tags: webdav
-  copy:
+  ansible.builtin.copy:
     src: httpd/55-authnz_pam.conf
     dest: /etc/httpd/conf.modules.d/55-authnz_pam.conf
     mode: u=rw,og=r

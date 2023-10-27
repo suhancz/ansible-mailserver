@@ -385,7 +385,7 @@
   when: item != "server"
 - name: Deploy WireGuard SystemD config path watcher
   tags: wireguard
-  copy:
+  ansible.builtin.copy:
     src: systemd/wg_vpn.path
     dest: /etc/systemd/system/wg_vpn.path
   notify: Restart WireGuard
