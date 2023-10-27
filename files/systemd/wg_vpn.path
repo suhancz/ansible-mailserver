@@ -1,8 +1,8 @@
 [Unit]
-Description=Watch /etc/wireguard/wg0.conf for changes
+Description=Watch /etc/wireguard for changes
 
 [Path]
-PathChanged=/etc/wireguard/wg0.conf
+PathModified=/etc/wireguard
 
 [Install]
 WantedBy=multi-user.target
