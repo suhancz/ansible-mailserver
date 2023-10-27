@@ -30,7 +30,7 @@
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   register: postfixadmin_db_state
 - name: Set up postfixadmin DB privileges
-  mysql_user:
+  community.mysql.mysql_user:
     name: postfixadmin
     password: '{{ postfixadmin_db_password }}'
     priv: 'postfixadmin.*:ALL'

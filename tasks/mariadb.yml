@@ -8,7 +8,7 @@
 - name: Set MariaDB root password
   block:
     - name: Set the MariaDB root password
-      mysql_user:
+      community.mysql.mysql_user:
         user: root
         password: "{{ mysql_root_password }}"
         host: localhost
@@ -17,7 +17,7 @@
     - name: Make sure MySQL root password is right
       block:
         - name: Ensure the MariaDB root password
-          mysql_user:
+          community.mysql.mysql_user:
             user: root
             password: "{{ mysql_root_password }}"
             host: localhost
@@ -67,7 +67,7 @@
             enabled: yes
             state: restarted
 - name: Delete anonymous MySQL server user for ansible_fqdn
-  mysql_user:
+  community.mysql.mysql_user:
     user: ""
     host: "{{ ansible_fqdn }}"
     state: absent
@@ -75,14 +75,14 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Delete anonymous MySQL server user for localhost
-  mysql_user:
+  community.mysql.mysql_user:
     user: ""
     state: absent
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secure the MySQL root user for IPV6 localhost (::1)
-  mysql_user:
+  community.mysql.mysql_user:
     user: root
     password: "{{ mysql_root_password }}"
     host: "::1"
@@ -90,7 +90,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secure the MySQL root user for IPV4 localhost (127.0.0.1)
-  mysql_user:
+  community.mysql.mysql_user:
     user: root
     password: "{{ mysql_root_password }}"
     host: 127.0.0.1
@@ -98,7 +98,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secure the MySQL root user for localhost domain (localhost)
-  mysql_user:
+  community.mysql.mysql_user:
     user: root
     password: "{{ mysql_root_password }}"
     host: localhost
@@ -106,7 +106,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secure the MySQL root user for server_hostname domain
-  mysql_user:
+  community.mysql.mysql_user:
     user: root
     password: "{{ mysql_root_password }}"
     host: "{{ ansible_fqdn }}"
@@ -121,7 +121,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Set up MariaBackup DB privileges
-  mysql_user:
+  community.mysql.mysql_user:
     name: mariabackup
     password: '{{ mariabackup_password }}'
     priv: '*.*:RELOAD,PROCESS,LOCK TABLES,REPLICATION CLIENT'

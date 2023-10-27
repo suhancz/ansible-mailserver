@@ -57,7 +57,7 @@
     mariadb_database: horde
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
 - name: Set up Horde DB privileges
-  mysql_user:
+  community.mysql.mysql_user:
     name: hordeuser
     password: '{{ horde_db_password }}'
     priv: 'horde.*:ALL'

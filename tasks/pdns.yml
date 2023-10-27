@@ -6,7 +6,7 @@
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   when: 'public_dns == "yes"'
 - name: Set up PowerDNS DB privileges
-  mysql_user:
+  community.mysql.mysql_user:
     name: powerdns
     password: '{{ powerdns_db_password }}'
     priv: 'powerdnsdb.*:ALL'
