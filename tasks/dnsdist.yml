@@ -4,5 +4,8 @@
     src: dnsdist/dnsdist.conf.j2
     dest: /etc/dnsdist/dnsdist.conf
     backup: yes
+    owner: dnsdist
+    group: dnsdist
+    mode: u=rw,g=r,o=
   when: 'public_dns == "yes"'
   notify: Restart dnsdist

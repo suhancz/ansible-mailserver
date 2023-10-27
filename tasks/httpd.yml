@@ -14,7 +14,7 @@
     - http
     - https
 - name: Set up SELinux rules
-  when: "{{ getenforce.stdout != 'Disabled' }}"
+  when: getenforce.stdout != 'Disabled'
   block:
     - name: Set SELinux booleans
       seboolean:
@@ -27,11 +27,14 @@
         - httpd_read_user_content
         - httpd_mod_auth_pam
     - name: Generate SELinux policy
-      shell: |
+      ansible.builtin.shell: |
+        set -o pipefail &&
         sepolicy generate --init /usr/sbin/httpd
         echo 'dovecot_read_config(httpd_t)' >> httpd.te
         ./httpd.sh
         ausearch -m AVC -ts recent | audit2allow -R
+      args:
+        executable: /usr/bin/bash
 - name: Render web config templates
   tags:
     - dyndns

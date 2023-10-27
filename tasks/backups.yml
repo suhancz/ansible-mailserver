@@ -183,7 +183,7 @@
         - pdns
         - wg_vpn
     - name: Restore non-service tarball backups
-      when: vars[item ~ '_backup_path']  is defined }}"
+      when: vars[item ~ '_backup_path'] is defined
       ansible.builtin.unarchive:
         src: "{{ vars[item ~ '_backup_path'] }}"
         dest: /

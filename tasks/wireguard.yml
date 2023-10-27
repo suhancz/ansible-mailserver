@@ -169,7 +169,9 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate QR codes
-  shell: "cat {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.conf | qrencode -o {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
+  ansible.builtin.shell: "set -o pipefail && cat {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.conf | qrencode -o {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
+  args:
+    executable: /usr/bin/bash
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Allow access to QR codes

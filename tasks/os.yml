@@ -1,6 +1,6 @@
 ---
 - name: Check SELinux status
-  shell: getenforce
+  ansible.builtin.shell: getenforce
   register: getenforce
   tags: always
 - name: "Set hostname to {{ mailserver_hostname }}.{{ mailserver_domain }}" # noqa name[template] we need to be informative, even if we deviate from the standards

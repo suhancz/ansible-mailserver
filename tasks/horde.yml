@@ -81,6 +81,7 @@
     dest: /tmp
     remote_src: yes
 - name: Install themes
-  shell: 'echo -e "/usr/share/horde\nroot\nroot\n755\n644\nYes\n"|./install.sh'
+  ansible.builtin.shell: 'set -o pipefail && echo -e "/usr/share/horde\nroot\nroot\n755\n644\nYes\n"|./install.sh'
   args:
     chdir: /tmp/combined-1.0.0
+    executable: /usr/bin/bash
