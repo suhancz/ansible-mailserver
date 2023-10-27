@@ -2,6 +2,8 @@
 galaxy_info:
   author: Akos Balla
   description: Mail server suite on RPM-based distros
+  role_name: ansible_mailserver
+  namespace: balla_cloud
   company: balla.cloud
 
   # If the issue tracker for your role is not on github, uncomment the
