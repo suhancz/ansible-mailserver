@@ -7,7 +7,7 @@
     desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
     current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
 - name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record" # noqa name[template] we need to be informative, even if we deviate from the standards
-  ansible.builtin.import_tasks:: add_dns_record.yml
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ domain_item }}"

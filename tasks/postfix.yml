@@ -32,7 +32,7 @@
 - name: Apply mail aliases
   ansible.builtin.command: newaliases
 - name: Set up automatic restart of services
-  ansible.builtin.import_tasks:: autorestart.yml
+  ansible.builtin.import_tasks: autorestart.yml
   vars:
     service: postfix
 - name: Deploy Postfix master config

@@ -9,7 +9,7 @@
     - pop3
     - pop3s
 - name: Automatically restart services
-  ansible.builtin.import_tasks:: autorestart.yml
+  ansible.builtin.import_tasks: autorestart.yml
   vars:
     service: dovecot
 - name: Configure Dovecot protocols

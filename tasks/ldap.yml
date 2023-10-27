@@ -1,6 +1,6 @@
 ---
 # - name: Open firewall
-#   ansible.builtin.import_tasks:: firewall.yml
+#   ansible.builtin.import_tasks: firewall.yml
 #   vars:
 #     port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
 #   loop:
