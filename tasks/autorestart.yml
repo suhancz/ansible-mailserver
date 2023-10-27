@@ -1,6 +1,6 @@
 ---
 - name: "Create restart directories for {{ service }}" # noqa name[template] we need to be informative, even if we deviate from the standards
-  file:
+  ansible.builtin.file:
     state: directory
     path: "/etc/systemd/system/{{ service }}.service.d"
     mode: u=rwX,og=rX

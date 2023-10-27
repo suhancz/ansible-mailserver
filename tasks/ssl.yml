@@ -3,7 +3,7 @@
   ansible.builtin.set_fact:
     acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
 - name: Create Certbot config directories
-  file:
+  ansible.builtin.file:
     state: directory
     path: "/etc/letsencrypt/{{ item.path }}"
     owner: root
@@ -96,7 +96,7 @@
 #   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 #   when: letsencrypt_challenge.challenge_data is defined and public_dns == "yes"
 - name: Ensure LEGO environment variables for root
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ ansible_env.HOME }}/.profile"
     regexp: "{{ item.key }}"
     line: "{{ item.key }}={{ item.value }}"
@@ -116,17 +116,17 @@
     PDNS_API_URL: http://127.0.0.1:8081/
     PDNS_API_KEY: "{{ powerdns_api_key }}"
 - name: Create symlink to the full certificate chain
-  file:
+  ansible.builtin.file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem"
     src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.crt"
     state: link
 - name: Create symlink to the main certificate
-  file:
+  ansible.builtin.file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem"
     src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
     state: link
 - name: Create symlink to the private key
-  file:
+  ansible.builtin.file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.key"
     src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
     state: link

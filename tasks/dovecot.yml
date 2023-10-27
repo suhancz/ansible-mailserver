@@ -13,7 +13,7 @@
   vars:
     service: dovecot
 - name: Configure Dovecot protocols
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/dovecot/dovecot.conf
     regexp: '^protocols ='
     line: 'protocols = imap pop3 lmtp'
@@ -24,7 +24,7 @@
     backup: yes
   notify: Restart dovecot
 - name: Configure Dovecot Authentication Mechanism
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/dovecot/conf.d/10-auth.conf
     regexp: '^{{ item.key }} = '
     line: '{{ item.key }} = {{ item.value }}'
@@ -41,7 +41,7 @@
     - { key: "auth_mechanisms", value: "plain login" }
   notify: Restart dovecot
 - name: Configure Dovecot SSL
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/dovecot/conf.d/10-ssl.conf
     regexp: '^{{ item.key }} = '
     line: '{{ item.key }} = {{ item.value }}'
@@ -81,7 +81,7 @@
     - 90-sieve.conf
   notify: Restart dovecot
 - name: Render Dovecot config templates
-  template:
+  ansible.builtin.template:
     src: "dovecot/{{ item }}.j2"
     dest: "/etc/dovecot/{{ item }}"
     mode: u=rw,og=r
@@ -94,7 +94,7 @@
     - report-spam.sieve
   notify: Restart dovecot
 - name: Configure Dovecot auth extensions
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item.line }}'
     line: "{{ '#' if item.comment }}{{ item.line }}"
     path: /etc/dovecot/conf.d/10-auth.conf

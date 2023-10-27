@@ -1,6 +1,6 @@
 ---
 - name: Create razor home directory
-  file:
+  ansible.builtin.file:
     path: /var/lib/razor/
     state: directory
 - name: Create Razor account
@@ -10,7 +10,7 @@
 - name: Register Razor account
   ansible.builtin.command: razor-admin -register -home=/var/lib/razor
 - name: Configure SPAMAssassin options
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: 'SPAMDOPTIONS'
     line: SPAMDOPTIONS="-c -m5 -H --razor-home-dir='/var/lib/razor/' --razor-log-file='sys-syslog' --virtual-config-dir=/var/vmail/%d/%l/spamassassin --username=vmail"
     path: /etc/sysconfig/spamassassin
@@ -21,7 +21,7 @@
     backup: yes
   notify: Restart spamassassin
 - name: Configure SPAMAssassin milter flags
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: 'EXTRA_FLAGS'
     line: 'EXTRA_FLAGS=" -e {{ mailserver_domain }} -u sa-milt -m -r 8 -R SPAM_ARE_NOT_ALLOWED_HERE -i 127.0.0.1 -g sa-milt -- --max-size=52428800"'
     path: /etc/sysconfig/spamass-milter
@@ -37,7 +37,7 @@
     groups: sa-milt
     append: yes
 - name: Configure SPAMAssassin rules
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item.type }} {{ item.key }}'
     line: '{{ item.type }} {{ item.key }}    {{ item.value }}'
     path: /etc/mail/spamassassin/local.cf

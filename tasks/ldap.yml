@@ -21,7 +21,7 @@
 #     home: /var/lib/openldap
 #     shell: /usr/sbin/nologin
 - name: Render dscreate config template
-  template:
+  ansible.builtin.template:
     src: "ldap/389.dscreate.conf.j2"
     dest: "/tmp/ansible-mailserver-install.dscreate.conf"
     mode: u=rw
@@ -46,7 +46,7 @@
       register: ldap_backups
       when: reset == "yes"
     - name: Create backup directory
-      file:
+      ansible.builtin.file:
         path: "/backup/{{ item }}"
         state: directory
         recurse: yes

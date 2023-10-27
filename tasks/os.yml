@@ -52,7 +52,7 @@
     - name: Install packages
       import_tasks: packages.yml
 - name: Set up OS mail aliases
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/aliases
     regexp: '^root: *{{ mailserver_admin_user }}'
     line: 'root: {{ mailserver_admin_user }}'
@@ -94,7 +94,7 @@
     name: MAILTO
     job: "hostmaster+cron@{{ mailserver_domain }}"
 - name: Add GO path to PATH
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/profile.d/gopath.sh
     line: 'export PATH=$PATH:$(go env GOPATH)/bin'
     mode: u=rw,og=r

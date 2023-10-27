@@ -10,7 +10,7 @@
     state: latest
 - name: Set up UEK repository
   tags: wireguard
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/uek-ol8.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK Unbreakable Enterprise Kernel Release 7 for Oracle Linux repository"
     block: |
@@ -52,7 +52,7 @@
 #     disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   tags: elasticsearch
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/elastic.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK ElasticSearch 8.x repository"
     block: |
@@ -71,7 +71,7 @@
     backup: yes
     create: yes
 - name: Set up Extra Packages for Enterprise Linux 7 repository
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/epel-el7.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK Extra Packages for Enterprise Linux 7 repository"
     block: |
@@ -88,7 +88,7 @@
     create: yes
 - name: Set up PowerDNS repository
   tags: dns
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/powerdns.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK PowerDNS repository"
     block: |
@@ -154,7 +154,7 @@
     create: yes
 - name: Set up MongoDB repository
   tags: mongodb
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/mongodb-org-5.0.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
     block: |

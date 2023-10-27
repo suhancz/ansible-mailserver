@@ -11,7 +11,7 @@
     - iptable_nat
     - ip6table_nat
 - name: Load kernel modules at boot
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/modules-load.d/{{ item }}.conf"
     line: "{{ item }}"
     create: yes
@@ -32,7 +32,7 @@
     - "net.ipv4.ip_forward"
     - "net.ipv6.conf.all.forwarding"
 - name: Create WireGuard config directories
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
   loop:
@@ -109,7 +109,7 @@
     backup: yes
   notify: Restart WireGuard
 - name: Create client config dirs
-  file:
+  ansible.builtin.file:
     state: directory
     name: "{{ wireguard.config_dir }}/clients/{{ item }}"
     owner: "{{ wg_configs[item]['owner'] }}"
@@ -117,7 +117,7 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate client configs
-  template:
+  ansible.builtin.template:
     src: wireguard/client.conf.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ wg_client }}/wg0.conf"
     owner: "{{ wg_configs[wg_client]['owner'] }}"
@@ -141,7 +141,7 @@
   when: item.name is defined
   loop: "{{ user_info.results }}"
 - name: Ensure user VPN config directories exist
-  file:
+  ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
@@ -151,7 +151,7 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Create user VPN config dirs
-  file:
+  ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
     state: directory
     owner: "{{ wg_configs[item]['owner'] }}"
@@ -173,7 +173,7 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Allow access to QR codes
-  file:
+  ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
@@ -335,7 +335,7 @@
     - wireguard
     - poweradmin
     - postfixadmin
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "forward-zones+=vpn.{{ mailserver_domain }}=127.0.0.1:5301"
     regex: "^forward-zones+=vpn.{{ mailserver_domain }}="
@@ -348,7 +348,7 @@
   tags:
     - dyndns
     - poweradmin
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "forward-zones+=dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
     regex: "^forward-zones+=dyndns.{{ mailserver_domain }}="
@@ -361,7 +361,7 @@
   tags:
     - dyndns
     - poweradmin
-  template:
+  ansible.builtin.template:
     src: dyndns/dynamic_dns_client.sh.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.sh"
     owner: "{{ wg_configs[item]['owner'] }}"
@@ -374,7 +374,7 @@
   tags:
     - dyndns
     - poweradmin
-  template:
+  ansible.builtin.template:
     src: dyndns/dynamic_dns_client.py.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.py"
     owner: "{{ wg_configs[item]['owner'] }}"
@@ -391,14 +391,14 @@
   notify: Restart WireGuard
 - name: Deploy WireGuard config loader SystemD service
   tags: wireguard
-  template:
+  ansible.builtin.template:
     src: systemd/wg_vpn.service.j2
     dest: /etc/systemd/system/wg_vpn.service
     backup: yes
   notify: Restart WireGuard
 - name: Deploy WireGuard routing helper scripts
   tags: wireguard
-  template:
+  ansible.builtin.template:
     src: wireguard/{{ item }}.j2
     dest: /etc/wireguard/helper/{{ item }}
     mode: ug=rwx,o=x

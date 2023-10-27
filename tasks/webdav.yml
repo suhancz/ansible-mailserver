@@ -1,7 +1,7 @@
 ---
 - name: Create WebDAV directory
   tags: wireguard
-  file:
+  ansible.builtin.file:
     path: /var/www/html/webdav
     state: directory
     owner: apache
@@ -9,7 +9,7 @@
     mode: u=rwX,og=rX
 - name: Ensure WebDav certificate directory exists
   tags: ssl
-  file:
+  ansible.builtin.file:
     path: /var/www/html/webdav/.certificates
     owner: apache
     group: apache

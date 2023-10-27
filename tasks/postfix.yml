@@ -60,7 +60,7 @@
     - "smtp_tls_loglevel = 1"
   notify: Restart postfix
 - name: Configure main.cf
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^{{ item.key }} = '
     line: '{{ item.key }} = {{ item.value }}'
     path: /etc/postfix/main.cf
@@ -82,7 +82,7 @@
     - { key: "propagate_unmatched_extensions", value: "" }
   notify: Restart postfix
 - name: Render Postfix SQL templates
-  template:
+  ansible.builtin.template:
     src: "postfix/sql/{{ item }}.j2"
     dest: "/etc/postfix/sql/{{ item }}"
     mode: u=rw,og=r
@@ -98,7 +98,7 @@
     - mysql_virtual_alias_domain_catchall_maps.cf
   notify: Restart postfix
 - name: Configure virtual domains
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK virtual domains"
     block: |
@@ -117,7 +117,7 @@
       virtual_gid_maps = static:2000
   notify: Restart postfix
 - name: Configure SMTP recipient restrictions
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK SMTP recipient restrictions"
     block: |
@@ -137,7 +137,7 @@
       #   reject_rbl_client zen.spamhaus.org
   notify: Restart postfix
 - name: Configure Milter
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK Milter"
     block: |
@@ -149,7 +149,7 @@
     backup: yes
   notify: Restart postfix
 - name: Start SPF policy daemon with Postfix
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/master.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK SPF policy"
     block: |
@@ -158,7 +158,7 @@
     backup: yes
   notify: Restart postfix
 - name: Configure sender restrictions
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK sender restrictions"
     block: |
@@ -170,7 +170,7 @@
          reject_unknown_client_hostname
   notify: Restart postfix
 - name: Configure HELO/EHLO restrictions
-  blockinfile:
+  ansible.builtin.blockinfile:
     marker: "# {mark} ANSIBLE MANAGED BLOCK HELO/EHLO restrictions"
     path: /etc/postfix/main.cf
     block: |
@@ -187,7 +187,7 @@
 - name: Set up HELO access whitelist
   block:
     - name: Create HELO access whitelist
-      lineinfile:
+      ansible.builtin.lineinfile:
         regexp: "\b{{ item.key }}\b"
         line: '{{ item.key }}    {{ item.value }}'
         path: /etc/postfix/helo_access
@@ -205,7 +205,7 @@
 - name: Set up RBL whitelist
   block:
     - name: Create RBL whitelist
-      lineinfile:
+      ansible.builtin.lineinfile:
         regexp: "\b{{ item.key }}\b"
         line: '{{ item.key }}    {{ item.value }}'
         path: /etc/postfix/rbl_override
@@ -221,7 +221,7 @@
       ansible.builtin.command: postmap /etc/postfix/rbl_override
   when: rbl_override is defined
 - name: Set Postgrey whitelist
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: '{{ item }}'
     path: /etc/postfix/postgrey_whitelist_clients
     mode: u=rw,og=r
@@ -232,7 +232,7 @@
   loop: "{{ postgrey_whitelist_clients }}"
   notify: Restart postgrey
 - name: Set POSTGREY_DELAY to 1
-  lineinfile:
+  ansible.builtin.lineinfile:
     regex: '^POSTGREY_DELAY='
     line: 'POSTGREY_DELAY="--delay=1"'
     path: /etc/sysconfig/postgrey
@@ -245,7 +245,7 @@
 - name: Clean postfix destination
   ansible.builtin.command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
 - name: Create directory for virtuals
-  file:
+  ansible.builtin.file:
     path: /var/vmail/
     state: directory
     mode: u=rwX,og=rX

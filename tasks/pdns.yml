@@ -23,7 +23,7 @@
 #       user: powerdns
 #       password: "{{ powerdns_db_password }}"
 - name: Configure PowerDNS authoritative server
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns/pdns.conf
     line: "{{ item.key }}={{ item.value }}"
     regex: "^{{ item.key }}="

@@ -4,7 +4,7 @@
 #   vars:
 #     port: 8891/tcp
 - name: Configure OpenDKIM
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item.key }}'
     line: "{{ '#' if item.comment }}{{ item.key }}\t{{ item.value }}"
     path: /etc/opendkim.conf
@@ -25,7 +25,7 @@
     - { key: "RequireSafeKeys", value: "false", comment: false}
   notify: Restart opendkim
 - name: Configure OpenDKIM key table
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item }}'
     line: "{{ dkim_selector }}._domainkey.{{ item }} {{ item }}:{{ dkim_selector }}:/etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.private"
     path: /etc/opendkim/KeyTable
@@ -37,7 +37,7 @@
   loop: "{{ [mailserver_domain] + custom_domains }}"
   notify: Restart opendkim
 - name: Configure OpenDKIM trusted hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item }}'
     line: "*.{{ item }}"
     path: /etc/opendkim/TrustedHosts
@@ -49,7 +49,7 @@
   loop: "{{ [mailserver_domain] + custom_domains }}"
   notify: Restart opendkim
 - name: Configure OpenDKIM signing table
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item }}'
     line: "*@{{ item }} {{ dkim_selector }}._domainkey.{{ item }}"
     path: /etc/opendkim/SigningTable
@@ -61,7 +61,7 @@
   loop: "{{ [mailserver_domain] + custom_domains }}"
   notify: Restart opendkim
 - name: Create OpenDKIM key directories
-  file:
+  ansible.builtin.file:
     state: directory
     path: "/etc/opendkim/keys/{{ item }}"
     mode: u=rwX,og-rwX
@@ -76,7 +76,7 @@
   loop: "{{ [mailserver_domain] + custom_domains }}"
   notify: Restart opendkim
 - name: Ensure OpenDKIM key directory permissions
-  file:
+  ansible.builtin.file:
     state: directory
     path: /etc/opendkim
     owner: opendkim

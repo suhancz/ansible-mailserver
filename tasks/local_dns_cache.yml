@@ -2,7 +2,7 @@
 - name: Configure local DNS cache
   block:
     - name: Configure /etc/resolv.conf
-      template:
+      ansible.builtin.template:
         src: resolv.conf.j2
         dest: /etc/resolv.conf
         owner: root
@@ -30,14 +30,14 @@
         type: ethernet
       notify: Restart NetworkManager
 - name: Create resolved.conf.d directory
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/resolved.conf.d
     state: directory
     owner: root
     group: root
     mode: u=rwX,og=rX
 - name: Enable local DNS caching
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/systemd/resolved.conf.d/LocalDNSCache.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK Local DNS cache"
     block: |

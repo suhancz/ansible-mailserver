@@ -1,6 +1,6 @@
 ---
 - name: Configure OpenDMARC
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '\b{{ item.key }}\b'
     line: "{{ '#' if item.comment }}{{ item.key }}    {{ item.value }}"
     path: /etc/opendmarc.conf

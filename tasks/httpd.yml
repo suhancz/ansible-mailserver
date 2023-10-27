@@ -40,7 +40,7 @@
     - poweradmin
     - wireguard
     - webdav
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: u=rw,og=r
@@ -105,7 +105,7 @@
     - webdav
     - ftp
     - wireguard
-  file:
+  ansible.builtin.file:
     path: "~{{ item.name }}"
     state: directory
     owner: "{{ item.name }}"
@@ -118,7 +118,7 @@
     - webdav
     - ftp
     - wireguard
-  file:
+  ansible.builtin.file:
     path: "~{{ item.name }}/public_html"
     state: directory
     owner: "{{ item.name }}"
@@ -129,7 +129,7 @@
   no_log: true
 - name: Ensure user certificate directories exist
   tags: wireguard
-  file:
+  ansible.builtin.file:
     path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
@@ -158,7 +158,7 @@
     state: present
     recursive: yes
 - name: Create HTTPD SystemD drop-in directory
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/httpd.service.d
     state: directory
 - name: Increase startup timeout
@@ -178,7 +178,7 @@
     backup: yes
   notify: Restart httpd
 - name: Deny blacklisted users from PAM authentication
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/httpd/conf.d/denyusers
     line: "{{ item }}"
     owner: apache
@@ -190,7 +190,7 @@
   notify: Restart httpd
 - name: Allow Apache read /etc/shadow
   tags: webdav
-  file:
+  ansible.builtin.file:
     path: /etc/shadow
     state: file
     group: apache

@@ -7,7 +7,7 @@
     - postfixadmin.conf
   notify: Restart fail2ban
 - name: Enable fail2ban jails
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/fail2ban/jail.d/ansible-mailserver.local
     marker: "# {mark} ANSIBLE MANAGED BLOCK ansible-mailserver fail2ban jails"
     block: |

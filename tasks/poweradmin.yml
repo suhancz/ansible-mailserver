@@ -34,7 +34,7 @@
   tags:
     - dyndns
     - poweradmin
-  file:
+  ansible.builtin.file:
     path: /var/www/poweradmin
     state: directory
     owner: apache
@@ -145,7 +145,7 @@
   tags:
     - dyndns
     - poweradmin
-  template:
+  ansible.builtin.template:
     src: poweradmin/config.inc.php.j2
     dest: /var/www/poweradmin/inc/config.inc.php
     mode: ug=rw,o=r
@@ -157,7 +157,7 @@
 - name: Remove install directory
   tags:
     - poweradmin
-  file:
+  ansible.builtin.file:
     path: /var/www/poweradmin/install/
     state: absent
   when: 'public_dns == "yes"'

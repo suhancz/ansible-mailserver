@@ -1,6 +1,6 @@
 ---
 - name: Increase upload size and execution time
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: '{{ item.file }}'
     regexp: '^{{ item.key }} ='
     line: '{{ item.key }} = {{ item.value }}'
@@ -41,7 +41,7 @@
     - turba
     - wicked
 - name: Render Horde config templates
-  template:
+  ansible.builtin.template:
     src: "horde/{{ item.app }}/conf.php.j2"
     dest: "/etc/horde/{{ item.app }}/conf.php"
     mode: "{{ item.mode }}"

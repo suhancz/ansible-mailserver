@@ -1,6 +1,6 @@
 ---
 - name: Render RPZ file for local addresses
-  template:
+  ansible.builtin.template:
     src: pdns-recursor/basic.rpz.j2
     dest: /etc/pdns-recursor/pdns-recursor.rpz
     owner: pdns-recursor
@@ -16,7 +16,7 @@
 #     backup: yes
 #   when: 'public_dns == "yes"'
 - name: Configure PowerDNS recursor
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "{{ item.key }}={{ item.value }}"
     regex: "^{{ item.key }}="
@@ -36,7 +36,7 @@
   notify: Restart pdns-recursor
 - name: Add VPN addresses to hosts file
   tags: wireguard
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: "{{ item }} postfixadmin.vpn.{{ mailserver_domain }} poweradmin.vpn.{{ mailserver_domain }}"
     path: /etc/hosts
     backup: yes
@@ -46,7 +46,7 @@
   when: wireguard is defined
   notify: Restart pdns-recursor
 - name: Configure PowerDNS recursor to forward custom domains
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "forward-zones+={{ item }}=127.0.0.1:5300"
     regex: "^forward-zones+={{ item }}="

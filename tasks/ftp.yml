@@ -7,7 +7,7 @@
     - 989-990/tcp
     - 40000-50000/tcp
 - name: Configure VSFTPD
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: "{{ item.key }}={{ item.value }}"
     regexp: '^{{ item.key }}='
     path: /etc/vsftpd/vsftpd.conf
@@ -54,7 +54,7 @@
     - { key: "dual_log_enable", value: "YES"}
   notify: Restart vsftpd
 - name: Set up VSFTPD user list
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: "{{ item.name }}"
     path: /etc/vsftpd/vsftpd.userlist
     mode: u=rw
@@ -73,7 +73,7 @@
     state: yes
     persistent: yes
 - name: Create user FTP roots
-  file:
+  ansible.builtin.file:
     path: "/home/{{ item.name }}/ftp"
     state: directory
     recurse: yes
@@ -83,7 +83,7 @@
   loop: "{{ users }}"
   no_log: yes
 - name: Create user FTP directories
-  file:
+  ansible.builtin.file:
     path: "/home/{{ item.name }}/ftp/files"
     state: directory
     recurse: yes
