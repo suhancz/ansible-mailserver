@@ -21,7 +21,7 @@
     - iptable_nat
     - ip6table_nat
 - name: Set sysctl variables
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item }}"
     value: 1
     state: present # not required. choices: present;absent. Whether the entry should be present or absent in the sysctl file.

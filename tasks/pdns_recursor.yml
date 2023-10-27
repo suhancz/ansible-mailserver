@@ -57,7 +57,7 @@
   when: 'public_dns == "yes"'
   notify: Restart pdns-recursor
 - name: Set IPv6 route size
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv6.route.max_size
     value: 16384
     state: present # not required. choices: present;absent. Whether the entry should be present or absent in the sysctl file.

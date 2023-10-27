@@ -9,7 +9,7 @@
   when: ansible_default_ipv6.address is not defined
   block:
     - name: Enable IPv6 via sysctl
-      sysctl:
+      ansible.posix.sysctl:
         name: "{{ item }}"
         value: 0
         state: present
