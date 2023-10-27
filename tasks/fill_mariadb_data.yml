@@ -1,6 +1,5 @@
 ---
-- name: "Render {{ mariadb_database.db }} data"
-  # noqa name[template] we need to be informative, even if we deviate from the standards
+- name: "Render {{ mariadb_database.db }} data" # noqa name[template] we need to be informative, even if we deviate from the standards
   template:
     src: "mariadb/{{ mariadb_database.db }}.sql.j2"
     dest: "/tmp/ansible-mailserver-install.{{ mariadb_database.db }}_data.sql"
@@ -8,8 +7,7 @@
     owner: root
     group: root
     backup: yes
-- name: "Fill {{ mariadb_database.db }} DB"
-  # noqa name[template] we need to be informative, even if we deviate from the standards
+- name: "Fill {{ mariadb_database.db }} DB" # noqa name[template] we need to be informative, even if we deviate from the standards
   mysql_db:
     name: "{{ mariadb_database.db }}"
     state: import

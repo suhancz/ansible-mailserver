@@ -1,25 +1,22 @@
 ---
-- name: 'Quote and escape record content "{{ record.content }}"'
-  # noqa name[template] we need to be informative, even if we deviate from the standards
+- name: 'Quote and escape record content "{{ record.content }}"' # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.set_fact:
     record_content: '"{{ record.content }}"'
 - name: Add DNS record
   when: (record.append is defined and record.append) and (record.content not in lookup('community.general.dig', record.name ~ '.' ~ record.zone ~ './' ~ record.type) | split(','))
-  # noqa name[template] we need to be informative, even if we deviate from the standards
   block:
-    - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
+    - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
   rescue:
-    - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
+    - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
 - name: Update or add DNS record
   when: record.append is not defined or not record.append
-  # noqa name[template] we need to be informative, even if we deviate from the standards
   block:
-    - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
+    - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
   rescue:
-    - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
+    - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
 - name: Rectify all zones
   ansible.builtin.command: pdnsutil rectify-all-zones

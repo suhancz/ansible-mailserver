@@ -1,14 +1,12 @@
 ---
-- name: "Create restart directories for {{ service }}"
-  # noqa name[template] we need to be informative, even if we deviate from the standards
+- name: "Create restart directories for {{ service }}" # noqa name[template] we need to be informative, even if we deviate from the standards
   file:
     state: directory
     path: "/etc/systemd/system/{{ service }}.service.d"
     mode: u=rwX,og=rX
     owner: root
     group: root
-- name: "Deploy restart files for {{ service }}"
-  # noqa name[template] we need to be informative, even if we deviate from the standards
+- name: "Deploy restart files for {{ service }}" # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.copy:
     src: systemd/restart.conf
     dest: "/etc/systemd/system/{{ service }}.service.d/restart.conf"
