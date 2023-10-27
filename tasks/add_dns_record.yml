@@ -3,20 +3,20 @@
   ansible.builtin.set_fact:
     record_content: '"{{ record.content }}"'
 - name: Add DNS record
-  when: "{{ (record.append is defined and record.append) and (record.content not in lookup('community.general.dig', record.name ~ '.' ~ record.zone ~ './' ~ record.type) | split(',')) }}"
+  when: (record.append is defined and record.append) and (record.content not in lookup('community.general.dig', record.name ~ '.' ~ record.zone ~ './' ~ record.type) | split(','))
   block:
     - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
-      command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
+      ansible.builtin.command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
   rescue:
     - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
-      command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
+      ansible.builtin.command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
 - name: Update or add DNS record
   when: record.append is not defined or not record.append
   block:
     - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
-      command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
+      ansible.builtin.command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
   rescue:
     - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}'
-      command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
+      ansible.builtin.command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
 - name: Rectify all zones
-  command: pdnsutil rectify-all-zones
+  ansible.builtin.command: pdnsutil rectify-all-zones

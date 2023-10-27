@@ -32,17 +32,17 @@
 - name: Apply LDAP server configuration
   block:
     - name: Configure LDAP server
-      command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
+      ansible.builtin.command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
       register: dscreate_status
   rescue:
     - name: Start LDAP server
-      command: "dsctl {{ mailserver_hostname }} start"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
       when: reset == "yes"
     - name: Create backup before taking destructive actions
-      command: "dsconf {{ mailserver_hostname }} backup create"
+      ansible.builtin.command: "dsconf {{ mailserver_hostname }} backup create"
       when: reset == "yes"
     - name: List LDAP server backups
-      command: "dsctl {{ mailserver_hostname }} backups"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} backups"
       register: ldap_backups
       when: reset == "yes"
     - name: Create backup directory
@@ -65,21 +65,21 @@
         force_archive: yes
       when: reset == "yes"
     - name: Uninstall LDAP server
-      command: "dsctl {{ mailserver_hostname }} remove --do-it"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} remove --do-it"
       when: reset == "yes"
     - name: Configure LDAP server
-      command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
+      ansible.builtin.command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
       when: reset == "yes"
       register: dscreate_status
 - name: Start LDAP server
-  command: "dsctl {{ mailserver_hostname }} start"
+  ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
 - name: Import TLS certificate for LDAP
-  command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
+  ansible.builtin.command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
 - name: Enable LDAP plugins
-  command: "dsconf {{ mailserver_hostname }} plugin {{ item }} enable"
+  ansible.builtin.command: "dsconf {{ mailserver_hostname }} plugin {{ item }} enable"
   loop:
     - memberof
     - automember
 - name: Configure the memberof plugin to search all entries
-  command: "dsconf {{ mailserver_hostname }} plugin memberof set --scope dc={{ mailserver_domain.split('.')|join(',dc=') }}"
+  ansible.builtin.command: "dsconf {{ mailserver_hostname }} plugin memberof set --scope dc={{ mailserver_domain.split('.')|join(',dc=') }}"
   when: "dscreate_status is defined and dscreate_status.rc is defined and dscreate_status.rc == 0"

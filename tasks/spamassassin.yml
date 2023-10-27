@@ -4,11 +4,11 @@
     path: /var/lib/razor/
     state: directory
 - name: Create Razor account
-  command: razor-admin -create -home=/var/lib/razor
+  ansible.builtin.command: razor-admin -create -home=/var/lib/razor
 - name: Discover Razor account
-  command: razor-admin -discover -home=/var/lib/razor
+  ansible.builtin.command: razor-admin -discover -home=/var/lib/razor
 - name: Register Razor account
-  command: razor-admin -register -home=/var/lib/razor
+  ansible.builtin.command: razor-admin -register -home=/var/lib/razor
 - name: Configure SPAMAssassin options
   lineinfile:
     regexp: 'SPAMDOPTIONS'
@@ -58,7 +58,7 @@
     group: root
   notify: Restart spamassassin
 - name: Enable sieve config
-  command: sievec /var/mail/SpamToJunk.sieve
+  ansible.builtin.command: sievec /var/mail/SpamToJunk.sieve
   args:
     creates: /var/mail/SpamToJunk.svbin
 - name: Enable SpamAssassin update service

@@ -30,7 +30,7 @@
     create_home: no
     shell: /bin/false
 - name: Apply mail aliases
-  command: newaliases
+  ansible.builtin.command: newaliases
 - name: Set up automatic restart of services
   import_tasks: autorestart.yml
   vars:
@@ -45,7 +45,7 @@
     group: root
   notify: Restart postfix
 - name: Configure postfix
-  command: 'postconf -e "{{ item }}"'
+  ansible.builtin.command: 'postconf -e "{{ item }}"'
   loop:
     - "inet_interfaces = all"
     - "myhostname = {{ mailserver_hostname }}.{{ mailserver_domain }}"
@@ -200,7 +200,7 @@
       loop: "{{ helo_access }}"
       notify: Restart postfix
     - name: Generate HELO access database
-      command: postmap /etc/postfix/helo_access
+      ansible.builtin.command: postmap /etc/postfix/helo_access
   when: helo_access is defined
 - name: Set up RBL whitelist
   block:
@@ -218,7 +218,7 @@
       loop: "{{ rbl_override }}"
       notify: Restart postfix
     - name: Generate RBL database
-      command: postmap /etc/postfix/rbl_override
+      ansible.builtin.command: postmap /etc/postfix/rbl_override
   when: rbl_override is defined
 - name: Set Postgrey whitelist
   lineinfile:
@@ -243,7 +243,7 @@
     backup: yes
   notify: Restart postgrey
 - name: Clean postfix destination
-  command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
+  ansible.builtin.command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
 - name: Create directory for virtuals
   file:
     path: /var/vmail/

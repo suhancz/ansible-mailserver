@@ -70,7 +70,7 @@
     recurse: yes
   loop: "{{ [''] + [mailserver_domain] + custom_domains }}"
 - name: Create OpenDKIM keys
-  command: "opendkim-genkey -b 2048 -d {{ item }} -D /etc/opendkim/keys/{{ item }} -s {{ dkim_selector }} -v"
+  ansible.builtin.command: "opendkim-genkey -b 2048 -d {{ item }} -D /etc/opendkim/keys/{{ item }} -s {{ dkim_selector }} -v"
   args:
     creates: "/etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.private"
   loop: "{{ [mailserver_domain] + custom_domains }}"

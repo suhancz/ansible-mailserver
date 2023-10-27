@@ -170,18 +170,18 @@
     backup: yes
     create: yes
 - name: Enable PowerTools
-  command: dnf config-manager --set-enable powertools
+  ansible.builtin.command: dnf config-manager --set-enable powertools
 - name: Enable the go-toolset DNF module
-  command: dnf module enable go-toolset -y
+  ansible.builtin.command: dnf module enable go-toolset -y
 - name: Query DNF repo list
   tags:
     - ldap
     - dns
-  command: dnf repolist
+  ansible.builtin.command: dnf repolist
   register: dnf_repolist
 - name: Enable the COPR repositories
   when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}"
-  command: "dnf copr enable -y {{ item }}"
+  ansible.builtin.command: "dnf copr enable -y {{ item }}"
   tags:
     - ldap
     - dns
@@ -349,7 +349,7 @@
       # - php-gettext-gettext
     state: latest
 # - name: Reset the PHP DNF module
-#   command: dnf module reset php -y
+#   ansible.builtin.command: dnf module reset php -y
 #   tags:
 #     - wireguard
 #     - dyndns
@@ -357,7 +357,7 @@
 #   tags:
 #     - wireguard
 #     - dyndns
-#   command: dnf module enable php:remi-8.1 -y
+#   ansible.builtin.command: dnf module enable php:remi-8.1 -y
 # - name: Install PHP 8.1 packages
 #   tags:
 #     - wireguard
@@ -385,12 +385,12 @@
 #     enabled: yes
 #     state: restarted
 - name: Reset the PHP DNF module
-  command: dnf module reset php -y
+  ansible.builtin.command: dnf module reset php -y
   tags:
     - always
 - name: Enable the php:remi-7.4 DNF module
   tags: horde
-  command: dnf module enable php:remi-7.4 -y
+  ansible.builtin.command: dnf module enable php:remi-7.4 -y
 - name: Install PHP 7.4 packages
   tags: horde
   dnf:
@@ -543,7 +543,7 @@
     name: pear.horde.org/Horde_ActiveSync
     state: latest
 # - name: Install go packages
-#   command: "go install {{ item }}"
+#   ansible.builtin.command: "go install {{ item }}"
 #   loop:
 #     - github.com/go-acme/lego/v4/cmd/lego@latest
 #   tags: ssl
@@ -564,6 +564,6 @@
   loop:
     - { url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py", dest: "/usr/local/bin/imapdedup.py" }
 - name: Reset the PHP DNF module
-  command: dnf module reset php -y
+  ansible.builtin.command: dnf module reset php -y
   tags:
     - always

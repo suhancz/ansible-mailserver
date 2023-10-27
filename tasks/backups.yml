@@ -116,7 +116,7 @@
   block:
     - name: Prepare MariaDB backup
       when: mariadb_backup_path is defined
-      command: "mariabackup --prepare --target-dir={{ mariadb_backup_path }}"
+      ansible.builtin.command: "mariabackup --prepare --target-dir={{ mariadb_backup_path }}"
     - name: Stop MariaDB
       when: mariadb_backup_path is defined
       ansible.builtin.systemd_service:
@@ -137,7 +137,7 @@
         mode: u=rwx,go=rx
     - name: Restore MariaDB backup
       when: mariadb_backup_path is defined
-      command: "mariabackup --copy-back --target-dir={{ mariadb_backup_path }}"
+      ansible.builtin.command: "mariabackup --copy-back --target-dir={{ mariadb_backup_path }}"
     - name: Ensure data directory permissions
       when: mariadb_backup_path is defined
       file:
@@ -153,7 +153,7 @@
         state: started
     - name: Stop LDAP server
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname }} stop"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} stop"
     - name: Prepare LDAP backup
       when: ldap_backup_path is defined
       unarchive:
@@ -164,10 +164,10 @@
       register: ldap_backup_files
     - name: Restore LDAP backup
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
     - name: Start LDAP server
       when: ldap_backup_path is defined
-      command: "dsctl {{ mailserver_hostname }} start"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
     - name: Restore service tarball backups
       include_tasks: restore_service_tarball_backup.yml
       vars:

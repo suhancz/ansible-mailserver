@@ -1,6 +1,6 @@
 ---
 - name: "Generate private key for {{ wg_name }}"
-  command: wg genkey
+  ansible.builtin.command: wg genkey
   when: wg_privatekey is not defined or wg_privatekey == ""
   register: wg_privatekey_output
 - name: "Fetch private key for {{ wg_name }} from config"
@@ -9,7 +9,7 @@
       stdout: "{{ wg_privatekey }}"
   when: wg_privatekey is defined and wg_privatekey != ""
 - name: "Generate public key for {{ wg_name }}"
-  command: wg pubkey
+  ansible.builtin.command: wg pubkey
   args:
     stdin: "{{ wg_privatekey_output.stdout }}"
   when: wg_publickey is not defined or wg_publickey == ""
@@ -20,7 +20,7 @@
       stdout: "{{ wg_publickey }}"
   when: wg_publickey is defined and wg_publickey != ""
 - name: "Generate pre-shared key for {{ wg_name }}"
-  command: wg genpsk
+  ansible.builtin.command: wg genpsk
   when: wg_psk is not defined or wg_psk == ""
   register: wg_psk_output
 - name: "Fetch pre-shared key for {{ wg_name }} from config"

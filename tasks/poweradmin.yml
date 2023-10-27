@@ -26,7 +26,7 @@
   tags:
     - dyndns
     - poweradmin
-  command: "mv /var/www/poweradmin-{{ poweradmin_version }} /var/www/poweradmin"
+  ansible.builtin.command: "mv /var/www/poweradmin-{{ poweradmin_version }} /var/www/poweradmin"
   args:
     creates: /var/www/poweradmin
   when: 'public_dns == "yes"'

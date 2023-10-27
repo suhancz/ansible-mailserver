@@ -66,7 +66,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Generate Horde DB schema
-  command: horde-db-migrate
+  ansible.builtin.command: horde-db-migrate
 - name: Enable ActiveSync
   mysql_query:
     login_db: horde

@@ -34,4 +34,4 @@
         setype: httpd_sys_rw_content_t
         state: present
     - name: Apply SELinux file context on WebDAV directory
-      command: restorecon -irv /var/www/html/webdav
+      ansible.builtin.command: restorecon -irv /var/www/html/webdav

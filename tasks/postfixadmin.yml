@@ -14,7 +14,7 @@
     dest: /var/www/
     remote_src: yes
 - name: Rename postfixadmin directory
-  command: "mv /var/www/postfixadmin-postfixadmin-{{ postfixadmin_version }} /var/www/postfixadmin"
+  ansible.builtin.command: "mv /var/www/postfixadmin-postfixadmin-{{ postfixadmin_version }} /var/www/postfixadmin"
   args:
     creates: /var/www/postfixadmin
 - name: Set up postfixadmin permissions
@@ -49,7 +49,7 @@
   no_log: yes
   notify: Warn on passwords
 - name: Generate PostfixAdmin PHP password
-  command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
+  ansible.builtin.command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password
   no_log: yes
 - name: Create PostfixAdmin directories

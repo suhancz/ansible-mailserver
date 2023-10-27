@@ -5,7 +5,7 @@
   tags: imapsync
   block:
     - name: Sync old IMAP for the first time (this might tale a while...)
-      command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+      ansible.builtin.command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
       environment:
         IMAPSYNC_PASSWORD1: "{{ current_user.old_imap_mail.password }}"
         IMAPSYNC_PASSWORD2: "{{ current_user.password }}"

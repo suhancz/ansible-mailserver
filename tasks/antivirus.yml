@@ -15,10 +15,10 @@
     backup: yes
   notify: Restart amavisd
 - name: Refresh ClamAV database
-  command: freshclam
+  ansible.builtin.command: freshclam
   notify: Restart clamav-freshclam
 - name: Update SPAMAssassin's signatures
-  command: sa-update -D
+  ansible.builtin.command: sa-update -D
   register: sa_update
   failed_when: "{{ sa_update.rc >= 4 }}"
   notify: Restart spamassassin

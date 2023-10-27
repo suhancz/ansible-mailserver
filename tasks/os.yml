@@ -4,7 +4,7 @@
   register: getenforce
   tags: always
 - name: "Set hostname to {{ mailserver_hostname }}.{{ mailserver_domain}}"
-  command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
+  ansible.builtin.command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
 - name: Enable IPv6
   when: ansible_default_ipv6.address is not defined
   block:
