@@ -76,6 +76,7 @@
   ansible.builtin.import_tasks: dovecot.yml
   tags: dovecot
 - name: Sync old IMAP account
+  # noqa jinja[invalid] however linter complains, this works
   ansible.builtin.include_tasks: imapsync.yml
   loop: "{{ users }}"
   loop_control:

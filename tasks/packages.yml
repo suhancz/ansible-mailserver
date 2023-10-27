@@ -2,7 +2,7 @@
 - name: Install EL repositories
   tags:
     - always
-  package:
+  ansible.builtin.package:
     name:
       - yum-utils
       - epel-release
@@ -191,7 +191,7 @@
 - name: Install packages
   tags:
     - always
-  package:
+  ansible.builtin.package:
     name:
       - postfix
       - mailx
@@ -362,7 +362,7 @@
 #   tags:
 #     - wireguard
 #     - dyndns
-#   package:
+#   ansible.builtin.package:
 #     name:
 #       - php81-php-fpm
 #       - php81-php-intl
@@ -531,7 +531,7 @@
         enablerepo: ol8_baseos_latest
         state: latest
     - name: Reboot to pick up changes
-      reboot:
+      ansible.builtin.reboot:
         reboot_timeout: 600
         msg: "Reboot initiated by Ansible to enable WireGuard"
     - name: Load the WireGuard kernel module

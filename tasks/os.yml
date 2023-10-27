@@ -20,7 +20,7 @@
       register: ipv6_enable
     - name: Reboot to pick up changes
       when: ipv6_enable.changed
-      reboot:
+      ansible.builtin.reboot:
         reboot_timeout: 600
         msg: "Reboot initiated by Ansible to enable IPv6"
     - name: Gather facts
@@ -31,19 +31,19 @@
       ansible.builtin.import_tasks: packages.yml
   rescue:
     - name: Find repo configs
-      find:
+      ansible.builtin.find:
         paths: /etc/yum.repos.d
         patterns: "*.repo"
       register: repo_files
     - name: Disable CentOS mirrorlist
-      replace:
+      ansible.builtin.replace:
         path: "{{ item.path }}"
         regexp: "^mirrorlist=http://mirrorlist.centos.org"
         replace: "#mirrorlist=http://mirrorlist.centos.org"
         validate: "grep '#mirrorlist=http://mirrorlist.centos.org' %s"
       loop: "{{ repo_files.files }}"
     - name: Move to CentOS Vault
-      replace:
+      ansible.builtin.replace:
         path: "{{ item.path }}"
         regexp: "#baseurl=http://mirror.centos.org"
         replace: "baseurl=http://vault.centos.org"

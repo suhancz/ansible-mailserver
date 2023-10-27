@@ -1,7 +1,7 @@
 ---
 - name: Sync old IMAP account to the current mailbox
   no_log: yes
-  when: "{{ current_user.old_imap_mail is defined }}"
+  when: current_user.old_imap_mail is defined
   tags: imapsync
   block:
     - name: Sync old IMAP for the first time (this might tale a while...)
@@ -32,7 +32,7 @@
         job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
         backup: yes
         user: "{{ current_user.name }}"
-    - name: "Save {{ current_user.old_imap_mail.user }}'s password in a file"
+    - name: "Save {{ current_user.old_imap_mail.user }}'s password in a file" # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.lineinfile:
         path: '~{{ current_user.name }}/.cron_secrets'
         line: 'IMAP_PASSWORD={{ current_user.password }}'

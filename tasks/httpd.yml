@@ -173,7 +173,9 @@
   ansible.builtin.copy:
     src: systemd/httpd.timeout.conf
     dest: /etc/systemd/system/httpd.service.d/timeout.conf
-    backup: yes
+    owner: root
+    group: root
+    mode: u=rwX,go=rX    backup: yes
   notify: Restart httpd
 - name: Create PAM module for HTTPD auth
   tags: webdav
