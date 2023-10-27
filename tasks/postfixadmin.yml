@@ -6,7 +6,7 @@
         url: https://github.com/postfixadmin/postfixadmin/releases/latest
       register: postfixadmin_download_site
     - name: Parse version
-      set_fact:
+      ansible.builtin.set_fact:
         postfixadmin_version: "{{ postfixadmin_download_site.url | replace('https://github.com/postfixadmin/postfixadmin/releases/tag/postfixadmin-','') }}"
 - name: Unpack postfixadmin
   unarchive:

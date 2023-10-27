@@ -9,7 +9,7 @@
     #     url: https://github.com/poweradmin/poweradmin/releases/latest
     #   register: poweradmin_download_site
     - name: Parse version
-      set_fact:
+      ansible.builtin.set_fact:
         # poweradmin_version: "{{ poweradmin_download_site.url | replace('https://github.com/poweradmin/poweradmin/releases/tag/v','') }}"
         poweradmin_version: 3.4.2 # enforcing PowerAdmin with a verion which supports PHP 7 to avoid package clash with other packages
   when: 'public_dns == "yes"'
@@ -45,7 +45,7 @@
   tags:
     - dyndns
     - poweradmin
-  set_fact:
+  ansible.builtin.set_fact:
     poweradmin_session_key: "{{ poweradmin_session_key | default(lookup('password', '/tmp/ansible-mailserver-install.poweradmin_session_key chars=ascii_lowercase,ascii_uppercase,digits,@,#,$,%,^,*,(,),_,-,! length=46')) }}"
   no_log: yes
   when: 'public_dns == "yes"'

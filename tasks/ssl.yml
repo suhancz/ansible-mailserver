@@ -1,6 +1,6 @@
 ---
 - name: Determine ACME directory
-  set_fact:
+  ansible.builtin.set_fact:
     acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
 - name: Create Certbot config directories
   file:

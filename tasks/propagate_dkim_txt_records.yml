@@ -3,7 +3,7 @@
   command: "cat /etc/opendkim/keys/{{ domain_item }}/{{ dkim_selector }}.txt"
   register: dkim_keys
 - name: "Parse DKIM keys for {{ domain_item }}"
-  set_fact:
+  ansible.builtin.set_fact:
     desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
     current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
 - name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record"

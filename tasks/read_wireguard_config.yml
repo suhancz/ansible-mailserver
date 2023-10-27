@@ -11,7 +11,7 @@
         src: "{{ wg_config_file }}"
       register: wg_config_content
     - name: Gather WiregGuard config lines
-      set_fact:
+      ansible.builtin.set_fact:
         wireguard_config_lines: "{{ wg_config_content.content|b64decode|split('\n') }}"
     - ansible.builtin.debug:
         var: wg_config_lines

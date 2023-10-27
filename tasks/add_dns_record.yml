@@ -1,6 +1,6 @@
 ---
 - name: 'Quote and escape record content "{{ record.content }}"'
-  set_fact:
+  ansible.builtin.set_fact:
     record_content: '"{{ record.content }}"'
 - name: Add DNS record
   when: "{{ (record.append is defined and record.append) and (record.content not in lookup('community.general.dig', record.name ~ '.' ~ record.zone ~ './' ~ record.type) | split(',')) }}"

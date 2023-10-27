@@ -56,17 +56,17 @@
   vars:
     wg_config_file: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
 - name: Define read server values
-  set_fact:
+  ansible.builtin.set_fact:
     wg_server:
       privatekey: "{{ wg_interface.PrivateKey|default('') }}"
       publickey: "{{ wg_peer.PublicKey|default('') }}"
       psk: "{{ wg_peer.PresharedKey|default('') }}"
       cidr: "{{ wg_interface.AllowedIPs|default('') }}"
 - name: Set WireGuard server config
-  set_fact:
+  ansible.builtin.set_fact:
     wg_server: "{{ wg_server|default({})|combine(wireguard.server|default({}), recursive=True) }}"
 - name: Set the next client's last IP segment
-  set_fact:
+  ansible.builtin.set_fact:
     next_ip_segment: 2
 - name: Generate WireGuard server keys
   import_tasks: generate_wireguard_keys.yml
@@ -136,7 +136,7 @@
     loop_var: wg_client
   when: wg_client != "server"
 - name: Collect user home directories
-  set_fact:
+  ansible.builtin.set_fact:
     user_home: "{{ user_home | default({}) | combine({item['name']: item['home']} )}}"
   when: item.name is defined
   loop: "{{ user_info.results }}"

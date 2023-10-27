@@ -1,6 +1,6 @@
 ---
 - name: 'Quote and escape record content "{{ record.content }}"'
-  set_fact:
+  ansible.builtin.set_fact:
     record_content: '"{{ record.content }}"'
 - name: 'Delete DNS record {{ record.name }}.{{ record.zone }} {{ record.type }}'
   command: "pdnsutil delete-rrset {{ record.zone }} {{ record.name }} {{ record.type }}"
