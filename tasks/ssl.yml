@@ -1,9 +1,9 @@
 ---
 - name: Determine ACME directory
-  set_fact:
+  ansible.builtin.set_fact:
     acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
 - name: Create Certbot config directories
-  file:
+  ansible.builtin.file:
     state: directory
     path: "/etc/letsencrypt/{{ item.path }}"
     owner: root
@@ -62,7 +62,7 @@
 #     remaining_days: 60
 #   register: letsencrypt_challenge
 # - name: Check Let's Encrypt TXT records
-#   import_tasks: propagate_ssl_txt_records.yml
+#   ansible.builtin.import_tasks: propagate_ssl_txt_records.yml
 #   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 #   loop_control:
 #     loop_var: challenge_item
@@ -82,7 +82,7 @@
 #     data: "{{ letsencrypt_challenge }}"
 #   when: letsencrypt_challenge.changed is true
 # - name: Clean up Let's Encrypt TXT records
-#   include_tasks: delete_dns_record.yml
+#   ansible.builtin.include_tasks: delete_dns_record.yml
 #   vars:
 #     record:
 #       zone: "{{ challenge_item.key|replace('*.', '') }}"
@@ -96,42 +96,45 @@
 #   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 #   when: letsencrypt_challenge.challenge_data is defined and public_dns == "yes"
 - name: Ensure LEGO environment variables for root
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ ansible_env.HOME }}/.profile"
     regexp: "{{ item.key }}"
     line: "{{ item.key }}={{ item.value }}"
     insertafter: EOF
     create: true
     backup: yes
+    owner: root
+    group: root
+    mode: u=rw,go=
   loop:
     - { key: "EXEC_PROPAGATION_TIMEOUT", value: 4242 }
     - { key: "PDNS_API_URL", value: http://127.0.0.1:8081/ }
     - { key: "PDNS_API_KEY", value: "{{ powerdns_api_key }}" }
-
 - name: Generate LetsEncrypt certificates
-  # command: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
-  command: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
+  ansible.builtin.command: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns {% for custom_domain in [mailserver_domain] + custom_domains %}-d {{ custom_domain }} -d *.{{ custom_domain }} {% endfor %}-d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
   environment:
     EXEC_PROPAGATION_TIMEOUT: 4242
     PDNS_API_URL: http://127.0.0.1:8081/
     PDNS_API_KEY: "{{ powerdns_api_key }}"
+  register: generate_certificates
+  changed_when: generate_certificates.rc == 0
 - name: Create symlink to the full certificate chain
-  file:
+  ansible.builtin.file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem"
     src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.crt"
     state: link
 - name: Create symlink to the main certificate
-  file:
+  ansible.builtin.file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/fullchain.pem"
     src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
     state: link
 - name: Create symlink to the private key
-  file:
+  ansible.builtin.file:
     path: "/etc/letsencrypt/live/{{ mailserver_domain }}/cert.key"
     src: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
     state: link
 - name: Allow Apache to reach letsencrypt keys
-  acl:
+  ansible.posix.acl:
     path: "{{ item.path }}"
     entity: "{{ item.entity }}"
     etype: "{{ item.etype }}"
@@ -142,7 +145,7 @@
     - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
     - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
 - name: Generate OpenSSL DHParam
-  openssl_dhparam:
+  community.crypto.openssl_dhparam:
     path: /etc/letsencrypt/dh.pem
     size: 4096
     mode: u=rw,og=r
@@ -150,7 +153,7 @@
     owner: root
     group: root
 # - name: Render certbot renewal config template
-#   template:
+#   ansible.builtin.template:
 #     src: ssl/letsencrypt.renewal.conf.j2
 #     dest: "/etc/letsencrypt/renewal/{{ mailserver_domain }}.conf"
 #     mode: u=rw,og=r
@@ -158,7 +161,7 @@
 #     group: root
 #     backup: yes
 - name: Set environment variables for certificate auto-renewals
-  cron:
+  ansible.builtin.cron:
     name: "{{ item.key }}"
     env: yes
     job: "{{ item.value }}"
@@ -168,7 +171,7 @@
     - { key: "PDNS_API_URL", value: http://127.0.0.1:8081/ }
     - { key: "PDNS_API_KEY", value: "{{ powerdns_api_key }}" }
 - name: Auto-renew certificates
-  cron:
+  ansible.builtin.cron:
     name: certificate-auto-renewal
     special_time: monthly
     # job: certbot renew --quiet && systemctl reload postfix dovecot httpd

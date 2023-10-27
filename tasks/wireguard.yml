@@ -1,19 +1,22 @@
 ---
 - name: Open firewall
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks: firewall.yml
   vars:
-    port: "{{ wireguard.listen_port }}/udp"
+    port: "{{ wireguard.listen_port }}/udp" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
 - name: Load kernel modules
-  modprobe:
+  community.general.modprobe:
     name: "{{ item }}"
   loop:
     - wireguard
     - iptable_nat
     - ip6table_nat
 - name: Load kernel modules at boot
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/modules-load.d/{{ item }}.conf"
     line: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
     create: yes
     backup: yes
   loop:
@@ -21,7 +24,7 @@
     - iptable_nat
     - ip6table_nat
 - name: Set sysctl variables
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item }}"
     value: 1
     state: present # not required. choices: present;absent. Whether the entry should be present or absent in the sysctl file.
@@ -32,9 +35,12 @@
     - "net.ipv4.ip_forward"
     - "net.ipv6.conf.all.forwarding"
 - name: Create WireGuard config directories
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
   loop:
     - /etc/wireguard/clients
     - /etc/wireguard/helper
@@ -42,7 +48,7 @@
     - /var/www/html/.vpn
   notify: Restart WireGuard
 - name: BindFS mount the WireGuard directory
-  mount:
+  ansible.posix.mount:
     path: "{{ item }}"
     src: /etc/wireguard
     opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
@@ -52,83 +58,88 @@
     - "{{ wireguard.config_dir }}"
     - /var/www/html/.vpn
 - name: Read WireGuard server config
-  import_tasks: read_wireguard_config.yml
+  ansible.builtin.import_tasks: read_wireguard_config.yml
   vars:
     wg_config_file: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
 - name: Define read server values
-  set_fact:
+  ansible.builtin.set_fact:
     wg_server:
-      privatekey: "{{ wg_interface.PrivateKey|default('') }}"
-      publickey: "{{ wg_peer.PublicKey|default('') }}"
-      psk: "{{ wg_peer.PresharedKey|default('') }}"
-      cidr: "{{ wg_interface.AllowedIPs|default('') }}"
+      privatekey: "{{ wg_interface.PrivateKey | default('') }}"
+      publickey: "{{ wg_peer.PublicKey | default('') }}"
+      psk: "{{ wg_peer.PresharedKey | default('') }}"
+      cidr: "{{ wg_interface.AllowedIPs | default('') }}"
 - name: Set WireGuard server config
-  set_fact:
-    wg_server: "{{ wg_server|default({})|combine(wireguard.server|default({}), recursive=True) }}"
+  ansible.builtin.set_fact:
+    wg_server: "{{ wg_server | default({}) | combine(wireguard.server | default({}), recursive=True) }}"
 - name: Set the next client's last IP segment
-  set_fact:
+  ansible.builtin.set_fact:
     next_ip_segment: 2
 - name: Generate WireGuard server keys
-  import_tasks: generate_wireguard_keys.yml
+  ansible.builtin.import_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "server"
-    wg_privatekey: "{{ wg_server.privatekey|default('') }}"
-    wg_publickey: "{{ wg_server.publickey|default('') }}"
+    wg_privatekey: "{{ wg_server.privatekey | default('') }}"
+    wg_publickey: "{{ wg_server.publickey | default('') }}"
     wg_owner: root
-    wg_cidr: "{{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') ~ ', ' ~ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}"
+    wg_cidr: "{{ wireguard.ipv4_pool.split('/') | first | replace('.0','.1') ~ ', ' ~ wireguard.ipv6_pool.split('/') | first | replace(':0',':1') }}"
 - name: Define read client values
-  include_tasks: define_vpn_clients.yml
+  ansible.builtin.include_tasks: define_vpn_clients.yml
   vars:
-    current_ipv4: "{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.' ~ next_ip_segment) }}"
-    current_ipv6: "{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':' ~ next_ip_segment) }}"
-    vpn_config_data: "{{ vpn_user.vpn|default([{'name': vpn_user.name, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6 }]) }}"
+    current_ipv4: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$','.' ~ next_ip_segment) }}"
+    current_ipv6: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$',':' ~ next_ip_segment) }}"
+    vpn_config_data: "{{ vpn_user.vpn | default([{'name': vpn_user.name, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6 }]) }}"
     vpn_config_owner: "{{ vpn_user.name }}"
   loop: "{{ users }}"
   loop_control:
     loop_var: vpn_user
 - name: Generate WireGuard client keys
-  include_tasks: generate_wireguard_keys.yml
+  ansible.builtin.include_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "{{ item.name }}"
-    wg_privatekey: "{{ item.privatekey|default('') }}"
-    wg_publickey: "{{ item.publickey|default('') }}"
-    wg_psk: "{{ item.psk|default('') }}"
+    wg_privatekey: "{{ item.privatekey | default('') }}"
+    wg_publickey: "{{ item.publickey | default('') }}"
+    wg_psk: "{{ item.psk | default('') }}"
     wg_owner: "{{ item.owner }}"
     wg_cidr: "{{ item.cidr }}"
   loop: "{{ wg_clients }}"
 - name: Deploy .htaccess for the WireGuard configs
-  template:
+  ansible.builtin.template:
     src: wireguard/htaccess.j2
     dest: /etc/wireguard/.htaccess
+    owner: root
+    group: apache
+    mode: ug=rw,o=
     backup: yes
 - name: Generate server config
-  template:
+  ansible.builtin.template:
     src: wireguard/server.conf.j2
     dest: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
     mode: u=rw,g=r,o=
     backup: yes
   notify: Restart WireGuard
 - name: Create client config dirs
-  file:
+  ansible.builtin.file:
     state: directory
     name: "{{ wireguard.config_dir }}/clients/{{ item }}"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
+    mode: u=rwX,g=rX,o=
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate client configs
-  template:
+  ansible.builtin.template:
     src: wireguard/client.conf.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ wg_client }}/wg0.conf"
     owner: "{{ wg_configs[wg_client]['owner'] }}"
     group: "{{ wg_configs[wg_client]['owner'] }}"
+    mode: u=rw,g=r,o=
     backup: yes
   loop: "{{ wg_configs.keys() }}"
   loop_control:
     loop_var: wg_client
   when: wg_client != "server"
 - name: Collect user info
-  user:
+  ansible.builtin.user:
     name: "{{ wg_configs[wg_client]['owner'] }}"
   register: user_info
   loop: "{{ wg_configs.keys() }}"
@@ -136,30 +147,32 @@
     loop_var: wg_client
   when: wg_client != "server"
 - name: Collect user home directories
-  set_fact:
-    user_home: "{{ user_home | default({}) | combine({item['name']: item['home']} )}}"
+  ansible.builtin.set_fact:
+    user_home: "{{ user_home | default({}) | combine({item['name']: item['home']}) }}"
   when: item.name is defined
   loop: "{{ user_info.results }}"
 - name: Ensure user VPN config directories exist
-  file:
+  ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
     state: directory
+    mode: u=rwX,g=rX,o=
   become: true
   become_user: "{{ wg_configs[item]['owner'] }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Create user VPN config dirs
-  file:
+  ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
     state: directory
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
+    mode: u=rwX,g=rX,o=
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Allow access to VPN configs
-  mount:
+  ansible.posix.mount:
     src: "{{ wireguard.config_dir }}/clients/{{ item }}"
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
     opts: "force-user={{ wg_configs[item]['owner'] }},force-group={{ wg_configs[item]['owner'] }},perms=u=rwX:g=rwX"
@@ -169,21 +182,26 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate QR codes
-  shell: "cat {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.conf | qrencode -o {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
+  ansible.builtin.shell: "set -o pipefail && cat {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.conf | qrencode -o {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
+  args:
+    executable: /usr/bin/bash
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
+  register: generate_vpn_qr_codes
+  changed_when: generate_vpn_qr_codes.item.rc == 0
 - name: Allow access to QR codes
-  file:
+  ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
+    mode: u=rw,g=r,o=
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS NS records
   tags:
     - dyndns
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ mailserver_domain }}"
@@ -198,7 +216,7 @@
   tags:
     - dyndns
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -210,7 +228,7 @@
   tags:
     - dyndns
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -222,35 +240,35 @@
   tags:
     - dyndns
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
       name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ wg_configs[item]['cidr'].split(', ')|first }}"
+      content: "{{ wg_configs[item]['cidr'].split(', ') | first }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS AAAA records
   tags:
     - dyndns
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
       name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ wg_configs[item]['cidr'].split(', ')|last }}"
+      content: "{{ wg_configs[item]['cidr'].split(', ') | last }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add VPN root A record
   tags:
     - wireguard
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -262,7 +280,7 @@
   tags:
     - wireguard
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -274,28 +292,28 @@
   tags:
     - wireguard
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
       name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ (wg_configs[item]['cidr'].split(', ')|first).split('/')|first }}"
+      content: "{{ (wg_configs[item]['cidr'].split(', ') | first).split('/') | first }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add VPN AAAA records
   tags:
     - wireguard
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
       name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ (wg_configs[item]['cidr'].split(', ')|last).split('/')|first }}"
+      content: "{{ (wg_configs[item]['cidr'].split(', ') | last).split('/') | first }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add admin VPN A records
@@ -303,14 +321,14 @@
     - wireguard
     - poweradmin
     - postfixadmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
       name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}"
+      content: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$', '.1') }}"
   loop:
     - postfixadmin
     - poweradmin
@@ -319,14 +337,14 @@
     - wireguard
     - poweradmin
     - postfixadmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
       name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':1') }}"
+      content: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$', ':1') }}"
   loop:
     - postfixadmin
     - poweradmin
@@ -335,7 +353,7 @@
     - wireguard
     - poweradmin
     - postfixadmin
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "forward-zones+=vpn.{{ mailserver_domain }}=127.0.0.1:5301"
     regex: "^forward-zones+=vpn.{{ mailserver_domain }}="
@@ -348,7 +366,7 @@
   tags:
     - dyndns
     - poweradmin
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "forward-zones+=dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
     regex: "^forward-zones+=dyndns.{{ mailserver_domain }}="
@@ -361,7 +379,7 @@
   tags:
     - dyndns
     - poweradmin
-  template:
+  ansible.builtin.template:
     src: dyndns/dynamic_dns_client.sh.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.sh"
     owner: "{{ wg_configs[item]['owner'] }}"
@@ -374,7 +392,7 @@
   tags:
     - dyndns
     - poweradmin
-  template:
+  ansible.builtin.template:
     src: dyndns/dynamic_dns_client.py.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.py"
     owner: "{{ wg_configs[item]['owner'] }}"
@@ -385,22 +403,31 @@
   when: item != "server"
 - name: Deploy WireGuard SystemD config path watcher
   tags: wireguard
-  copy:
+  ansible.builtin.copy:
     src: systemd/wg_vpn.path
     dest: /etc/systemd/system/wg_vpn.path
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
   notify: Restart WireGuard
 - name: Deploy WireGuard config loader SystemD service
   tags: wireguard
-  template:
+  ansible.builtin.template:
     src: systemd/wg_vpn.service.j2
     dest: /etc/systemd/system/wg_vpn.service
     backup: yes
+    mode: u=rw,og=r
+    owner: root
+    group: root
   notify: Restart WireGuard
 - name: Deploy WireGuard routing helper scripts
   tags: wireguard
-  template:
+  ansible.builtin.template:
     src: wireguard/{{ item }}.j2
     dest: /etc/wireguard/helper/{{ item }}
+    owner: root
+    group: root
     mode: ug=rwx,o=x
     backup: yes
   loop:
@@ -409,13 +436,13 @@
   notify: Restart WireGuard
 - name: Enable WireGuard config watch
   tags: wireguard
-  systemd:
+  ansible.builtin.systemd_service:
     name: wg_vpn.path
     daemon_reload: yes
     enabled: yes
 - name: Load WireGuard config loader
   tags: wireguard
-  systemd:
+  ansible.builtin.systemd_service:
     name: wg_vpn.service
     daemon_reload: yes
     enabled: no

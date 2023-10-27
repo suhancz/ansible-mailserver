@@ -2,7 +2,7 @@
 - name: Configure local DNS cache
   block:
     - name: Configure /etc/resolv.conf
-      template:
+      ansible.builtin.template:
         src: resolv.conf.j2
         dest: /etc/resolv.conf
         owner: root
@@ -14,7 +14,7 @@
         - Restart NetworkManager
   rescue:
     - name: Configure local DNS cache
-      nmcli:
+      community.general.nmcli:
         conn_name: "{{ ansible_default_ipv4.interface }}"
         ip4: "{{ ansible_default_ipv4.address }}"
         ip6: "{{ ansible_default_ipv6.address }}"
@@ -30,14 +30,14 @@
         type: ethernet
       notify: Restart NetworkManager
 - name: Create resolved.conf.d directory
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/resolved.conf.d
     state: directory
     owner: root
     group: root
     mode: u=rwX,og=rX
 - name: Enable local DNS caching
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/systemd/resolved.conf.d/LocalDNSCache.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK Local DNS cache"
     block: |
@@ -56,7 +56,7 @@
     create: yes
   notify: Restart systemd-resolved
 - name: Make sure resolved is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: systemd-resolved
     daemon_reload: yes
     enabled: yes

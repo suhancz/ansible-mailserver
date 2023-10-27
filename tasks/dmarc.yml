@@ -1,6 +1,6 @@
 ---
 - name: Configure OpenDMARC
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '\b{{ item.key }}\b'
     line: "{{ '#' if item.comment }}{{ item.key }}    {{ item.value }}"
     path: /etc/opendmarc.conf
@@ -12,12 +12,13 @@
   loop:
     - { key: "AuthservID", value: "OpenDMARC", comment: false }
     - key: "TrustedAuthservIDs"
+      # noqa jinja[spacing] brackets here are as an empty list
       value: >
         {%- set domains = [mailserver_domain] %}
-        {%- for domain in custom_domains|default([]) %}
+        {%- for domain in custom_domains | default([]) %}
         {%- set domains = domains.append( domain ) %}
         {%- endfor %}
-        {{- domains|join(',') -}}
+        {{- domains | join(',') -}}
       comment: false
     - { key: "IgnoreAuthenticatedClients", value: "true", comment: false }
     - { key: "RejectFailures", value: "true", comment: false }
@@ -27,7 +28,7 @@
     - { key: "IgnoreMailFrom", value: "{{ undeliverable_exceptions | join(',') }}", comment: false }
   notify: Restart opendmarc
 - name: Set up DMARC TXT records
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ item }}"
@@ -38,12 +39,12 @@
   when: 'public_dns == "yes"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Reload PowerDNS config
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns
     daemon_reload: yes
     enabled: yes
     state: restarted
   when: 'public_dns == "yes"'
 - name: Wait for DNS to listen
-  wait_for:
-    port: 53
+  ansible.builtin.wait_for:
+    port: 53 # noqa var-naming[no-reserved] we refer to a port here, so I call it a port

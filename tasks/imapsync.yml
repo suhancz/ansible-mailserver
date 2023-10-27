@@ -1,19 +1,21 @@
 ---
 - name: Sync old IMAP account to the current mailbox
   no_log: yes
-  when: "{{ current_user.old_imap_mail is defined }}"
+  when: current_user.old_imap_mail is defined
   tags: imapsync
   block:
     - name: Sync old IMAP for the first time (this might tale a while...)
-      command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
+      ansible.builtin.command: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
       environment:
         IMAPSYNC_PASSWORD1: "{{ current_user.old_imap_mail.password }}"
         IMAPSYNC_PASSWORD2: "{{ current_user.password }}"
         MAILTO: "{{ current_user.name }}+cron@{{ mailserver_domain }}"
+      register: sync_from_old_mail
+      changed_when: sync_from_old_mail.rc == 0
     - name: Set up password environment variables for cron jobs
       become: yes
       become_user: "{{ current_user.name }}"
-      cron:
+      ansible.builtin.cron:
         backup: yes
         env: yes
         name: "IMAPSYNC_PASSWORD{{ imapsync_password_index + 1 }}"
@@ -26,14 +28,14 @@
     - name: Sync old IMAP account
       become: yes
       become_user: "{{ current_user.name }}"
-      cron:
+      ansible.builtin.cron:
         name: "Sync old IMAP account {{ current_user.old_imap_mail.user }} at {{ current_user.old_imap_mail.host }} for {{ current_user.name }}"
         special_time: daily
         job: "imapsync --host1 {{ current_user.old_imap_mail.host }} --user1 {{ current_user.old_imap_mail.user }} --host2 mail.{{ mailserver_domain }} --user2 {{ current_user.name }}@{{ mailserver_domain }} --emailreport1 --emailreport2 --useheader Message-Id --noexpunge1 --nodelete1"
         backup: yes
         user: "{{ current_user.name }}"
-    - name: "Save {{ current_user.old_imap_mail.user }}'s password in a file"
-      lineinfile:
+    - name: "Save {{ current_user.old_imap_mail.user }}'s password in a file" # noqa name[template] we need to be informative, even if we deviate from the standards
+      ansible.builtin.lineinfile:
         path: '~{{ current_user.name }}/.cron_secrets'
         line: 'IMAP_PASSWORD={{ current_user.password }}'
         owner: '{{ current_user.name }}'
@@ -45,7 +47,7 @@
     - name: De-duplicate IMAP mail
       become: yes
       become_user: "{{ current_user.name }}"
-      cron:
+      ansible.builtin.cron:
         name: De-duplicate IMAP mail
         special_time: daily
         job: "/usr/bin/bash -c 'export IMAP_PASSWORD=\"$(grep ^IMAP_PASSWORD= ~{{ current_user.name }}/.cron_secrets|cut -d= -f2)\"; /usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w ${IMAP_PASSWORD} -c -r -m INBOX'"

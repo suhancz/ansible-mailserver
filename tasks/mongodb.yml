@@ -1,6 +1,6 @@
 ---
 - name: Configure limits
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^mongod '
     line: 'mongod soft nproc 32000'
     path: /etc/security/limits.d/2-nproc.conf

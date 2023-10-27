@@ -1,16 +1,25 @@
 ---
 - name: Create razor home directory
-  file:
+  ansible.builtin.file:
     path: /var/lib/razor/
     state: directory
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
 - name: Create Razor account
-  command: razor-admin -create -home=/var/lib/razor
+  ansible.builtin.command: razor-admin -create -home=/var/lib/razor
+  register: create_razor_account
+  changed_when: create_razor_account.rc == 0
 - name: Discover Razor account
-  command: razor-admin -discover -home=/var/lib/razor
+  ansible.builtin.command: razor-admin -discover -home=/var/lib/razor
+  register: discover_razor_account
+  changed_when: discover_razor_account.rc == 0
 - name: Register Razor account
-  command: razor-admin -register -home=/var/lib/razor
+  ansible.builtin.command: razor-admin -register -home=/var/lib/razor
+  register: register_razor_account
+  changed_when: register_razor_account.rc == 0
 - name: Configure SPAMAssassin options
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: 'SPAMDOPTIONS'
     line: SPAMDOPTIONS="-c -m5 -H --razor-home-dir='/var/lib/razor/' --razor-log-file='sys-syslog' --virtual-config-dir=/var/vmail/%d/%l/spamassassin --username=vmail"
     path: /etc/sysconfig/spamassassin
@@ -21,7 +30,7 @@
     backup: yes
   notify: Restart spamassassin
 - name: Configure SPAMAssassin milter flags
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: 'EXTRA_FLAGS'
     line: 'EXTRA_FLAGS=" -e {{ mailserver_domain }} -u sa-milt -m -r 8 -R SPAM_ARE_NOT_ALLOWED_HERE -i 127.0.0.1 -g sa-milt -- --max-size=52428800"'
     path: /etc/sysconfig/spamass-milter
@@ -32,12 +41,12 @@
     backup: yes
   notify: Restart spamass-milter
 - name: Add Postfix user to the sa-milt group
-  user:
+  ansible.builtin.user:
     name: postfix
     groups: sa-milt
     append: yes
 - name: Configure SPAMAssassin rules
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item.type }} {{ item.key }}'
     line: '{{ item.type }} {{ item.key }}    {{ item.value }}'
     path: /etc/mail/spamassassin/local.cf
@@ -49,7 +58,7 @@
   loop: "{{ spamassassin_rules }}"
   notify: Restart spamassassin
 - name: Upload sieve config
-  copy:
+  ansible.builtin.copy:
     dest: /var/mail/SpamToJunk.sieve
     src: spamassassin/SpamToJunk.sieve
     mode: u=rw,og=r
@@ -58,11 +67,11 @@
     group: root
   notify: Restart spamassassin
 - name: Enable sieve config
-  command: sievec /var/mail/SpamToJunk.sieve
+  ansible.builtin.command: sievec /var/mail/SpamToJunk.sieve
   args:
     creates: /var/mail/SpamToJunk.svbin
 - name: Enable SpamAssassin update service
-  systemd:
+  ansible.builtin.systemd_service:
     name: sa-update.timer
     daemon_reload: yes
     enabled: yes

@@ -1,12 +1,12 @@
 ---
 - name: Fill default DNS records
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     empty_apostrophes: "''"
     record:
       zone: "{{ dns_zone }}"
-      name: "{{ dns_record.name|default(empty_apostrophes) }}"
-      ttl: "{{ dns_record.ttl|default('3600') }}"
+      name: "{{ dns_record.name | default(empty_apostrophes) }}"
+      ttl: "{{ dns_record.ttl | default('3600') }}"
       type: "{{ dns_record.type }}"
       content: "{{ dns_record.content }}"
   loop: "{{ default_dns_records }}"
