@@ -6,6 +6,7 @@
     enabled: yes
     state: started
 - name: "Open Firewall for {{ port }}"
+  # noqa name[template] we need to be informative, even if we deviate from the standards
   block:
     - name: "Open firewall for numeric port {{ port }}"
       firewalld:

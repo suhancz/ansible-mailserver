@@ -1,10 +1,12 @@
 ---
 - name: "Upload {{ mariadb_database }} DB schema"
+  # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.copy:
     src: "mariadb/{{ mariadb_database }}_schema.sql"
     dest: "/tmp/ansible-mailserver-install.{{ mariadb_database }}_schema.sql"
 
 - name: "Check if {{ mariadb_database }} DB exists"
+  # noqa name[template] we need to be informative, even if we deviate from the standards
   mysql_db:
     name: "{{ mariadb_database }}"
     state: present
@@ -14,6 +16,7 @@
   register: mariadb_database_exists
 
 - name: "Create {{ mariadb_database }} DB schema"
+  # noqa name[template] we need to be informative, even if we deviate from the standards
   mysql_db:
     name: "{{ mariadb_database }}"
     state: import

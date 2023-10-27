@@ -58,13 +58,13 @@
 - name: Define read server values
   ansible.builtin.set_fact:
     wg_server:
-      privatekey: "{{ wg_interface.PrivateKey|default('') }}"
-      publickey: "{{ wg_peer.PublicKey|default('') }}"
-      psk: "{{ wg_peer.PresharedKey|default('') }}"
-      cidr: "{{ wg_interface.AllowedIPs|default('') }}"
+      privatekey: "{{ wg_interface.PrivateKey | default('') }}"
+      publickey: "{{ wg_peer.PublicKey | default('') }}"
+      psk: "{{ wg_peer.PresharedKey | default('') }}"
+      cidr: "{{ wg_interface.AllowedIPs | default('') }}"
 - name: Set WireGuard server config
   ansible.builtin.set_fact:
-    wg_server: "{{ wg_server|default({})|combine(wireguard.server|default({}), recursive=True) }}"
+    wg_server: "{{ wg_server | default({}) | combine(wireguard.server | default({}), recursive=True) }}"
 - name: Set the next client's last IP segment
   ansible.builtin.set_fact:
     next_ip_segment: 2
@@ -72,16 +72,16 @@
   import_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "server"
-    wg_privatekey: "{{ wg_server.privatekey|default('') }}"
-    wg_publickey: "{{ wg_server.publickey|default('') }}"
+    wg_privatekey: "{{ wg_server.privatekey | default('') }}"
+    wg_publickey: "{{ wg_server.publickey | default('') }}"
     wg_owner: root
-    wg_cidr: "{{ wireguard.ipv4_pool.split('/')|first|replace('.0','.1') ~ ', ' ~ wireguard.ipv6_pool.split('/')|first|replace(':0',':1') }}"
+    wg_cidr: "{{ wireguard.ipv4_pool.split('/') | first | replace('.0','.1') ~ ', ' ~ wireguard.ipv6_pool.split('/') | first | replace(':0',':1') }}"
 - name: Define read client values
   include_tasks: define_vpn_clients.yml
   vars:
-    current_ipv4: "{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.' ~ next_ip_segment) }}"
-    current_ipv6: "{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':' ~ next_ip_segment) }}"
-    vpn_config_data: "{{ vpn_user.vpn|default([{'name': vpn_user.name, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6 }]) }}"
+    current_ipv4: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$','.' ~ next_ip_segment) }}"
+    current_ipv6: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$',':' ~ next_ip_segment) }}"
+    vpn_config_data: "{{ vpn_user.vpn | default([{'name': vpn_user.name, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6 }]) }}"
     vpn_config_owner: "{{ vpn_user.name }}"
   loop: "{{ users }}"
   loop_control:
@@ -90,9 +90,9 @@
   include_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "{{ item.name }}"
-    wg_privatekey: "{{ item.privatekey|default('') }}"
-    wg_publickey: "{{ item.publickey|default('') }}"
-    wg_psk: "{{ item.psk|default('') }}"
+    wg_privatekey: "{{ item.privatekey | default('') }}"
+    wg_publickey: "{{ item.publickey | default('') }}"
+    wg_psk: "{{ item.psk | default('') }}"
     wg_owner: "{{ item.owner }}"
     wg_cidr: "{{ item.cidr }}"
   loop: "{{ wg_clients }}"
@@ -229,7 +229,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ wg_configs[item]['cidr'].split(', ')|first }}"
+      content: "{{ wg_configs[item]['cidr'].split(', ') | first }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS AAAA records
@@ -243,7 +243,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ wg_configs[item]['cidr'].split(', ')|last }}"
+      content: "{{ wg_configs[item]['cidr'].split(', ') | last }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add VPN root A record
@@ -281,7 +281,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ (wg_configs[item]['cidr'].split(', ')|first).split('/')|first }}"
+      content: "{{ (wg_configs[item]['cidr'].split(', ') | first).split('/') | first }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add VPN AAAA records
@@ -295,7 +295,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ (wg_configs[item]['cidr'].split(', ')|last).split('/')|first }}"
+      content: "{{ (wg_configs[item]['cidr'].split(', ') | last).split('/') | first }}"
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add admin VPN A records
@@ -310,7 +310,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}"
+      content: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$','.1') }}"
   loop:
     - postfixadmin
     - poweradmin
@@ -326,7 +326,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ wireguard.ipv6_pool.split('/')|first|regex_replace(':0$',':1') }}"
+      content: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$',':1') }}"
   loop:
     - postfixadmin
     - poweradmin
