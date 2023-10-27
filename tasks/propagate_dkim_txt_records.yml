@@ -57,5 +57,4 @@
       - name: "{{ dkim_selector }}._domainkey.{{ domain_item }}"
         values: "{{ desired_dkim_record }}"
         mode: equals
-    always_ask_default_resolver: no
   when: desired_dkim_record != current_dkim_record
