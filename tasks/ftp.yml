@@ -67,7 +67,7 @@
   no_log: yes
   notify: Restart vsftpd
 - name: Set SELinux booleans
-  when: "{{ getenforce.stdout != 'Disabled' }}"
+  when: getenforce.stdout != 'Disabled'
   seboolean:
     name: ftpd_full_access
     state: yes

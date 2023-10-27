@@ -1,6 +1,6 @@
 ---
 - name: "Render {{ mariadb_database.db }} data" # noqa name[template] we need to be informative, even if we deviate from the standards
-  template:
+  ansible.builtin.template:
     src: "mariadb/{{ mariadb_database.db }}.sql.j2"
     dest: "/tmp/ansible-mailserver-install.{{ mariadb_database.db }}_data.sql"
     mode: u=rw,og=r

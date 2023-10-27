@@ -37,7 +37,7 @@
           shell: "mysqld_safe --skip-grant-tables --skip-networking &"
         - name: "Generate MariaDB root password reset SQL"
           when: reset == "yes" or forgotten_mariadb_root_password
-          template:
+          ansible.builtin.template:
             src: mariadb/reset_mariadb_root_password.sql.j2
             dest: /tmp/ansible-mailserver-install.reset_mariadb_root_password.sql
             mode: u=rw,og=r

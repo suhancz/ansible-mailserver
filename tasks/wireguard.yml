@@ -97,12 +97,12 @@
     wg_cidr: "{{ item.cidr }}"
   loop: "{{ wg_clients }}"
 - name: Deploy .htaccess for the WireGuard configs
-  template:
+  ansible.builtin.template:
     src: wireguard/htaccess.j2
     dest: /etc/wireguard/.htaccess
     backup: yes
 - name: Generate server config
-  template:
+  ansible.builtin.template:
     src: wireguard/server.conf.j2
     dest: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
     mode: u=rw,g=r,o=

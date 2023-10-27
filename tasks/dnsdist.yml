@@ -1,6 +1,6 @@
 ---
 - name: Configure DNSDist
-  template:
+  ansible.builtin.template:
     src: dnsdist/dnsdist.conf.j2
     dest: /etc/dnsdist/dnsdist.conf
     backup: yes

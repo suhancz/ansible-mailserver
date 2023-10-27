@@ -150,7 +150,7 @@
     owner: root
     group: root
 # - name: Render certbot renewal config template
-#   template:
+#   ansible.builtin.template:
 #     src: ssl/letsencrypt.renewal.conf.j2
 #     dest: "/etc/letsencrypt/renewal/{{ mailserver_domain }}.conf"
 #     mode: u=rw,og=r
