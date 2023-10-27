@@ -1,13 +1,14 @@
 ---
-- name: "Read DKIM keys for {{ domain_item }}"
-  command: "cat /etc/opendkim/keys/{{ domain_item }}/{{ dkim_selector }}.txt"
+- name: "Read DKIM keys for {{ domain_item }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.command: "cat /etc/opendkim/keys/{{ domain_item }}/{{ dkim_selector }}.txt"
   register: dkim_keys
-- name: "Parse DKIM keys for {{ domain_item }}"
-  set_fact:
-    desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}"
-    current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}"
-- name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record"
-  import_tasks: add_dns_record.yml
+  changed_when: dkim_keys.rc == 0
+- name: "Parse DKIM keys for {{ domain_item }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.set_fact:
+    desired_dkim_record: "{{ dkim_keys.stdout.replace(dkim_selector ~ '._domainkey\tIN\tTXT\t( \"', '').replace('\t', '').replace('\n', '').replace('\"  \"', '').replace('\" )  ; ----- DKIM key ' ~ dkim_selector ~ ' for ' ~ domain_item, '') }}" # noqa no-tabs we need tabs in this content
+    current_dkim_record: "{{ lookup('community.general.dig', dkim_selector ~ '._domainkey.' ~ domain_item ~ './TXT').replace('\" \"', '') }}" # noqa no-tabs we need tabs in this content
+- name: "Set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ domain_item }}"
@@ -17,7 +18,7 @@
       content: "{{ desired_dkim_record }}"
   when: 'public_dns == "yes"'
 - name: Reload PowerDNS config
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ item }}"
     daemon_reload: yes
     enabled: yes
@@ -28,14 +29,14 @@
     - dnsdist
   when: 'public_dns == "yes"'
 - name: Wait for DNS server to come up
-  wait_for:
-    port: "{{ item }}"
+  ansible.builtin.wait_for:
+    port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   loop:
     - 5300
     - 5301
     - 53
-- name: "Warn user to set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record with the DKIM keys"
-  debug:
+- name: "Warn user to set up the {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record with the DKIM keys" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.debug:
     msg:
       - ""
       - "Please, set up the following TXT record with your DNS provider if not done yet:"
@@ -47,7 +48,7 @@
       - "value: {{ desired_dkim_record }}"
       - ""
   when: desired_dkim_record != current_dkim_record
-- name: "Wait for {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record to get propagated"
+- name: "Wait for {{ dkim_selector }}._domainkey.{{ domain_item }} TXT record to get propagated" # noqa name[template] we need to be informative, even if we deviate from the standards
   community.dns.wait_for_txt:
     always_ask_default_resolver: no
     max_sleep: 42
@@ -57,5 +58,4 @@
       - name: "{{ dkim_selector }}._domainkey.{{ domain_item }}"
         values: "{{ desired_dkim_record }}"
         mode: equals
-    always_ask_default_resolver: no
   when: desired_dkim_record != current_dkim_record

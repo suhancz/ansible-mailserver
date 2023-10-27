@@ -1,14 +1,14 @@
 ---
-- name: "Render {{ mariadb_database.db }} data"
-  template:
+- name: "Render {{ mariadb_database.db }} data" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.template:
     src: "mariadb/{{ mariadb_database.db }}.sql.j2"
     dest: "/tmp/ansible-mailserver-install.{{ mariadb_database.db }}_data.sql"
     mode: u=rw,og=r
     owner: root
     group: root
     backup: yes
-- name: "Fill {{ mariadb_database.db }} DB"
-  mysql_db:
+- name: "Fill {{ mariadb_database.db }} DB" # noqa name[template] we need to be informative, even if we deviate from the standards
+  community.mysql.mysql_db:
     name: "{{ mariadb_database.db }}"
     state: import
     login_user: "{{ mariadb_database.user }}"

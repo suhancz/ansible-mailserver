@@ -1,14 +1,14 @@
 ---
 - name: Ensure firewall is enabled
-  systemd:
+  ansible.builtin.systemd_service:
     name: firewalld
     daemon_reload: yes
     enabled: yes
     state: started
-- name: "Open Firewall for {{ port }}"
+- name: "Open Firewall for {{ port }}" # noqa name[template] we need to be informative, even if we deviate from the standards
   block:
     - name: "Open firewall for numeric port {{ port }}"
-      firewalld:
+      ansible.posix.firewalld:
         port : "{{ port }}"
         permanent: yes
         state: enabled
@@ -16,7 +16,7 @@
       notify: Restart firewalld
   rescue:
     - name: "Open firewall for service {{ port }}"
-      firewalld:
+      ansible.posix.firewalld:
         service: "{{ port }}"
         permanent: yes
         state: enabled

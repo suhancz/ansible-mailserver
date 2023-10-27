@@ -1,6 +1,6 @@
 ---
 - name: Fill array of WireGuard clients
-  set_fact:
+  ansible.builtin.set_fact:
     next_ip_segment: "{{ next_ip_segment | int + 1 }}"
     wg_clients: "{{ wg_clients|default([]) + [vpn_client|combine({'name': vpn_client.name, 'owner': vpn_config_owner, 'cidr': current_ipv4 ~ ', ' ~ current_ipv6})] }}"
   loop: "{{ vpn_config_data }}"

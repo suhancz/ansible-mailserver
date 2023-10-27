@@ -1,12 +1,12 @@
 ---
 - name: Set SELinux booleans
-  when: "{{ getenforce.stdout != 'Disabled' }}"
-  seboolean:
+  when: getenforce.stdout != 'Disabled'
+  ansible.posix.seboolean:
     name: antivirus_can_scan_system
     state: yes
     persistent: yes
 - name: Render AMAVISD config
-  template:
+  ansible.builtin.template:
     src: amavisd/amavisd.conf.j2
     dest: /etc/amavisd/amavisd.conf
     mode: u=rw,og=r
@@ -15,15 +15,17 @@
     backup: yes
   notify: Restart amavisd
 - name: Refresh ClamAV database
-  command: freshclam
+  ansible.builtin.command: freshclam
+  register: start_freshclam
+  changed_when: start_freshclam.rc == 0
   notify: Restart clamav-freshclam
 - name: Update SPAMAssassin's signatures
-  command: sa-update -D
+  ansible.builtin.command: sa-update -D
   register: sa_update
   failed_when: "{{ sa_update.rc >= 4 }}"
   notify: Restart spamassassin
 - name: Enable systemd services
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ item }}"
     daemon_reload: yes
     enabled: yes

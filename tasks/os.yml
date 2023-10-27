@@ -1,15 +1,18 @@
 ---
 - name: Check SELinux status
-  shell: getenforce
+  ansible.builtin.command: getenforce
+  changed_when: getenforce.rc == 0
   register: getenforce
   tags: always
-- name: "Set hostname to {{ mailserver_hostname }}.{{ mailserver_domain}}"
-  command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
+- name: "Set hostname to {{ mailserver_hostname }}.{{ mailserver_domain }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
+  register: set_hostname
+  changed_when: set_hostname.rc == 0
 - name: Enable IPv6
   when: ansible_default_ipv6.address is not defined
   block:
     - name: Enable IPv6 via sysctl
-      sysctl:
+      ansible.posix.sysctl:
         name: "{{ item }}"
         value: 0
         state: present
@@ -20,39 +23,39 @@
       register: ipv6_enable
     - name: Reboot to pick up changes
       when: ipv6_enable.changed
-      reboot:
+      ansible.builtin.reboot:
         reboot_timeout: 600
         msg: "Reboot initiated by Ansible to enable IPv6"
     - name: Gather facts
-      setup:
+      ansible.builtin.setup:
 - name: Install requiremets
   block:
     - name: Install packages
-      import_tasks: packages.yml
+      ansible.builtin.import_tasks: packages.yml
   rescue:
     - name: Find repo configs
-      find:
+      ansible.builtin.find:
         paths: /etc/yum.repos.d
         patterns: "*.repo"
       register: repo_files
     - name: Disable CentOS mirrorlist
-      replace:
+      ansible.builtin.replace:
         path: "{{ item.path }}"
         regexp: "^mirrorlist=http://mirrorlist.centos.org"
         replace: "#mirrorlist=http://mirrorlist.centos.org"
         validate: "grep '#mirrorlist=http://mirrorlist.centos.org' %s"
       loop: "{{ repo_files.files }}"
     - name: Move to CentOS Vault
-      replace:
+      ansible.builtin.replace:
         path: "{{ item.path }}"
         regexp: "#baseurl=http://mirror.centos.org"
         replace: "baseurl=http://vault.centos.org"
         validate: "grep '^baseurl=http://vault.centos.org' %s"
       loop: "{{ repo_files.files }}"
     - name: Install packages
-      import_tasks: packages.yml
+      ansible.builtin.import_tasks: packages.yml
 - name: Set up OS mail aliases
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/aliases
     regexp: '^root: *{{ mailserver_admin_user }}'
     line: 'root: {{ mailserver_admin_user }}'
@@ -62,9 +65,9 @@
     state: present
     backup: yes
 - name: Create OS users
-  user:
+  ansible.builtin.user:
     name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
+    password: "{{ item.password | password_hash('sha512') | default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
     groups: "{{ 'wheel' if item.name == mailserver_admin_user }}"
     append: yes
     state: present
@@ -83,18 +86,18 @@
     - ldap
     - postfixadmin
 - name: Enable ip_conntrack
-  modprobe:
+  community.general.modprobe:
     name: ip_conntrack
     state: present
   tags: wireguard
 - name: Set up cron mailto
-  cron:
+  ansible.builtin.cron:
     backup: yes
     env: yes
     name: MAILTO
-    job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
+    job: "hostmaster+cron@{{ mailserver_domain }}"
 - name: Add GO path to PATH
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/profile.d/gopath.sh
     line: 'export PATH=$PATH:$(go env GOPATH)/bin'
     mode: u=rw,og=r

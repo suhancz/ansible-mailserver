@@ -39,19 +39,20 @@ spamassassin_rules:
   - { type: "score", key: "CUSTOM_DMARC_FAIL", value: "3.0"}
   - type: "body"
     key: "BE_POLITE"
+    # noqa jinja[spacing] some pipes here are for regex purposes and not for Jinja2
     value: >
       /(hi|hello|dear) (
       {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
-      {%- for user in users|default([]) %}
+      {%- for user in users | default( [] ) %}
       {%- set mail_users = mail_users.append( user['name'] ) %}
       {%- endfor %}
-      {{- mail_users|join('|') -}}
+      {{- mail_users | join('|') -}}
       )@(
       {%- set domains = [mailserver_domain] %}
-      {%- for domain in custom_domains|default([]) %}
+      {%- for domain in custom_domains | default( [] ) %}
       {%- set domains = domains.append( domain ) %}
       {%- endfor %}
-      {{- domains|join('|') -}}
+      {{- domains | join('|') -}}
       )/i
   - { type: "describe", key: "BE_POLITE", value: "This email doesn't use a proper name for the recipient" }
   - { type: "score", key: "BE_POLITE", value: "5.0" }
@@ -76,31 +77,33 @@ spamassassin_rules:
   - { type: "allow_user_rules", key: "1", value: "# Allow user rules"}
   - type: "header"
     key: "SUBJECT_SPAM"
+    # noqa jinja[spacing] some pipes here are as plain text and not for Jinja2
     value: >
       Subject =~ /(
       {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
-      {%- for user in users|default([]) %}
+      {%- for user in users | default( [] ) %}
       {%- set mail_users = mail_users.append( user['name'] ) %}
       {%- endfor %}
-      {{- mail_users|join('|') -}}
+      {{- mail_users | join('|') -}}
       )@(
       {%- set domains = [mailserver_domain] %}
-      {%- for domain in custom_domains|default([]) %}
+      {%- for domain in custom_domains | default( [] ) %}
       {%- set domains = domains.append( domain ) %}
       {%- endfor %}
-      {{- domains|join('|') -}}
+      {{- domains | join('|') -}}
       )/i
   - { type: "describe", key: "SUBJECT_SPAM", value: "Subject contains my email address."}
   - { type: "score", key: "SUBJECT_SPAM", value: "4.0" }
   - type: "header"
     key: "__DOMAIN_IN_TO"
+    # noqa jinja[spacing] some pipes here are as plain text and not for Jinja2
     value: >
       To =~ /(
       {%- set domains = [mailserver_domain] %}
-      {%- for domain in custom_domains|default([]) %}
+      {%- for domain in custom_domains | default( [] ) %}
       {%- set domains = domains.append( domain ) %}
       {%- endfor %}
-      {{- domains|join('|') -}}
+      {{- domains | join('|') -}}
       )/
   - { type: "meta", key: "NO_DOMAIN_IN_TO", value: "!__DOMAIN_IN_TO" }
   - { type: "score", key: "NO_DOMAIN_IN_TO", value: "3.0" }

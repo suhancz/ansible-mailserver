@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Deploy mail server
+  hosts: all
   remote_user: root
   gather_facts: true
   roles:

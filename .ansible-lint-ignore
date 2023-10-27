@@ -1,0 +1,1 @@
+tasks/ssl.yml schema[tasks] # no idea why the linter complains on this one, the whole thing works

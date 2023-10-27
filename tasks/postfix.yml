@@ -1,42 +1,44 @@
 ---
 - name: Add vmail group
-  group:
+  ansible.builtin.group:
     name: vmail
     system: yes
     gid: 2000
 - name: Add vmail user
-  user:
+  ansible.builtin.user:
     name: vmail
     group: vmail
     create_home: no
     system: yes
     uid: 2000
 - name: Open firewall
-  include_tasks: firewall.yml
+  ansible.builtin.include_tasks: firewall.yml
   vars:
-    port: "{{ item }}"
+    port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   loop:
     - smtp
     - smtp-submission
     - smtps
 - name: Create policyd-spf group
-  group:
+  ansible.builtin.group:
     name: policyd-spf
     state: present
 - name: Create policyd-spf user
-  user:
+  ansible.builtin.user:
     name: policyd-spf
     group: policyd-spf
     create_home: no
     shell: /bin/false
 - name: Apply mail aliases
-  command: newaliases
+  ansible.builtin.command: newaliases
+  register: apply_new_aliases
+  changed_when: apply_new_aliases.rc == 0
 - name: Set up automatic restart of services
-  import_tasks: autorestart.yml
+  ansible.builtin.import_tasks: autorestart.yml
   vars:
     service: postfix
 - name: Deploy Postfix master config
-  copy:
+  ansible.builtin.copy:
     src: postfix/master.cf
     dest: /etc/postfix/master.cf
     mode: u=rw,og=r
@@ -45,7 +47,7 @@
     group: root
   notify: Restart postfix
 - name: Configure postfix
-  command: 'postconf -e "{{ item }}"'
+  ansible.builtin.command: 'postconf -e "{{ item }}"'
   loop:
     - "inet_interfaces = all"
     - "myhostname = {{ mailserver_hostname }}.{{ mailserver_domain }}"
@@ -59,8 +61,10 @@
     - "smtpd_tls_loglevel = 1"
     - "smtp_tls_loglevel = 1"
   notify: Restart postfix
+  register: configure_postfix
+  changed_when: configure_postfix.item.rc == 0
 - name: Configure main.cf
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '^{{ item.key }} = '
     line: '{{ item.key }} = {{ item.value }}'
     path: /etc/postfix/main.cf
@@ -82,7 +86,7 @@
     - { key: "propagate_unmatched_extensions", value: "" }
   notify: Restart postfix
 - name: Render Postfix SQL templates
-  template:
+  ansible.builtin.template:
     src: "postfix/sql/{{ item }}.j2"
     dest: "/etc/postfix/sql/{{ item }}"
     mode: u=rw,og=r
@@ -98,7 +102,7 @@
     - mysql_virtual_alias_domain_catchall_maps.cf
   notify: Restart postfix
 - name: Configure virtual domains
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK virtual domains"
     block: |
@@ -117,7 +121,7 @@
       virtual_gid_maps = static:2000
   notify: Restart postfix
 - name: Configure SMTP recipient restrictions
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK SMTP recipient restrictions"
     block: |
@@ -137,7 +141,7 @@
       #   reject_rbl_client zen.spamhaus.org
   notify: Restart postfix
 - name: Configure Milter
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK Milter"
     block: |
@@ -149,7 +153,7 @@
     backup: yes
   notify: Restart postfix
 - name: Start SPF policy daemon with Postfix
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/master.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK SPF policy"
     block: |
@@ -158,7 +162,7 @@
     backup: yes
   notify: Restart postfix
 - name: Configure sender restrictions
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# {mark} ANSIBLE MANAGED BLOCK sender restrictions"
     block: |
@@ -170,7 +174,7 @@
          reject_unknown_client_hostname
   notify: Restart postfix
 - name: Configure HELO/EHLO restrictions
-  blockinfile:
+  ansible.builtin.blockinfile:
     marker: "# {mark} ANSIBLE MANAGED BLOCK HELO/EHLO restrictions"
     path: /etc/postfix/main.cf
     block: |
@@ -185,9 +189,10 @@
          reject_unknown_helo_hostname
   notify: Restart postfix
 - name: Set up HELO access whitelist
+  when: helo_access is defined
   block:
     - name: Create HELO access whitelist
-      lineinfile:
+      ansible.builtin.lineinfile:
         regexp: "\b{{ item.key }}\b"
         line: '{{ item.key }}    {{ item.value }}'
         path: /etc/postfix/helo_access
@@ -200,12 +205,14 @@
       loop: "{{ helo_access }}"
       notify: Restart postfix
     - name: Generate HELO access database
-      command: postmap /etc/postfix/helo_access
-  when: helo_access is defined
+      ansible.builtin.command: postmap /etc/postfix/helo_access
+      register: generate_helo_access
+      changed_when: generate_helo_access.rc == 0
 - name: Set up RBL whitelist
+  when: rbl_override is defined
   block:
     - name: Create RBL whitelist
-      lineinfile:
+      ansible.builtin.lineinfile:
         regexp: "\b{{ item.key }}\b"
         line: '{{ item.key }}    {{ item.value }}'
         path: /etc/postfix/rbl_override
@@ -218,10 +225,11 @@
       loop: "{{ rbl_override }}"
       notify: Restart postfix
     - name: Generate RBL database
-      command: postmap /etc/postfix/rbl_override
-  when: rbl_override is defined
+      ansible.builtin.command: postmap /etc/postfix/rbl_override
+      register: generate_rbl_override
+      changed_when: generate_rbl_override.rc == 0
 - name: Set Postgrey whitelist
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: '{{ item }}'
     path: /etc/postfix/postgrey_whitelist_clients
     mode: u=rw,og=r
@@ -232,7 +240,7 @@
   loop: "{{ postgrey_whitelist_clients }}"
   notify: Restart postgrey
 - name: Set POSTGREY_DELAY to 1
-  lineinfile:
+  ansible.builtin.lineinfile:
     regex: '^POSTGREY_DELAY='
     line: 'POSTGREY_DELAY="--delay=1"'
     path: /etc/sysconfig/postgrey
@@ -243,9 +251,11 @@
     backup: yes
   notify: Restart postgrey
 - name: Clean postfix destination
-  command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
+  ansible.builtin.command: 'postconf -e "mydestination = $myhostname, localhost.$mydomain, localhost"'
+  register: clean_postfix_destination
+  changed_when: clean_postfix_destination.rc == 0
 - name: Create directory for virtuals
-  file:
+  ansible.builtin.file:
     path: /var/vmail/
     state: directory
     mode: u=rwX,og=rX
@@ -254,7 +264,7 @@
     setype: mail_spool_t
     recurse: yes
 - name: Generate daily Postfix log report
-  cron:
+  ansible.builtin.cron:
     name: "Generate daily Postfix log report"
     backup: yes
     hour: 4
