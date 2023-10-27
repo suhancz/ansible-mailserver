@@ -2,14 +2,14 @@
 - name: Open firewall
   ansible.builtin.include_tasks: firewall.yml
   vars:
-    port: "{{ item }}"
+    port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   loop:
     - imap
     - imaps
     - pop3
     - pop3s
 - name: Automatically restart services
-  import_tasks: autorestart.yml
+  ansible.builtin.import_tasks:: autorestart.yml
   vars:
     service: dovecot
 - name: Configure Dovecot protocols

@@ -1,8 +1,8 @@
 ---
 - name: Open firewall
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks:: firewall.yml
   vars:
-    port: "{{ wireguard.listen_port }}/udp"
+    port: "{{ wireguard.listen_port }}/udp" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
 - name: Load kernel modules
   community.general.modprobe:
     name: "{{ item }}"
@@ -52,7 +52,7 @@
     - "{{ wireguard.config_dir }}"
     - /var/www/html/.vpn
 - name: Read WireGuard server config
-  import_tasks: read_wireguard_config.yml
+  ansible.builtin.import_tasks:: read_wireguard_config.yml
   vars:
     wg_config_file: "{{ wireguard.config_dir }}/{{ wireguard.interface }}.conf"
 - name: Define read server values
@@ -69,7 +69,7 @@
   ansible.builtin.set_fact:
     next_ip_segment: 2
 - name: Generate WireGuard server keys
-  import_tasks: generate_wireguard_keys.yml
+  ansible.builtin.import_tasks:: generate_wireguard_keys.yml
   vars:
     wg_name: "server"
     wg_privatekey: "{{ wg_server.privatekey | default('') }}"
@@ -198,7 +198,7 @@
   tags:
     - dyndns
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks:: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -210,7 +210,7 @@
   tags:
     - dyndns
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks:: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -250,7 +250,7 @@
   tags:
     - wireguard
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks:: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -262,7 +262,7 @@
   tags:
     - wireguard
     - poweradmin
-  import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks:: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"

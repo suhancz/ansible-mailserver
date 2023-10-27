@@ -46,5 +46,5 @@
     state: restarted
   when: 'public_dns == "yes"'
 - name: Wait for DNS to listen
-  wait_for:
-    port: 53
+  ansible.builtin.wait_for:
+    port: 53 # noqa var-naming[no-reserved] we refer to a port here, so I call it a port

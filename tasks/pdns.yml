@@ -1,6 +1,6 @@
 ---
 - name: Create PowerDNS DB
-  import_tasks: create_mariadb_schema.yml
+  ansible.builtin.import_tasks:: create_mariadb_schema.yml
   vars:
     mariadb_database: powerdnsdb
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
@@ -16,7 +16,7 @@
   no_log: yes
   when: 'public_dns == "yes"'
 # - name: Fill PowerDNS DB with data
-#   import_tasks: fill_mariadb_data.yml
+#   ansible.builtin.import_tasks:: fill_mariadb_data.yml
 #   vars:
 #     mariadb_database:
 #       db: powerdnsdb

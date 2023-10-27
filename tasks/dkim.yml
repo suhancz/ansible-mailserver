@@ -1,6 +1,6 @@
 ---
 # - name: Open firewall
-#   import_tasks: firewall.yml
+#   ansible.builtin.import_tasks:: firewall.yml
 #   vars:
 #     port: 8891/tcp
 - name: Configure OpenDKIM

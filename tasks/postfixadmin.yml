@@ -24,7 +24,7 @@
     setype: httpd_sys_rw_content_t
     recurse: yes
 - name: Create postfixadmin DB schema
-  import_tasks: create_mariadb_schema.yml
+  ansible.builtin.import_tasks:: create_mariadb_schema.yml
   vars:
     mariadb_database: postfixadmin
     mariadb_state: "{{ ('import' if reset == 'yes') | default('present') }}"
@@ -39,7 +39,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Fill postfixadmin DB with data
-  import_tasks: fill_mariadb_data.yml
+  ansible.builtin.import_tasks:: fill_mariadb_data.yml
   vars:
     mariadb_database:
       db: postfixadmin

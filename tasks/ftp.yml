@@ -2,7 +2,7 @@
 - name: Open firewall
   ansible.builtin.include_tasks: firewall.yml
   vars:
-    port: "{{ item }}"
+    port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   loop:
     - 989-990/tcp
     - 40000-50000/tcp

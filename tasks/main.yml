@@ -21,37 +21,37 @@
   no_log: yes
   tags: always
 - name: Configure OS
-  import_tasks: os.yml
+  ansible.builtin.import_tasks:: os.yml
   tags: os
 - name: Configure MariaDB
-  import_tasks: mariadb.yml
+  ansible.builtin.import_tasks:: mariadb.yml
   tags: mariadb
 - name: Configure DNS
-  import_tasks: dns.yml
+  ansible.builtin.import_tasks:: dns.yml
   tags:
     - dns
     - poweradmin
     - dyndns
 - name: Configure PostfixAdmin
-  import_tasks: postfixadmin.yml
+  ansible.builtin.import_tasks:: postfixadmin.yml
   tags: postfixadmin
 - name: Set up SSL
-  import_tasks: ssl.yml
+  ansible.builtin.import_tasks:: ssl.yml
   tags: ssl
 - name: Configure LDAP
-  import_tasks: ldap.yml
+  ansible.builtin.import_tasks:: ldap.yml
   tags: ldap
 - name: Set up Horde
-  import_tasks: horde.yml
+  ansible.builtin.import_tasks:: horde.yml
   tags: horde
 - name: Set up ElasticSearch
-  import_tasks: elasticsearch.yml
+  ansible.builtin.import_tasks:: elasticsearch.yml
   tags: elasticsearch
 - name: Set up FTP
-  import_tasks: ftp.yml
+  ansible.builtin.import_tasks:: ftp.yml
   tags: ftp
 - name: Configure Apache
-  import_tasks: httpd.yml
+  ansible.builtin.import_tasks:: httpd.yml
   tags:
     - httpd
     - dyndns
@@ -61,19 +61,19 @@
     - wireguard
     - webdav
 - name: Set up SPAMAssassin
-  import_tasks: spamassassin.yml
+  ansible.builtin.import_tasks:: spamassassin.yml
   tags: spamassassin
 - name: Configure Antivirus
-  import_tasks: antivirus.yml
+  ansible.builtin.import_tasks:: antivirus.yml
   tags: antivirus
 - name: Configure Redis
-  import_tasks: redis.yml
+  ansible.builtin.import_tasks:: redis.yml
   tags: redis
 - name: Configure Postfix
-  import_tasks: postfix.yml
+  ansible.builtin.import_tasks:: postfix.yml
   tags: postfix
 - name: Configure Dovecot
-  import_tasks: dovecot.yml
+  ansible.builtin.import_tasks:: dovecot.yml
   tags: dovecot
 - name: Sync old IMAP account
   ansible.builtin.include_tasks: imapsync.yml
@@ -85,27 +85,27 @@
   no_log: yes
   tags: imapsync
 - name: Set up DKIM
-  import_tasks: dkim.yml
+  ansible.builtin.import_tasks:: dkim.yml
   tags: dkim
 - name: Set up DMARC
-  import_tasks: dmarc.yml
+  ansible.builtin.import_tasks:: dmarc.yml
   tags: dmarc
 - name: Set up MongoDB
-  import_tasks: mongodb.yml
+  ansible.builtin.import_tasks:: mongodb.yml
   tags: mongodb
 - name: Set up WebDav
-  import_tasks: webdav.yml
+  ansible.builtin.import_tasks:: webdav.yml
   tags: webdav
 - name: Set up WireGuard
-  import_tasks: wireguard.yml
+  ansible.builtin.import_tasks:: wireguard.yml
   tags:
     - wireguard
     - dyndns
     - poweradmin
     - postfixadmin
 - name: Set up backups
-  import_tasks: backups.yml
+  ansible.builtin.import_tasks:: backups.yml
   tags: backup
 - name: Configure fail2ban
-  import_tasks: fail2ban.yml
+  ansible.builtin.import_tasks:: fail2ban.yml
   tags: fail2ban

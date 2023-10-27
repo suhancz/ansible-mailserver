@@ -62,7 +62,7 @@
 #     remaining_days: 60
 #   register: letsencrypt_challenge
 # - name: Check Let's Encrypt TXT records
-#   import_tasks: propagate_ssl_txt_records.yml
+#   ansible.builtin.import_tasks:: propagate_ssl_txt_records.yml
 #   with_dict: "{{ letsencrypt_challenge.challenge_data }}"
 #   loop_control:
 #     loop_var: challenge_item

@@ -52,7 +52,7 @@
     - { app: '', mode: 'ug=rw' }
     # - { app: 'kronolith', mode: 'u=rw' }
 - name: Create horde DB schema
-  import_tasks: create_mariadb_schema.yml
+  ansible.builtin.import_tasks:: create_mariadb_schema.yml
   vars:
     mariadb_database: horde
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"

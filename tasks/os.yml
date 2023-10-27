@@ -28,7 +28,7 @@
 - name: Install requiremets
   block:
     - name: Install packages
-      import_tasks: packages.yml
+      ansible.builtin.import_tasks:: packages.yml
   rescue:
     - name: Find repo configs
       find:
@@ -50,7 +50,7 @@
         validate: "grep '^baseurl=http://vault.centos.org' %s"
       loop: "{{ repo_files.files }}"
     - name: Install packages
-      import_tasks: packages.yml
+      ansible.builtin.import_tasks:: packages.yml
 - name: Set up OS mail aliases
   ansible.builtin.lineinfile:
     path: /etc/aliases

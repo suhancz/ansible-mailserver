@@ -1,19 +1,19 @@
 ---
 - name: Open firewall
-  import_tasks: firewall.yml
+  ansible.builtin.import_tasks:: firewall.yml
   vars:
-    port: dns
+    port: dns # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   when: 'public_dns == "yes"'
 - name: Configure local DNS cache
-  import_tasks: local_dns_cache.yml
+  ansible.builtin.import_tasks:: local_dns_cache.yml
 - name: Configure PowerDNS
-  import_tasks: pdns.yml
+  ansible.builtin.import_tasks:: pdns.yml
 - name: Set up DNS records
-  import_tasks: dns_records.yml
+  ansible.builtin.import_tasks:: dns_records.yml
 - name: Configure PowerDNS recursor
-  import_tasks: pdns_recursor.yml
+  ansible.builtin.import_tasks:: pdns_recursor.yml
 - name: Configure DNSDist
-  import_tasks: dnsdist.yml
+  ansible.builtin.import_tasks:: dnsdist.yml
 - name: Make sure PowerDNS is running
   ansible.builtin.systemd_service:
     name: pdns
@@ -35,7 +35,7 @@
     state: started
   when: 'public_dns == "yes"'
 - name: Configure PowerAdmin
-  import_tasks: poweradmin.yml
+  ansible.builtin.import_tasks:: poweradmin.yml
   tags:
     - dyndns
     - poweradmin
