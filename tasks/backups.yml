@@ -75,7 +75,7 @@
     - pdns
     - wg_vpn
 - name: Ensure systemd is aware of the backup services
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ item }}-backup"
     daemon_reload: yes
     enabled: no
@@ -93,7 +93,7 @@
     - pdns
     - wg_vpn
 - name: Enable the backup timers
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ item }}-backup.timer"
     daemon_reload: yes
     enabled: yes
@@ -119,7 +119,7 @@
       command: "mariabackup --prepare --target-dir={{ mariadb_backup_path }}"
     - name: Stop MariaDB
       when: mariadb_backup_path is defined
-      systemd:
+      ansible.builtin.systemd_service:
         name: mariadb
         state: stopped
     - name: Erase data directory
@@ -148,7 +148,7 @@
         recurse: yes
     - name: Start MariaDB
       when: mariadb_backup_path is defined
-      systemd:
+      ansible.builtin.systemd_service:
         name: mariadb
         state: started
     - name: Stop LDAP server

@@ -38,7 +38,7 @@
   when: 'public_dns == "yes"'
   loop: "{{ [mailserver_domain] + custom_domains }}"
 - name: Reload PowerDNS config
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns
     daemon_reload: yes
     enabled: yes

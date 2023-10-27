@@ -15,20 +15,20 @@
 - name: Configure DNSDist
   import_tasks: dnsdist.yml
 - name: Make sure PowerDNS is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns
     daemon_reload: yes
     enabled: yes
     state: started
   when: 'public_dns == "yes"'
 - name: Make sure PowerDNS recursor is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns-recursor
     daemon_reload: yes
     enabled: yes
     state: started
 - name: Make sure DNSDist is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: dnsdist
     daemon_reload: yes
     enabled: yes

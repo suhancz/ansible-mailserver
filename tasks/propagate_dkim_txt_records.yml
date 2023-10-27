@@ -17,7 +17,7 @@
       content: "{{ desired_dkim_record }}"
   when: 'public_dns == "yes"'
 - name: Reload PowerDNS config
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ item }}"
     daemon_reload: yes
     enabled: yes

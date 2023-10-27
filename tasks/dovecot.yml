@@ -108,7 +108,7 @@
     - { comment: true, line: "!include auth-system.conf.ext"}
   notify: Restart dovecot
 - name: Make sure Dovecot is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: dovecot
     daemon_reload: yes
     enabled: yes

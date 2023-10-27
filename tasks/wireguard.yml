@@ -409,13 +409,13 @@
   notify: Restart WireGuard
 - name: Enable WireGuard config watch
   tags: wireguard
-  systemd:
+  ansible.builtin.systemd_service:
     name: wg_vpn.path
     daemon_reload: yes
     enabled: yes
 - name: Load WireGuard config loader
   tags: wireguard
-  systemd:
+  ansible.builtin.systemd_service:
     name: wg_vpn.service
     daemon_reload: yes
     enabled: no

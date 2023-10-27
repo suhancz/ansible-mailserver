@@ -1,6 +1,6 @@
 ---
 - name: Make sure MariaDB is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: mariadb
     daemon_reload: yes
     enabled: yes
@@ -27,7 +27,7 @@
       rescue:
         - name: Stop MariaDB
           when: reset == "yes" or forgotten_mariadb_root_password
-          systemd:
+          ansible.builtin.systemd_service:
             name: mariadb
             daemon-reload: yes
             enabled: yes
@@ -61,7 +61,7 @@
           command: "kill {{ mariadb_pid.stdout }}"
         - name: Make sure MariaDB is running
           when: reset == "yes" or forgotten_mariadb_root_password
-          systemd:
+          ansible.builtin.systemd_service:
             name: mariadb
             daemon_reload: yes
             enabled: yes

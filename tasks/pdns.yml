@@ -53,7 +53,7 @@
   when: 'public_dns == "yes"'
   notify: Restart pdns
 - name: Restart pdns
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns
     daemon_reload: yes
     enabled: yes

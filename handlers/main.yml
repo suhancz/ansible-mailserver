@@ -1,90 +1,90 @@
 ---
 - name: Restart amavisd
-  systemd:
+  ansible.builtin.systemd_service:
     name: amavisd
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart clamav-freshclam
-  systemd:
+  ansible.builtin.systemd_service:
     name: clamav-freshclam
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: "Restart dirsrv@{{ mailserver_hostname }}"
-  systemd:
+  ansible.builtin.systemd_service:
     name: "dirsrv@{{ mailserver_hostname }}"
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart dnsdist
-  systemd:
+  ansible.builtin.systemd_service:
     name: dnsdist
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart dovecot
-  systemd:
+  ansible.builtin.systemd_service:
     name: dovecot
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart fail2ban
-  systemd:
+  ansible.builtin.systemd_service:
     name: fail2ban
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart firewalld
-  systemd:
+  ansible.builtin.systemd_service:
     name: firewalld
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart httpd
-  systemd:
+  ansible.builtin.systemd_service:
     name: httpd
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart mongod
-  systemd:
+  ansible.builtin.systemd_service:
     name: mongod
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart NetworkManager
-  systemd:
+  ansible.builtin.systemd_service:
     name: NetworkManager
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart opendkim
-  systemd:
+  ansible.builtin.systemd_service:
     name: opendkim
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart opendmarc
-  systemd:
+  ansible.builtin.systemd_service:
     name: opendmarc
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart pdns
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart pdns-recursor
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns-recursor
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart php-fpm
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ php_fpm_service }}"
     daemon_reload: yes
     enabled: yes
@@ -95,25 +95,25 @@
   loop_control:
     loop_var: php_fpm_service
 - name: Restart postfix
-  systemd:
+  ansible.builtin.systemd_service:
     name: postfix
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart postgrey
-  systemd:
+  ansible.builtin.systemd_service:
     name: postgrey
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart spamassassin
-  systemd:
+  ansible.builtin.systemd_service:
     name: spamassassin
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart spamass-milter
-  systemd:
+  ansible.builtin.systemd_service:
     name: spamass-milter
     daemon_reload: yes
     enabled: yes
@@ -131,19 +131,19 @@
     group: root
     mode: 0644
 - name: Restart systemd-resolved
-  systemd:
+  ansible.builtin.systemd_service:
     name: systemd-resolved
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart vsftpd
-  systemd:
+  ansible.builtin.systemd_service:
     name: vsftpd
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Restart WireGuard
-  systemd:
+  ansible.builtin.systemd_service:
     name: "wg_vpn.{{ systemd_unit_type }}"
     daemon_reload: yes
     state: started

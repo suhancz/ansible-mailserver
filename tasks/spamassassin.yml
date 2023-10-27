@@ -62,7 +62,7 @@
   args:
     creates: /var/mail/SpamToJunk.svbin
 - name: Enable SpamAssassin update service
-  systemd:
+  ansible.builtin.systemd_service:
     name: sa-update.timer
     daemon_reload: yes
     enabled: yes

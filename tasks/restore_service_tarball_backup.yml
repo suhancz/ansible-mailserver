@@ -1,6 +1,6 @@
 ---
 - name: "Stop {{ service }}"
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ service }}"
     daemon_reload: yes
     enabled: yes
@@ -12,7 +12,7 @@
     dest: /
     remote_src: yes
 - name: "Start {{ service }}"
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ service }}"
     daemon_reload: yes
     enabled: yes

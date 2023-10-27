@@ -56,7 +56,7 @@
     create: yes
   notify: Restart systemd-resolved
 - name: Make sure resolved is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: systemd-resolved
     daemon_reload: yes
     enabled: yes

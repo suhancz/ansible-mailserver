@@ -1,6 +1,6 @@
 ---
 - name: Ensure firewall is enabled
-  systemd:
+  ansible.builtin.systemd_service:
     name: firewalld
     daemon_reload: yes
     enabled: yes

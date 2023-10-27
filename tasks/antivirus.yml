@@ -23,7 +23,7 @@
   failed_when: "{{ sa_update.rc >= 4 }}"
   notify: Restart spamassassin
 - name: Enable systemd services
-  systemd:
+  ansible.builtin.systemd_service:
     name: "{{ item }}"
     daemon_reload: yes
     enabled: yes
