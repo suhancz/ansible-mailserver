@@ -92,7 +92,7 @@
     backup: yes
     env: yes
     name: MAILTO
-    job: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
+    job: "hostmaster+cron@{{ mailserver_domain }}"
 - name: Add GO path to PATH
   lineinfile:
     path: /etc/profile.d/gopath.sh
