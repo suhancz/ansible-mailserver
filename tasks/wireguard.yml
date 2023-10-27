@@ -4,7 +4,7 @@
   vars:
     port: "{{ wireguard.listen_port }}/udp"
 - name: Load kernel modules
-  modprobe:
+  community.general.modprobe:
     name: "{{ item }}"
   loop:
     - wireguard

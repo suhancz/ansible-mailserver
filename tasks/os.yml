@@ -83,7 +83,7 @@
     - ldap
     - postfixadmin
 - name: Enable ip_conntrack
-  modprobe:
+  community.general.modprobe:
     name: ip_conntrack
     state: present
   tags: wireguard

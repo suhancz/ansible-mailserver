@@ -521,7 +521,7 @@
   tags: wireguard
   block:
     - name: Load the WireGuard kernel module
-      modprobe:
+      community.general.modprobe:
         name: wireguard
   rescue:
     - name: Install UEK packages
@@ -535,7 +535,7 @@
         reboot_timeout: 600
         msg: "Reboot initiated by Ansible to enable WireGuard"
     - name: Load the WireGuard kernel module
-      modprobe:
+      community.general.modprobe:
         name: wireguard
 - name: Install PEAR packages
   tags: horde
