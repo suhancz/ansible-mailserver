@@ -124,7 +124,7 @@
     content: |
       nameserver 127.0.0.1
       nameserver ::1
-      search {{ ([mailserver_domain] + custom_domains)|join(' ') }}
+      search {{ ([mailserver_domain] + custom_domains) | join(' ') }}
     backup: true
     force: true
     owner: root
