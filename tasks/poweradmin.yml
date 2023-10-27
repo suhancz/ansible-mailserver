@@ -3,6 +3,7 @@
   tags:
     - dyndns
     - poweradmin
+  when: 'public_dns == "yes"'
   block:
     # - name: Get URL for latest release
     #   uri:
@@ -12,7 +13,6 @@
       ansible.builtin.set_fact:
         # poweradmin_version: "{{ poweradmin_download_site.url | replace('https://github.com/poweradmin/poweradmin/releases/tag/v','') }}"
         poweradmin_version: 3.4.2 # enforcing PowerAdmin with a verion which supports PHP 7 to avoid package clash with other packages
-  when: 'public_dns == "yes"'
 - name: Unpack PowerAdmin
   tags:
     - dyndns
