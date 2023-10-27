@@ -76,7 +76,7 @@
   import_tasks: dovecot.yml
   tags: dovecot
 - name: Sync old IMAP account
-  include_tasks: imapsync.yml
+  ansible.builtin.include_tasks: imapsync.yml
   loop: "{{ users }}"
   loop_control:
     loop_var: current_user

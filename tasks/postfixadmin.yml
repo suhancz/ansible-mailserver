@@ -9,7 +9,7 @@
       ansible.builtin.set_fact:
         postfixadmin_version: "{{ postfixadmin_download_site.url | replace('https://github.com/postfixadmin/postfixadmin/releases/tag/postfixadmin-','') }}"
 - name: Unpack postfixadmin
-  unarchive:
+  ansible.builtin.unarchive:
     src: "https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-{{ postfixadmin_version }}.tar.gz"
     dest: /var/www/
     remote_src: yes

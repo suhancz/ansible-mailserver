@@ -12,7 +12,7 @@
 #     system: yes
 #     gid: 55
 # - name: Add ldap user
-#   user:
+#   ansible.builtin.user:
 #     name: ldap
 #     group: ldap
 #     create_home: yes

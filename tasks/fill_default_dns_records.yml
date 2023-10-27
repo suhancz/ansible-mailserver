@@ -1,6 +1,6 @@
 ---
 - name: Fill default DNS records
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     empty_apostrophes: "''"
     record:

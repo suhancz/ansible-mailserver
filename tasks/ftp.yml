@@ -1,6 +1,6 @@
 ---
 - name: Open firewall
-  include_tasks: firewall.yml
+  ansible.builtin.include_tasks: firewall.yml
   vars:
     port: "{{ item }}"
   loop:

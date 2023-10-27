@@ -77,7 +77,7 @@
     wg_owner: root
     wg_cidr: "{{ wireguard.ipv4_pool.split('/') | first | replace('.0','.1') ~ ', ' ~ wireguard.ipv6_pool.split('/') | first | replace(':0',':1') }}"
 - name: Define read client values
-  include_tasks: define_vpn_clients.yml
+  ansible.builtin.include_tasks: define_vpn_clients.yml
   vars:
     current_ipv4: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$','.' ~ next_ip_segment) }}"
     current_ipv6: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$',':' ~ next_ip_segment) }}"
@@ -87,7 +87,7 @@
   loop_control:
     loop_var: vpn_user
 - name: Generate WireGuard client keys
-  include_tasks: generate_wireguard_keys.yml
+  ansible.builtin.include_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "{{ item.name }}"
     wg_privatekey: "{{ item.privatekey | default('') }}"
@@ -128,7 +128,7 @@
     loop_var: wg_client
   when: wg_client != "server"
 - name: Collect user info
-  user:
+  ansible.builtin.user:
     name: "{{ wg_configs[wg_client]['owner'] }}"
   register: user_info
   loop: "{{ wg_configs.keys() }}"
@@ -183,7 +183,7 @@
   tags:
     - dyndns
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ mailserver_domain }}"
@@ -222,7 +222,7 @@
   tags:
     - dyndns
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -236,7 +236,7 @@
   tags:
     - dyndns
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -274,7 +274,7 @@
   tags:
     - wireguard
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -288,7 +288,7 @@
   tags:
     - wireguard
     - poweradmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -303,7 +303,7 @@
     - wireguard
     - poweradmin
     - postfixadmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"
@@ -319,7 +319,7 @@
     - wireguard
     - poweradmin
     - postfixadmin
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "vpn.{{ mailserver_domain }}"

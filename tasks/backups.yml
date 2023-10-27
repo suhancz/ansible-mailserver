@@ -156,7 +156,7 @@
       ansible.builtin.command: "dsctl {{ mailserver_hostname }} stop"
     - name: Prepare LDAP backup
       when: ldap_backup_path is defined
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ ldap_backup_path }}"
         dest: /
         list_files: yes
@@ -169,7 +169,7 @@
       when: ldap_backup_path is defined
       ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
     - name: Restore service tarball backups
-      include_tasks: restore_service_tarball_backup.yml
+      ansible.builtin.include_tasks: restore_service_tarball_backup.yml
       vars:
         service: "{{ item }}"
         service_backup_path: "{{ vars[item ~ '_backup_path'] }}"
@@ -184,7 +184,7 @@
         - wg_vpn
     - name: Restore non-service tarball backups
       when: "{{ vars[item ~ '_backup_path']  is defined }}"
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ vars[item ~ '_backup_path'] }}"
         dest: /
         remote_src: yes

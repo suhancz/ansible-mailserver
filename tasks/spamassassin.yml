@@ -32,7 +32,7 @@
     backup: yes
   notify: Restart spamass-milter
 - name: Add Postfix user to the sa-milt group
-  user:
+  ansible.builtin.user:
     name: postfix
     groups: sa-milt
     append: yes

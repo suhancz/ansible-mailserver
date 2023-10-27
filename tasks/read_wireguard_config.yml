@@ -16,7 +16,7 @@
     - ansible.builtin.debug:
         var: wg_config_lines
     - name: Gather WireGuard config sections
-      include_tasks: gather_wireguard_config_sections.yml
+      ansible.builtin.include_tasks: gather_wireguard_config_sections.yml
       vars:
         wireguard_config_line: "{{ item }}"
       loop: "{{ wireguard_config_lines }}"

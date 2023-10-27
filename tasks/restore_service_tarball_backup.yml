@@ -7,7 +7,7 @@
     state: stopped
 - name: "Restore {{ service }} backup" # noqa name[template] we need to be informative, even if we deviate from the standards
   when: service_backup_path is defined
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ service_backup_path }}"
     dest: /
     remote_src: yes

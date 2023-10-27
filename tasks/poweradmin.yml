@@ -17,7 +17,7 @@
   tags:
     - dyndns
     - poweradmin
-  unarchive:
+  ansible.builtin.unarchive:
     src: "https://github.com/poweradmin/poweradmin/archive/v{{ poweradmin_version }}.tar.gz"
     dest: /var/www/
     remote_src: yes

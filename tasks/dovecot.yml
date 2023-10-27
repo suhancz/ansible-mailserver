@@ -1,6 +1,6 @@
 ---
 - name: Open firewall
-  include_tasks: firewall.yml
+  ansible.builtin.include_tasks: firewall.yml
   vars:
     port: "{{ item }}"
   loop:
@@ -59,7 +59,7 @@
     - { key: "ssl_prefer_server_ciphers", value: "yes" }
   notify: Restart dovecot
 - name: Add Dovecot user to the mail and apache groups
-  user:
+  ansible.builtin.user:
     name: dovecot
     groups: mail,apache
     append: yes

@@ -28,7 +28,7 @@
     - { key: "IgnoreMailFrom", value: "{{ undeliverable_exceptions | join(',') }}", comment: false }
   notify: Restart opendmarc
 - name: Set up DMARC TXT records
-  include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ item }}"

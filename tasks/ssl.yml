@@ -82,7 +82,7 @@
 #     data: "{{ letsencrypt_challenge }}"
 #   when: letsencrypt_challenge.changed is true
 # - name: Clean up Let's Encrypt TXT records
-#   include_tasks: delete_dns_record.yml
+#   ansible.builtin.include_tasks: delete_dns_record.yml
 #   vars:
 #     record:
 #       zone: "{{ challenge_item.key|replace('*.', '') }}"
