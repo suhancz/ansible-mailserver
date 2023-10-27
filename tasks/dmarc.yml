@@ -14,10 +14,10 @@
     - key: "TrustedAuthservIDs"
       value: >
         {%- set domains = [mailserver_domain] %}
-        {%- for domain in custom_domains|default([]) %}
+        {%- for domain in custom_domains | default([]) %}
         {%- set domains = domains.append( domain ) %}
         {%- endfor %}
-        {{- domains|join(',') -}}
+        {{- domains | join(',') -}}
       comment: false
     - { key: "IgnoreAuthenticatedClients", value: "true", comment: false }
     - { key: "RejectFailures", value: "true", comment: false }

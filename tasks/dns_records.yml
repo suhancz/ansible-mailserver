@@ -56,7 +56,7 @@
   register: zone_records
   loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] + ['dyndns.' ~ mailserver_domain] }}"
 - name: Correct SOA record for all domains
-  ansible.builtin.command: 'pdnsutil replace-rrset {{ zone_record.item }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ zone_record.item }} {{ zone_record.stdout_lines|length }} 10800 3600 604800 3600"'
+  ansible.builtin.command: 'pdnsutil replace-rrset {{ zone_record.item }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ zone_record.item }} {{ zone_record.stdout_lines | length }} 10800 3600 604800 3600"'
   loop: "{{ zone_records.results }}"
   loop_control:
     loop_var: zone_record
