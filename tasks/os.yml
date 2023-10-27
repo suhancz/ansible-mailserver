@@ -64,7 +64,7 @@
 - name: Create OS users
   ansible.builtin.user:
     name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512')| default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
+    password: "{{ item.password | password_hash('sha512') | default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
     groups: "{{ 'wheel' if item.name == mailserver_admin_user }}"
     append: yes
     state: present

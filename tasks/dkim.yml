@@ -2,7 +2,7 @@
 # - name: Open firewall
 #   ansible.builtin.import_tasks:: firewall.yml
 #   vars:
-#     port: 8891/tcp
+#     port: 8891/tcp # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
 - name: Configure OpenDKIM
   ansible.builtin.lineinfile:
     regexp: '{{ item.key }}'
