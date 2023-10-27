@@ -3,12 +3,21 @@
   ansible.builtin.file:
     path: /var/lib/razor/
     state: directory
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
 - name: Create Razor account
   ansible.builtin.command: razor-admin -create -home=/var/lib/razor
+  register: create_razor_account
+  changed_when: create_razor_account.rc == 0
 - name: Discover Razor account
   ansible.builtin.command: razor-admin -discover -home=/var/lib/razor
+  register: discover_razor_account
+  changed_when: discover_razor_account.rc == 0
 - name: Register Razor account
   ansible.builtin.command: razor-admin -register -home=/var/lib/razor
+  register: register_razor_account
+  changed_when: register_razor_account.rc == 0
 - name: Configure SPAMAssassin options
   ansible.builtin.lineinfile:
     regexp: 'SPAMDOPTIONS'

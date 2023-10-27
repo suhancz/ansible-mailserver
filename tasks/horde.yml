@@ -67,8 +67,10 @@
   no_log: yes
 - name: Generate Horde DB schema
   ansible.builtin.command: horde-db-migrate
+  register: horde_db_migrate
+  changed_when: horde_db_migrate.rc == 0
 - name: Enable ActiveSync
-  mysql_query:
+  community.mysql.mysql_query:
     login_db: horde
     login_user: hordeuser
     login_password: '{{ horde_db_password }}'
@@ -85,3 +87,5 @@
   args:
     chdir: /tmp/combined-1.0.0
     executable: /usr/bin/bash
+  register: install_horde_themes
+  changed_when: install_horde_themes.rc == 0

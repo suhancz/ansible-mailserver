@@ -4,3 +4,5 @@
     record_content: '"{{ record.content }}"'
 - name: 'Delete DNS record {{ record.name }}.{{ record.zone }} {{ record.type }}' # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.command: "pdnsutil delete-rrset {{ record.zone }} {{ record.name }} {{ record.type }}"
+  register: delete_rrset
+  changed_when: delete_rrset.rc == 0

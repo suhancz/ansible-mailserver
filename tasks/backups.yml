@@ -19,7 +19,7 @@
     - /backup/pdns
     - /var/www/webdav/.backup
 - name: BindFS mount the backup directory to WebDav
-  mount:
+  ansible.posix.mount:
     path: /var/www/webdav/.backup
     src: /backup
     opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
@@ -117,6 +117,8 @@
     - name: Prepare MariaDB backup
       when: mariadb_backup_path is defined
       ansible.builtin.command: "mariabackup --prepare --target-dir={{ mariadb_backup_path }}"
+      register: prepare_mariabackup
+      changed_when: prepare_mariabackup.rc == 0
     - name: Stop MariaDB
       when: mariadb_backup_path is defined
       ansible.builtin.systemd_service:
@@ -138,6 +140,8 @@
     - name: Restore MariaDB backup
       when: mariadb_backup_path is defined
       ansible.builtin.command: "mariabackup --copy-back --target-dir={{ mariadb_backup_path }}"
+      register: restore_mariabackup
+      changed_when: restore_mariabackup.rc == 0
     - name: Ensure data directory permissions
       when: mariadb_backup_path is defined
       ansible.builtin.file:
@@ -154,6 +158,8 @@
     - name: Stop LDAP server
       when: ldap_backup_path is defined
       ansible.builtin.command: "dsctl {{ mailserver_hostname }} stop"
+      register: stop_ldap_server
+      changed_when: stop_ldap_server.rc == 0
     - name: Prepare LDAP backup
       when: ldap_backup_path is defined
       ansible.builtin.unarchive:
@@ -165,9 +171,13 @@
     - name: Restore LDAP backup
       when: ldap_backup_path is defined
       ansible.builtin.command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
+      register: restore_ldap_server
+      changed_when: restore_ldap_server.rc == 0
     - name: Start LDAP server
       when: ldap_backup_path is defined
       ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
+      register: start_ldap_server
+      changed_when: start_ldap_server.rc == 0
     - name: Restore service tarball backups
       ansible.builtin.include_tasks: restore_service_tarball_backup.yml
       vars:

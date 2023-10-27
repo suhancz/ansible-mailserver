@@ -5,6 +5,7 @@
     dest: /etc/pdns-recursor/pdns-recursor.rpz
     owner: pdns-recursor
     group: pdns-recursor
+    mode: ug=rw,o=r
     backup: yes
   when: 'public_dns == "yes"'
 # - name: Create LUA config

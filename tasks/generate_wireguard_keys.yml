@@ -3,6 +3,7 @@
   ansible.builtin.command: wg genkey
   when: wg_privatekey is not defined or wg_privatekey == ""
   register: wg_privatekey_output
+  changed_when: wg_privatekey_output.rc == 0
 - name: "Fetch private key for {{ wg_name }} from config" # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.set_fact:
     wg_privatekey_output:
@@ -14,6 +15,7 @@
     stdin: "{{ wg_privatekey_output.stdout }}"
   when: wg_publickey is not defined or wg_publickey == ""
   register: wg_publickey_output
+  changed_when: wg_publickey_output.rc == 0
 - name: "Fetch public key from config for {{ wg_name }}" # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.set_fact:
     wg_publickey_output:
@@ -23,6 +25,7 @@
   ansible.builtin.command: wg genpsk
   when: wg_psk is not defined or wg_psk == ""
   register: wg_psk_output
+  changed_when: wg_psk_output.rc == 0
 - name: "Fetch pre-shared key for {{ wg_name }} from config" # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.set_fact:
     wg_psk_output:

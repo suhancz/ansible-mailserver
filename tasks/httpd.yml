@@ -17,7 +17,7 @@
   when: getenforce.stdout != 'Disabled'
   block:
     - name: Set SELinux booleans
-      seboolean:
+      ansible.posix.seboolean:
         name: "{{ item }}"
         state: yes
         persistent: yes
@@ -35,6 +35,8 @@
         ausearch -m AVC -ts recent | audit2allow -R
       args:
         executable: /usr/bin/bash
+      register: generate_apache_selinux_policy
+      changed_when: generate_apache_selinux_policy.rc == 0
 - name: Render web config templates
   tags:
     - dyndns
@@ -144,7 +146,7 @@
   no_log: true
 - name: BindFS mount SSL certificates to user public_html
   tags: ssl
-  mount:
+  ansible.posix.mount:
     path: "~{{ item.name }}/public_html/.certificates"
     src: /etc/letsencrypt/certificates
     opts: "map=root/{{ item.name }}:@root/@apache,perms=u=rwX:g=rwX"

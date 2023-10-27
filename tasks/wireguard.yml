@@ -14,6 +14,9 @@
   ansible.builtin.lineinfile:
     path: "/etc/modules-load.d/{{ item }}.conf"
     line: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
     create: yes
     backup: yes
   loop:
@@ -35,6 +38,9 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
   loop:
     - /etc/wireguard/clients
     - /etc/wireguard/helper
@@ -42,7 +48,7 @@
     - /var/www/html/.vpn
   notify: Restart WireGuard
 - name: BindFS mount the WireGuard directory
-  mount:
+  ansible.posix.mount:
     path: "{{ item }}"
     src: /etc/wireguard
     opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
@@ -100,6 +106,9 @@
   ansible.builtin.template:
     src: wireguard/htaccess.j2
     dest: /etc/wireguard/.htaccess
+    owner: root
+    group: apache
+    mode: ug=rw,o=
     backup: yes
 - name: Generate server config
   ansible.builtin.template:
@@ -114,6 +123,7 @@
     name: "{{ wireguard.config_dir }}/clients/{{ item }}"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
+    mode: u=rwX,g=rX,o=
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Generate client configs
@@ -122,6 +132,7 @@
     dest: "{{ wireguard.config_dir }}/clients/{{ wg_client }}/wg0.conf"
     owner: "{{ wg_configs[wg_client]['owner'] }}"
     group: "{{ wg_configs[wg_client]['owner'] }}"
+    mode: u=rw,g=r,o=
     backup: yes
   loop: "{{ wg_configs.keys() }}"
   loop_control:
@@ -146,6 +157,7 @@
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
     state: directory
+    mode: u=rwX,g=rX,o=
   become: true
   become_user: "{{ wg_configs[item]['owner'] }}"
   loop: "{{ wg_configs.keys() }}"
@@ -156,10 +168,11 @@
     state: directory
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
+    mode: u=rwX,g=rX,o=
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Allow access to VPN configs
-  mount:
+  ansible.posix.mount:
     src: "{{ wireguard.config_dir }}/clients/{{ item }}"
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}"
     opts: "force-user={{ wg_configs[item]['owner'] }},force-group={{ wg_configs[item]['owner'] }},perms=u=rwX:g=rwX"
@@ -174,11 +187,14 @@
     executable: /usr/bin/bash
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
+  register: generate_vpn_qr_codes
+  changed_when: generate_vpn_qr_codes.item.rc == 0
 - name: Allow access to QR codes
   ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
+    mode: u=rw,g=r,o=
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
 - name: Add DynDNS NS records
@@ -390,6 +406,10 @@
   ansible.builtin.copy:
     src: systemd/wg_vpn.path
     dest: /etc/systemd/system/wg_vpn.path
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
   notify: Restart WireGuard
 - name: Deploy WireGuard config loader SystemD service
   tags: wireguard
@@ -397,12 +417,17 @@
     src: systemd/wg_vpn.service.j2
     dest: /etc/systemd/system/wg_vpn.service
     backup: yes
+    mode: u=rw,og=r
+    owner: root
+    group: root
   notify: Restart WireGuard
 - name: Deploy WireGuard routing helper scripts
   tags: wireguard
   ansible.builtin.template:
     src: wireguard/{{ item }}.j2
     dest: /etc/wireguard/helper/{{ item }}
+    owner: root
+    group: root
     mode: ug=rwx,o=x
     backup: yes
   loop:

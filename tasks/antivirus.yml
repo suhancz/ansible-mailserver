@@ -1,7 +1,7 @@
 ---
 - name: Set SELinux booleans
   when: getenforce.stdout != 'Disabled'
-  seboolean:
+  ansible.posix.seboolean:
     name: antivirus_can_scan_system
     state: yes
     persistent: yes
@@ -16,6 +16,8 @@
   notify: Restart amavisd
 - name: Refresh ClamAV database
   ansible.builtin.command: freshclam
+  register: start_freshclam
+  changed_when: start_freshclam.rc == 0
   notify: Restart clamav-freshclam
 - name: Update SPAMAssassin's signatures
   ansible.builtin.command: sa-update -D

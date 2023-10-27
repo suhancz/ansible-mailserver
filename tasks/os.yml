@@ -1,10 +1,13 @@
 ---
 - name: Check SELinux status
-  ansible.builtin.shell: getenforce
+  ansible.builtin.command: getenforce
+  changed_when: getenforce.rc == 0
   register: getenforce
   tags: always
 - name: "Set hostname to {{ mailserver_hostname }}.{{ mailserver_domain }}" # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
+  register: set_hostname
+  changed_when: set_hostname.rc == 0
 - name: Enable IPv6
   when: ansible_default_ipv6.address is not defined
   block:

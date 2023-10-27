@@ -10,6 +10,8 @@
         IMAPSYNC_PASSWORD1: "{{ current_user.old_imap_mail.password }}"
         IMAPSYNC_PASSWORD2: "{{ current_user.password }}"
         MAILTO: "{{ current_user.name }}+cron@{{ mailserver_domain }}"
+      register: sync_from_old_mail
+      changed_when: sync_from_old_mail.rc == 0
     - name: Set up password environment variables for cron jobs
       become: yes
       become_user: "{{ current_user.name }}"

@@ -2,7 +2,7 @@
 - name: Get latest postfixadmin version
   block:
     - name: Get URL for latest release
-      uri:
+      ansible.builtin.uri:
         url: https://github.com/postfixadmin/postfixadmin/releases/latest
       register: postfixadmin_download_site
     - name: Parse version
@@ -45,12 +45,13 @@
       db: postfixadmin
       user: postfixadmin
       password: "{{ postfixadmin_db_password }}"
-  when: mariadb_schema_created.changed
+  when: mariadb_schema_created.changed # noqa no-handler we want the database filled now, no time to wait for the handler
   no_log: yes
   notify: Warn on passwords
 - name: Generate PostfixAdmin PHP password
   ansible.builtin.command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password
+  changed_when: postfixadmin_setup_password.rc == 0
   no_log: yes
 - name: Create PostfixAdmin directories
   ansible.builtin.file:

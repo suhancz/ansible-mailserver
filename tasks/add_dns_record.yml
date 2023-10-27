@@ -7,16 +7,26 @@
   block:
     - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
+      register: add_record
+      changed_when: add_record.rc == 0
   rescue:
     - name: 'Add DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil add-record {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
+      register: add_record
+      changed_when: add_record.rc == 0
 - name: Update or add DNS record
   when: record.append is not defined or not record.append
   block:
     - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record.content }}'"
+      register: update_record
+      changed_when: update_record.rc == 0
   rescue:
     - name: 'Update DNS record {{ record.name }}.{{ record.zone }} {{ record.ttl | default("3600") }} IN {{ record.type }} {{ record.content }}' # noqa name[template] we need to be informative, even if we deviate from the standards
       ansible.builtin.command: "pdnsutil replace-rrset {{ record.zone }} {{ record.name }} {{ record.type }} {{ record.ttl | default('3600') }} '{{ record_content }}'"
+      register: update_record
+      changed_when: update_record.rc == 0
 - name: Rectify all zones
   ansible.builtin.command: pdnsutil rectify-all-zones
+  register: rectify_zones
+  changed_when: rectify_zones.rc == 0

@@ -14,7 +14,7 @@
         - Restart NetworkManager
   rescue:
     - name: Configure local DNS cache
-      nmcli:
+      community.general.nmcli:
         conn_name: "{{ ansible_default_ipv4.interface }}"
         ip4: "{{ ansible_default_ipv4.address }}"
         ip6: "{{ ansible_default_ipv6.address }}"

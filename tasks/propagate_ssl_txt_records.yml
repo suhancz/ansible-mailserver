@@ -1,6 +1,6 @@
 ---
 - name: "Set up ACME challenge TXT records for {{ challenge_item.key }}" # noqa name[template] we need to be informative, even if we deviate from the standards
-  ansible.builtin.import_tasks:: add_dns_record.yml
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ challenge_item.key|replace('*.', '') }}"

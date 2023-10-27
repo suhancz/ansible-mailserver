@@ -69,7 +69,7 @@
     - poweradmin
   block:
     - name: Fill PowerDNS DB with PowerAdmin data using Blowfish 2y ident
-      mysql_query:
+      community.mysql.mysql_query:
         login_db: powerdnsdb
         login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
         login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
@@ -115,7 +115,7 @@
   tags:
     - dyndns
     - poweradmin
-  stat:
+  ansible.builtin.stat:
     path: /var/www/poweradmin/.htaccess
   register: htaccess_exists
   when: 'public_dns == "yes"'
