@@ -3,7 +3,7 @@
   ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
-      zone: "{{ challenge_item.key|replace('*.', '') }}"
+      zone: "{{ challenge_item.key | replace('*.', '') }}"
       name: "{{ challenge_item.value['dns-01'].resource }}"
       type: TXT
       content: "{{ challenge_item.value['dns-01'].resource_value }}"

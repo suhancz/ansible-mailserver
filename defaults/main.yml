@@ -43,13 +43,13 @@ spamassassin_rules:
     value: >
       /(hi|hello|dear) (
       {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
-      {%- for user in users | default([]) %}
+      {%- for user in users | default( [] ) %}
       {%- set mail_users = mail_users.append( user['name'] ) %}
       {%- endfor %}
       {{- mail_users | join('|') -}}
       )@(
       {%- set domains = [mailserver_domain] %}
-      {%- for domain in custom_domains | default([]) %}
+      {%- for domain in custom_domains | default( [] ) %}
       {%- set domains = domains.append( domain ) %}
       {%- endfor %}
       {{- domains | join('|') -}}
@@ -81,13 +81,13 @@ spamassassin_rules:
     value: >
       Subject =~ /(
       {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
-      {%- for user in users | default([]) %}
+      {%- for user in users | default( [] ) %}
       {%- set mail_users = mail_users.append( user['name'] ) %}
       {%- endfor %}
       {{- mail_users | join('|') -}}
       )@(
       {%- set domains = [mailserver_domain] %}
-      {%- for domain in custom_domains | default([]) %}
+      {%- for domain in custom_domains | default( [] ) %}
       {%- set domains = domains.append( domain ) %}
       {%- endfor %}
       {{- domains | join('|') -}}
@@ -100,7 +100,7 @@ spamassassin_rules:
     value: >
       To =~ /(
       {%- set domains = [mailserver_domain] %}
-      {%- for domain in custom_domains | default([]) %}
+      {%- for domain in custom_domains | default( [] ) %}
       {%- set domains = domains.append( domain ) %}
       {%- endfor %}
       {{- domains | join('|') -}}
