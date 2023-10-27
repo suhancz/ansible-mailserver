@@ -1,11 +1,12 @@
 ---
-- name: "Upload {{ mariadb_database }} DB schema"
-  copy:
+- name: "Upload {{ mariadb_database }} DB schema" # noqa name[template] we need to be informative, even if we deviate from the standards
+  # noqa risky-file-permissions this is a temporary file and wil be discarded at the first reboot, no need to secure it
+  ansible.builtin.copy:
     src: "mariadb/{{ mariadb_database }}_schema.sql"
     dest: "/tmp/ansible-mailserver-install.{{ mariadb_database }}_schema.sql"
 
-- name: "Check if {{ mariadb_database }} DB exists"
-  mysql_db:
+- name: "Check if {{ mariadb_database }} DB exists" # noqa name[template] we need to be informative, even if we deviate from the standards
+  community.mysql.mysql_db:
     name: "{{ mariadb_database }}"
     state: present
     login_user: root
@@ -13,8 +14,8 @@
   no_log: yes
   register: mariadb_database_exists
 
-- name: "Create {{ mariadb_database }} DB schema"
-  mysql_db:
+- name: "Create {{ mariadb_database }} DB schema" # noqa name[template] we need to be informative, even if we deviate from the standards
+  community.mysql.mysql_db:
     name: "{{ mariadb_database }}"
     state: import
     login_user: root

@@ -1,18 +1,18 @@
 ---
-- name: "Stop {{ service }}"
-  systemd:
+- name: "Stop {{ service }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.systemd_service:
     name: "{{ service }}"
     daemon_reload: yes
     enabled: yes
     state: stopped
-- name: "Restore {{ service }} backup"
+- name: "Restore {{ service }} backup" # noqa name[template] we need to be informative, even if we deviate from the standards
   when: service_backup_path is defined
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ service_backup_path }}"
     dest: /
     remote_src: yes
-- name: "Start {{ service }}"
-  systemd:
+- name: "Start {{ service }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.systemd_service:
     name: "{{ service }}"
     daemon_reload: yes
     enabled: yes

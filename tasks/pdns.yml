@@ -1,12 +1,12 @@
 ---
 - name: Create PowerDNS DB
-  import_tasks: create_mariadb_schema.yml
+  ansible.builtin.import_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: powerdnsdb
     mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
   when: 'public_dns == "yes"'
 - name: Set up PowerDNS DB privileges
-  mysql_user:
+  community.mysql.mysql_user:
     name: powerdns
     password: '{{ powerdns_db_password }}'
     priv: 'powerdnsdb.*:ALL'
@@ -16,14 +16,14 @@
   no_log: yes
   when: 'public_dns == "yes"'
 # - name: Fill PowerDNS DB with data
-#   import_tasks: fill_mariadb_data.yml
+#   ansible.builtin.import_tasks: fill_mariadb_data.yml
 #   vars:
 #     mariadb_database:
 #       db: powerdnsdb
 #       user: powerdns
 #       password: "{{ powerdns_db_password }}"
 - name: Configure PowerDNS authoritative server
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pdns/pdns.conf
     line: "{{ item.key }}={{ item.value }}"
     regex: "^{{ item.key }}="
@@ -53,7 +53,7 @@
   when: 'public_dns == "yes"'
   notify: Restart pdns
 - name: Restart pdns
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns
     daemon_reload: yes
     enabled: yes

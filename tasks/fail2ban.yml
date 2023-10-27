@@ -1,13 +1,16 @@
 ---
 - name: Create custom fail2ban filters
-  copy:
+  ansible.builtin.copy:
     src: "fail2ban/{{ item }}"
     dest: "/etc/fail2ban/filter.d/{{ item }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
   loop:
     - postfixadmin.conf
   notify: Restart fail2ban
 - name: Enable fail2ban jails
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/fail2ban/jail.d/ansible-mailserver.local
     marker: "# {mark} ANSIBLE MANAGED BLOCK ansible-mailserver fail2ban jails"
     block: |

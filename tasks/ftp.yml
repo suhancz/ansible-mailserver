@@ -1,13 +1,13 @@
 ---
 - name: Open firewall
-  include_tasks: firewall.yml
+  ansible.builtin.include_tasks: firewall.yml
   vars:
-    port: "{{ item }}"
+    port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   loop:
     - 989-990/tcp
     - 40000-50000/tcp
 - name: Configure VSFTPD
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: "{{ item.key }}={{ item.value }}"
     regexp: '^{{ item.key }}='
     path: /etc/vsftpd/vsftpd.conf
@@ -54,7 +54,7 @@
     - { key: "dual_log_enable", value: "YES"}
   notify: Restart vsftpd
 - name: Set up VSFTPD user list
-  lineinfile:
+  ansible.builtin.lineinfile:
     line: "{{ item.name }}"
     path: /etc/vsftpd/vsftpd.userlist
     mode: u=rw
@@ -67,13 +67,13 @@
   no_log: yes
   notify: Restart vsftpd
 - name: Set SELinux booleans
-  when: "{{ getenforce.stdout != 'Disabled' }}"
-  seboolean:
+  when: getenforce.stdout != 'Disabled'
+  ansible.posix.seboolean:
     name: ftpd_full_access
     state: yes
     persistent: yes
 - name: Create user FTP roots
-  file:
+  ansible.builtin.file:
     path: "/home/{{ item.name }}/ftp"
     state: directory
     recurse: yes
@@ -83,7 +83,7 @@
   loop: "{{ users }}"
   no_log: yes
 - name: Create user FTP directories
-  file:
+  ansible.builtin.file:
     path: "/home/{{ item.name }}/ftp/files"
     state: directory
     recurse: yes

@@ -1,36 +1,34 @@
 ---
-- name: Get latest postfixadmin version
-  block:
-    - name: Get URL for latest release
-      uri:
-        url: https://github.com/postfixadmin/postfixadmin/releases/latest
-      register: postfixadmin_download_site
-    - name: Parse version
-      set_fact:
-        postfixadmin_version: "{{ postfixadmin_download_site.url | replace('https://github.com/postfixadmin/postfixadmin/releases/tag/postfixadmin-','') }}"
+- name: Get URL for latest release
+  ansible.builtin.uri:
+    url: https://github.com/postfixadmin/postfixadmin/releases/latest
+  register: postfixadmin_download_site
+- name: Parse version
+  ansible.builtin.set_fact:
+    postfixadmin_version: "{{ postfixadmin_download_site.url | replace('https://github.com/postfixadmin/postfixadmin/releases/tag/postfixadmin-', '') }}"
 - name: Unpack postfixadmin
-  unarchive:
+  ansible.builtin.unarchive:
     src: "https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-{{ postfixadmin_version }}.tar.gz"
     dest: /var/www/
     remote_src: yes
 - name: Rename postfixadmin directory
-  command: "mv /var/www/postfixadmin-postfixadmin-{{ postfixadmin_version }} /var/www/postfixadmin"
+  ansible.builtin.command: "mv /var/www/postfixadmin-postfixadmin-{{ postfixadmin_version }} /var/www/postfixadmin"
   args:
     creates: /var/www/postfixadmin
 - name: Set up postfixadmin permissions
-  file:
+  ansible.builtin.file:
     path: /var/www/postfixadmin/templates_c
     state: directory
     setype: httpd_sys_rw_content_t
     recurse: yes
 - name: Create postfixadmin DB schema
-  import_tasks: create_mariadb_schema.yml
+  ansible.builtin.import_tasks: create_mariadb_schema.yml
   vars:
     mariadb_database: postfixadmin
-    mariadb_state: "{{ ('import' if reset == 'yes')|default('present') }}"
+    mariadb_state: "{{ ('import' if reset == 'yes') | default('present') }}"
   register: postfixadmin_db_state
 - name: Set up postfixadmin DB privileges
-  mysql_user:
+  community.mysql.mysql_user:
     name: postfixadmin
     password: '{{ postfixadmin_db_password }}'
     priv: 'postfixadmin.*:ALL'
@@ -39,21 +37,22 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Fill postfixadmin DB with data
-  import_tasks: fill_mariadb_data.yml
+  ansible.builtin.import_tasks: fill_mariadb_data.yml
   vars:
     mariadb_database:
       db: postfixadmin
       user: postfixadmin
       password: "{{ postfixadmin_db_password }}"
-  when: mariadb_schema_created.changed
+  when: mariadb_schema_created.changed # noqa no-handler we want the database filled now, no time to wait for the handler
   no_log: yes
   notify: Warn on passwords
 - name: Generate PostfixAdmin PHP password
-  command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
+  ansible.builtin.command: php -r 'echo password_hash("{{ postfixadmin_db_password }}", PASSWORD_DEFAULT);'
   register: postfixadmin_setup_password
+  changed_when: postfixadmin_setup_password.rc == 0
   no_log: yes
 - name: Create PostfixAdmin directories
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: u=rwX,og=rX
@@ -65,7 +64,7 @@
     - /etc/mail/postfixadmin
     - /var/lock/fetchmail
 - name: Render PostfixAdmin config template
-  template:
+  ansible.builtin.template:
     src: postfixadmin/config.local.php.j2
     dest: /var/www/postfixadmin/config.local.php
     mode: u=rw,og=r
@@ -73,7 +72,7 @@
     group: root
     backup: yes
 - name: Render PostfixAdmin fetchmail config template
-  template:
+  ansible.builtin.template:
     src: postfixadmin/fetchmail.conf.j2
     dest: /etc/mail/postfixadmin/fetchmail.conf
     mode: u=rw,og=r
@@ -81,7 +80,7 @@
     group: root
     backup: yes
 - name: Make sure log file exists for fail2ban to work
-  file:
+  ansible.builtin.file:
     path: /var/log/php-fpm/www-error.log
     state: touch
     owner: apache

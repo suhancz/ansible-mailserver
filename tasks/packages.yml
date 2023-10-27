@@ -2,15 +2,15 @@
 - name: Install EL repositories
   tags:
     - always
-  package:
+  ansible.builtin.package:
     name:
       - yum-utils
       - epel-release
       - elrepo-release
-    state: latest
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
 - name: Set up UEK repository
   tags: wireguard
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/uek-ol8.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK Unbreakable Enterprise Kernel Release 7 for Oracle Linux repository"
     block: |
@@ -35,24 +35,24 @@
     create: yes
 - name: Set up Remi repository
   tags: horde
-  dnf:
+  ansible.builtin.dnf:
     name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
 # - name: Enable RPM Fusion
 #   tags: horde
-#   dnf:
+#   ansible.builtin.dnf:
 #     name:
 #       - "https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
 #       - "https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-{{ ansible_distribution_major_version }}.noarch.rpm"
 #     disable_gpg_check: yes
 # - name: Set up Cheese repository
 #   tags: horde
-#   dnf:
+#   ansible.builtin.dnf:
 #     name: "http://www.nosuchhost.net/~cheese/fedora/packages/epel-{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/cheese-release-8-1.el8.noarch.rpm"
 #     disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   tags: elasticsearch
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/elastic.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK ElasticSearch 8.x repository"
     block: |
@@ -71,7 +71,7 @@
     backup: yes
     create: yes
 - name: Set up Extra Packages for Enterprise Linux 7 repository
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/epel-el7.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK Extra Packages for Enterprise Linux 7 repository"
     block: |
@@ -88,7 +88,7 @@
     create: yes
 - name: Set up PowerDNS repository
   tags: dns
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/powerdns.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK PowerDNS repository"
     block: |
@@ -154,7 +154,7 @@
     create: yes
 - name: Set up MongoDB repository
   tags: mongodb
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/mongodb-org-5.0.repo
     marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
     block: |
@@ -170,28 +170,35 @@
     backup: yes
     create: yes
 - name: Enable PowerTools
-  command: dnf config-manager --set-enable powertools
+  ansible.builtin.command: dnf config-manager --set-enable powertools
+  register: enable_powertools
+  changed_when: enable_powertools.rc == 0
 - name: Enable the go-toolset DNF module
-  command: dnf module enable go-toolset -y
+  ansible.builtin.command: dnf module enable go-toolset -y
+  register: enable_go_toolset
+  changed_when: enable_go_toolset.rc == 0
 - name: Query DNF repo list
   tags:
     - ldap
     - dns
-  command: dnf repolist
+  ansible.builtin.command: dnf repolist
   register: dnf_repolist
+  changed_when: dnf_repolist.rc == 0
 - name: Enable the COPR repositories
-  when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}"
-  command: "dnf copr enable -y {{ item }}"
+  when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}" # noqa no-jinja-when this logic starts with a varable concatenation, no other way I found to do such
+  ansible.builtin.command: "dnf copr enable -y {{ item }}"
   tags:
     - ldap
     - dns
   loop:
     - "@389ds/389-directory-server"
     - "eclipseo/golang-ng custom-1-x86_64"
+  register: enable_copr_repo
+  changed_when: enable_copr_repo.item.rc == 0
 - name: Install packages
   tags:
     - always
-  package:
+  ansible.builtin.package:
     name:
       - postfix
       - mailx
@@ -347,9 +354,9 @@
       # - php56-php-pecl-imagick
       # - php56-php-pecl-memcache
       # - php-gettext-gettext
-    state: latest
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
 # - name: Reset the PHP DNF module
-#   command: dnf module reset php -y
+#   ansible.builtin.command: dnf module reset php -y
 #   tags:
 #     - wireguard
 #     - dyndns
@@ -357,12 +364,12 @@
 #   tags:
 #     - wireguard
 #     - dyndns
-#   command: dnf module enable php:remi-8.1 -y
+#   ansible.builtin.command: dnf module enable php:remi-8.1 -y
 # - name: Install PHP 8.1 packages
 #   tags:
 #     - wireguard
 #     - dyndns
-#   package:
+#   ansible.builtin.package:
 #     name:
 #       - php81-php-fpm
 #       - php81-php-intl
@@ -372,28 +379,32 @@
 #       - php81-php-mysqlnd
 #       - php81-php-pecl-mysql-xdevapi
 #       - php81-php-ldap
-#     state: latest
+#     state: latest # noqa package-latest I do prefer fresh stuff ;)
 #   register: php81_packages
 # - name: Restart php81-php-fpm
 #   when: php81_packages.changed
 #   tags:
 #     - wireguard
 #     - dyndns
-#   systemd:
+#   ansible.builtin.systemd_service:
 #     name: php81-php-fpm
 #     daemon_reload: yes
 #     enabled: yes
 #     state: restarted
 - name: Reset the PHP DNF module
-  command: dnf module reset php -y
+  ansible.builtin.command: dnf module reset php -y
   tags:
     - always
+  register: reset_php_module
+  changed_when: reset_php_module.rc == 0
 - name: Enable the php:remi-7.4 DNF module
   tags: horde
-  command: dnf module enable php:remi-7.4 -y
+  ansible.builtin.command: dnf module enable php:remi-7.4 -y
+  register: enable_php74_module
+  changed_when: enable_php74_module.rc == 0
 - name: Install PHP 7.4 packages
   tags: horde
-  dnf:
+  ansible.builtin.dnf:
     name:
       - phpldapadmin
       - phpunit7
@@ -499,63 +510,64 @@
       - php-pear-Text-Figlet
     enablerepo: remi
     # enablerepo: cheese
-    state: latest
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
   register: php74_packages
 - name: Restart php74-php-fpm
+  # noqa no-handler we want results now, no time to wait for a handler
   when: php74_packages.changed
   tags: horde
-  systemd:
+  ansible.builtin.systemd_service:
     name: php74-php-fpm
     daemon_reload: yes
     enabled: yes
     state: restarted
 - name: Install EL7 packages
-  dnf:
+  ansible.builtin.dnf:
     name:
       - wiredtiger
       - wiredtiger-devel
       - getmail
     enablerepo: epel-el7
-    state: latest
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
 - name: Enable WireGuard kernel module
   tags: wireguard
   block:
     - name: Load the WireGuard kernel module
-      modprobe:
+      community.general.modprobe:
         name: wireguard
   rescue:
     - name: Install UEK packages
-      dnf:
+      ansible.builtin.dnf:
         name:
           - kmod-wireguard
         enablerepo: ol8_baseos_latest
-        state: latest
+        state: latest # noqa package-latest I do prefer fresh stuff ;)
     - name: Reboot to pick up changes
-      reboot:
+      ansible.builtin.reboot:
         reboot_timeout: 600
         msg: "Reboot initiated by Ansible to enable WireGuard"
     - name: Load the WireGuard kernel module
-      modprobe:
+      community.general.modprobe:
         name: wireguard
 - name: Install PEAR packages
   tags: horde
-  pear:
+  community.general.pear:
     name: pear.horde.org/Horde_ActiveSync
-    state: latest
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
 # - name: Install go packages
-#   command: "go install {{ item }}"
+#   ansible.builtin.command: "go install {{ item }}"
 #   loop:
 #     - github.com/go-acme/lego/v4/cmd/lego@latest
 #   tags: ssl
 # - name: Copy GO binaries to /usr/local/bin
-#   copy:
+#   ansible.builtin.copy:
 #     src: "{{ ansible_env.HOME }}/go/bin/"
 #     dest: /usr/local/bin/
 #     remote_src: yes
 #     backup: yes
 - name: Download as-is executables
   tags: imapsync
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
     mode: u=rwx,go=rx
@@ -564,6 +576,8 @@
   loop:
     - { url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py", dest: "/usr/local/bin/imapdedup.py" }
 - name: Reset the PHP DNF module
-  command: dnf module reset php -y
+  ansible.builtin.command: dnf module reset php -y
   tags:
     - always
+  register: reset_php_module
+  changed_when: reset_php_module.rc == 0

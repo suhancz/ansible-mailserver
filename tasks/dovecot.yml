@@ -1,19 +1,19 @@
 ---
 - name: Open firewall
-  include_tasks: firewall.yml
+  ansible.builtin.include_tasks: firewall.yml
   vars:
-    port: "{{ item }}"
+    port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   loop:
     - imap
     - imaps
     - pop3
     - pop3s
 - name: Automatically restart services
-  import_tasks: autorestart.yml
+  ansible.builtin.import_tasks: autorestart.yml
   vars:
     service: dovecot
 - name: Configure Dovecot protocols
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/dovecot/dovecot.conf
     regexp: '^protocols ='
     line: 'protocols = imap pop3 lmtp'
@@ -24,7 +24,7 @@
     backup: yes
   notify: Restart dovecot
 - name: Configure Dovecot Authentication Mechanism
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/dovecot/conf.d/10-auth.conf
     regexp: '^{{ item.key }} = '
     line: '{{ item.key }} = {{ item.value }}'
@@ -41,7 +41,7 @@
     - { key: "auth_mechanisms", value: "plain login" }
   notify: Restart dovecot
 - name: Configure Dovecot SSL
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/dovecot/conf.d/10-ssl.conf
     regexp: '^{{ item.key }} = '
     line: '{{ item.key }} = {{ item.value }}'
@@ -59,12 +59,12 @@
     - { key: "ssl_prefer_server_ciphers", value: "yes" }
   notify: Restart dovecot
 - name: Add Dovecot user to the mail and apache groups
-  user:
+  ansible.builtin.user:
     name: dovecot
     groups: mail,apache
     append: yes
 - name: Upload complex Dovecot configs
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/dovecot/conf.d/{{ item }}"
     src: "dovecot/{{ item }}"
     mode: u=rw,og=r
@@ -81,7 +81,7 @@
     - 90-sieve.conf
   notify: Restart dovecot
 - name: Render Dovecot config templates
-  template:
+  ansible.builtin.template:
     src: "dovecot/{{ item }}.j2"
     dest: "/etc/dovecot/{{ item }}"
     mode: u=rw,og=r
@@ -94,7 +94,7 @@
     - report-spam.sieve
   notify: Restart dovecot
 - name: Configure Dovecot auth extensions
-  lineinfile:
+  ansible.builtin.lineinfile:
     regexp: '{{ item.line }}'
     line: "{{ '#' if item.comment }}{{ item.line }}"
     path: /etc/dovecot/conf.d/10-auth.conf
@@ -108,7 +108,7 @@
     - { comment: true, line: "!include auth-system.conf.ext"}
   notify: Restart dovecot
 - name: Make sure Dovecot is running
-  systemd:
+  ansible.builtin.systemd_service:
     name: dovecot
     daemon_reload: yes
     enabled: yes

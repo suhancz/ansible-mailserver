@@ -1,7 +1,7 @@
 ---
 - name: Create WebDAV directory
   tags: wireguard
-  file:
+  ansible.builtin.file:
     path: /var/www/html/webdav
     state: directory
     owner: apache
@@ -9,16 +9,17 @@
     mode: u=rwX,og=rX
 - name: Ensure WebDav certificate directory exists
   tags: ssl
-  file:
+  ansible.builtin.file:
     path: /var/www/html/webdav/.certificates
     owner: apache
     group: apache
     state: directory
+    mode: ug=rwX,o=rX
   become: true
   become_user: apache
 - name: BindFS mount SSL certificates to WebDav
   tags: ssl
-  mount:
+  ansible.posix.mount:
     path: /var/www/html/webdav/.certificates
     src: /etc/letsencrypt/certificates
     opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
@@ -26,12 +27,14 @@
     fstype: fuse.bindfs
 - name: Set up SELinux rules for WebDAV
   tags: wireguard
-  when: "{{ getenforce.stdout != 'Disabled' }}"
+  when: getenforce.stdout != 'Disabled'
   block:
     - name: Set SELinux context on WebDAV directory
-      sefcontext:
+      community.general.sefcontext:
         target: '/var/www/html/webdav(/.*)?'
         setype: httpd_sys_rw_content_t
         state: present
     - name: Apply SELinux file context on WebDAV directory
-      command: restorecon -irv /var/www/html/webdav
+      ansible.builtin.command: restorecon -irv /var/www/html/webdav
+      register: restore_webdav_selinux_context
+      changed_when: restore_webdav_selinux_context.rc == 0

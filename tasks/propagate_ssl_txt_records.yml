@@ -1,9 +1,9 @@
 ---
-- name: "Set up ACME challenge TXT records for {{ challenge_item.key }}"
-  import_tasks: add_dns_record.yml
+- name: "Set up ACME challenge TXT records for {{ challenge_item.key }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
-      zone: "{{ challenge_item.key|replace('*.', '') }}"
+      zone: "{{ challenge_item.key | replace('*.', '') }}"
       name: "{{ challenge_item.value['dns-01'].resource }}"
       type: TXT
       content: "{{ challenge_item.value['dns-01'].resource_value }}"
@@ -11,14 +11,14 @@
       append: yes
   when: 'public_dns == "yes"'
 - name: Reload PowerDNS config
-  systemd:
+  ansible.builtin.systemd_service:
     name: pdns
     daemon_reload: yes
     enabled: yes
     state: restarted
   when: 'public_dns == "yes"'
-- name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ challenge_item.key }}"
-  debug:
+- name: "Warn user to set up TXT records with the Let's Encrypt challenge for {{ challenge_item.key }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.debug:
     msg:
       - ""
       - "Please, set up the following TXT record with your DNS provider if not done yet:"
