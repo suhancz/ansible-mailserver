@@ -33,4 +33,4 @@
     wg_configs_json: '{"{{ wg_name }}": {"privatekey": "{{ wg_privatekey_output.stdout }}", "publickey": "{{ wg_publickey_output.stdout }}", "psk": "{{ wg_psk_output.stdout }}", "owner": "{{ wg_owner }}", "cidr": "{{ wg_cidr }}"}}'
 - name: "Add {{ wg_name }} to the WireGuard config array" # noqa name[template] we need to be informative, even if we deviate from the standards
   ansible.builtin.set_fact:
-    wg_configs: "{{ wg_configs|default({})|combine(wg_configs_json) }}"
+    wg_configs: "{{ wg_configs | default({}) | combine(wg_configs_json) }}"

@@ -1,12 +1,12 @@
 ---
 - name: Set SELinux booleans
-  when: "{{ getenforce.stdout != 'Disabled' }}"
+  when: getenforce.stdout != 'Disabled'
   seboolean:
     name: antivirus_can_scan_system
     state: yes
     persistent: yes
 - name: Render AMAVISD config
-  template:
+  ansible.builtin.template:
     src: amavisd/amavisd.conf.j2
     dest: /etc/amavisd/amavisd.conf
     mode: u=rw,og=r

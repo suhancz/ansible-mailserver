@@ -12,6 +12,7 @@
   loop:
     - { key: "AuthservID", value: "OpenDMARC", comment: false }
     - key: "TrustedAuthservIDs"
+      # noqa jinja[spacing] brackets here are as an empty list
       value: >
         {%- set domains = [mailserver_domain] %}
         {%- for domain in custom_domains | default([]) %}

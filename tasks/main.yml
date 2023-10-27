@@ -16,7 +16,7 @@
   tags: always
 - name: Fill authorized submit user list
   ansible.builtin.set_fact:
-    authorized_submit_users: "{{ authorized_submit_users + [ item.name ] }}"
+    authorized_submit_users: "{{ authorized_submit_users + [item.name] }}"
   loop: "{{ users }}"
   no_log: yes
   tags: always

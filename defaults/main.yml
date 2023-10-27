@@ -39,6 +39,7 @@ spamassassin_rules:
   - { type: "score", key: "CUSTOM_DMARC_FAIL", value: "3.0"}
   - type: "body"
     key: "BE_POLITE"
+    # noqa jinja[spacing] some pipes here are for regex purposes and not for Jinja2
     value: >
       /(hi|hello|dear) (
       {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
@@ -76,6 +77,7 @@ spamassassin_rules:
   - { type: "allow_user_rules", key: "1", value: "# Allow user rules"}
   - type: "header"
     key: "SUBJECT_SPAM"
+    # noqa jinja[spacing] some pipes here are as plain text and not for Jinja2
     value: >
       Subject =~ /(
       {%- set mail_users = ['root','postmaster','abuse','hostmaster','webmaster','dmarc-reports'] %}
@@ -94,6 +96,7 @@ spamassassin_rules:
   - { type: "score", key: "SUBJECT_SPAM", value: "4.0" }
   - type: "header"
     key: "__DOMAIN_IN_TO"
+    # noqa jinja[spacing] some pipes here are as plain text and not for Jinja2
     value: >
       To =~ /(
       {%- set domains = [mailserver_domain] %}

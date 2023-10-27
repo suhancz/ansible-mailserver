@@ -59,8 +59,8 @@
         - ldap
     - name: Save last LDAP backup
       archive:
-        path: "{{ (ldap_backups.stdout_lines|last).split(' ')[1] }}"
-        dest: "/backup/ldap/LDAP_backup.{{ (ldap_backups.stdout_lines|last).split(' ')[1].split('/')|last }}.tar.bz2"
+        path: "{{ (ldap_backups.stdout_lines | last).split(' ')[1] }}"
+        dest: "/backup/ldap/LDAP_backup.{{ (ldap_backups.stdout_lines | last).split(' ')[1].split('/') | last }}.tar.bz2"
         format: bz2
         force_archive: yes
       when: reset == "yes"
@@ -81,5 +81,5 @@
     - memberof
     - automember
 - name: Configure the memberof plugin to search all entries
-  ansible.builtin.command: "dsconf {{ mailserver_hostname }} plugin memberof set --scope dc={{ mailserver_domain.split('.')|join(',dc=') }}"
+  ansible.builtin.command: "dsconf {{ mailserver_hostname }} plugin memberof set --scope dc={{ mailserver_domain.split('.') | join(',dc=') }}"
   when: "dscreate_status is defined and dscreate_status.rc is defined and dscreate_status.rc == 0"
