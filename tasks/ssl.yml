@@ -158,7 +158,7 @@
 #     group: root
 #     backup: yes
 - name: Set environment variables for certificate auto-renewals
-  cron:
+  ansible.builtin.cron:
     name: "{{ item.key }}"
     env: yes
     job: "{{ item.value }}"
@@ -168,7 +168,7 @@
     - { key: "PDNS_API_URL", value: http://127.0.0.1:8081/ }
     - { key: "PDNS_API_KEY", value: "{{ powerdns_api_key }}" }
 - name: Auto-renew certificates
-  cron:
+  ansible.builtin.cron:
     name: certificate-auto-renewal
     special_time: monthly
     # job: certbot renew --quiet && systemctl reload postfix dovecot httpd

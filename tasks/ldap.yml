@@ -61,6 +61,9 @@
       archive:
         path: "{{ (ldap_backups.stdout_lines | last).split(' ')[1] }}"
         dest: "/backup/ldap/LDAP_backup.{{ (ldap_backups.stdout_lines | last).split(' ')[1].split('/') | last }}.tar.bz2"
+        owner: root
+        group: root
+        mode: u=rw
         format: bz2
         force_archive: yes
       when: reset == "yes"

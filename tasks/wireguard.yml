@@ -137,7 +137,7 @@
   when: wg_client != "server"
 - name: Collect user home directories
   ansible.builtin.set_fact:
-    user_home: "{{ user_home | default({}) | combine({item['name']: item['home']} )}}"
+    user_home: "{{ user_home | default({}) | combine({item['name']: item['home']}) }}"
   when: item.name is defined
   loop: "{{ user_info.results }}"
 - name: Ensure user VPN config directories exist
@@ -312,7 +312,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: A
-      content: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$','.1') }}"
+      content: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$', '.1') }}"
   loop:
     - postfixadmin
     - poweradmin
@@ -328,7 +328,7 @@
       name: "{{ item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$',':1') }}"
+      content: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$', ':1') }}"
   loop:
     - postfixadmin
     - poweradmin

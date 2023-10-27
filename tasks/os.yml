@@ -24,7 +24,7 @@
         reboot_timeout: 600
         msg: "Reboot initiated by Ansible to enable IPv6"
     - name: Gather facts
-      setup:
+      ansible.builtin.setup:
 - name: Install requiremets
   block:
     - name: Install packages
@@ -88,7 +88,7 @@
     state: present
   tags: wireguard
 - name: Set up cron mailto
-  cron:
+  ansible.builtin.cron:
     backup: yes
     env: yes
     name: MAILTO

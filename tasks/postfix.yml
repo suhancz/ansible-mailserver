@@ -254,7 +254,7 @@
     setype: mail_spool_t
     recurse: yes
 - name: Generate daily Postfix log report
-  cron:
+  ansible.builtin.cron:
     name: "Generate daily Postfix log report"
     backup: yes
     hour: 4

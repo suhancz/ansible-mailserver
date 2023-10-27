@@ -1,7 +1,7 @@
 ---
 # tasks file for ansible-mailserver
 - name: Gather facts
-  setup:
+  ansible.builtin.setup:
 - name: Generate passwords if they don't exist yet
   ansible.builtin.set_fact:
     postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"

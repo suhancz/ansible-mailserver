@@ -136,6 +136,7 @@
     path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
+    mode: ug=rwX,o=
     state: directory
   become: true
   become_user: "{{ item.name }}"
@@ -153,17 +154,21 @@
   no_log: true
 - name: Set postfixadmin ACLs
   tags: postfixadmin
-  acl:
+  ansible.posix.acl:
     path: /var/www/postfixadmin/templates_c
     entity: apache
     etype: user
     permissions: rwX
     state: present
     recursive: yes
+    default: true
 - name: Create HTTPD SystemD drop-in directory
   ansible.builtin.file:
     path: /etc/systemd/system/httpd.service.d
     state: directory
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
 - name: Increase startup timeout
   ansible.builtin.copy:
     src: systemd/httpd.timeout.conf
