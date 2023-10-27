@@ -173,7 +173,7 @@
       vars:
         service: "{{ item }}"
         service_backup_path: "{{ vars[item ~ '_backup_path'] }}"
-      when: "{{ vars[item ~ '_backup_path'] is defined }}"
+      when: vars[item ~ '_backup_path'] is defined
       loop:
         - opendkim
         - opendmarc
