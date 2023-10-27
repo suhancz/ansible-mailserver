@@ -189,6 +189,7 @@
          reject_unknown_helo_hostname
   notify: Restart postfix
 - name: Set up HELO access whitelist
+  when: helo_access is defined
   block:
     - name: Create HELO access whitelist
       ansible.builtin.lineinfile:
@@ -207,8 +208,8 @@
       ansible.builtin.command: postmap /etc/postfix/helo_access
       register: generate_helo_access
       changed_when: generate_helo_access.rc == 0
-  when: helo_access is defined
 - name: Set up RBL whitelist
+  when: rbl_override is defined
   block:
     - name: Create RBL whitelist
       ansible.builtin.lineinfile:
@@ -227,7 +228,6 @@
       ansible.builtin.command: postmap /etc/postfix/rbl_override
       register: generate_rbl_override
       changed_when: generate_rbl_override.rc == 0
-  when: rbl_override is defined
 - name: Set Postgrey whitelist
   ansible.builtin.lineinfile:
     line: '{{ item }}'

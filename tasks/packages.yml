@@ -185,7 +185,7 @@
   register: dnf_repolist
   changed_when: dnf_repolist.rc == 0
 - name: Enable the COPR repositories
-  when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}"
+  when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}" # noqa no-jinja-when this logic starts with a varable concatenation, no other way I found to do such
   ansible.builtin.command: "dnf copr enable -y {{ item }}"
   tags:
     - ldap
