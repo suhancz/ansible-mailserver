@@ -121,10 +121,10 @@
   ansible.builtin.file:
     state: directory
     name: "{{ wireguard.config_dir }}/clients/{{ item }}"
-    owner: "{{ wg_configs[item]['owner'] }}"
-    group: "{{ wg_configs[item]['owner'] }}"
+    owner: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
+    group: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
     mode: u=rwX,g=rX,o=
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ ['dyndns'] + [wg_configs.keys()] }}"
   when: item != "server"
 - name: Generate client configs
   ansible.builtin.template:
