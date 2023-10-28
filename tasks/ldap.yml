@@ -64,7 +64,7 @@
         - ''
         - ldap
     - name: Save last LDAP backup
-      archive:
+      community.general.archive:
         path: "{{ (ldap_backups.stdout_lines | last).split(' ')[1] }}"
         dest: "/backup/ldap/LDAP_backup.{{ (ldap_backups.stdout_lines | last).split(' ')[1].split('/') | last }}.tar.bz2"
         owner: root

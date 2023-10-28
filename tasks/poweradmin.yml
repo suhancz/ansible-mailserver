@@ -83,7 +83,7 @@
       notify: Warn on passwords
   rescue:
     - name: Fill PowerDNS DB with PowerAdmin data replacing Blowfish 2b ident with 2y
-      mysql_query:
+      community.mysql.mysql_query:
         login_db: powerdnsdb
         login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
         login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'

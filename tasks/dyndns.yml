@@ -40,7 +40,7 @@
     - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
       when: 'public_dns == "yes"'
       notify: Warn on passwords
-      mysql_query:
+      community.mysql.mysql_query:
         login_db: powerdnsdb
         login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
         login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
@@ -185,7 +185,7 @@
       loop_control:
         loop_var: dyndns_item
       notify: Warn on passwords
-      mysql_query:
+      community.mysql.mysql_query:
         login_db: powerdnsdb
         login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
         login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
