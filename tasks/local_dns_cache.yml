@@ -7,7 +7,7 @@
         dest: /etc/resolv.conf
         owner: root
         group: root
-        mode: 0644
+        mode: u=rw,og=r
         backup: yes
       notify:
         - Default to localhost in resolv.conf
