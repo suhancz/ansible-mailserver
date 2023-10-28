@@ -40,6 +40,7 @@
   ansible.builtin.lineinfile:
     path: "/etc/modules-load.d/{{ item }}.conf"
     line: "{{ item }}"
+    regexp: "^{{ item }}"
     owner: root
     group: root
     mode: u=rw,go=r
