@@ -124,7 +124,7 @@
     owner: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
     group: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
     mode: u=rwX,g=rX,o=
-  loop: "{{ ['dyndns'] + [wg_configs.keys()] }}"
+  loop: "{{ ['dyndns'] + [wg_configs.keys() | list] }}"
   when: item != "server"
 - name: Generate client configs
   ansible.builtin.template:
@@ -134,7 +134,7 @@
     group: "{{ wg_configs[wg_client]['owner'] }}"
     mode: u=rw,g=r,o=
     backup: yes
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   loop_control:
     loop_var: wg_client
   when: wg_client != "server"
@@ -142,7 +142,7 @@
   ansible.builtin.user:
     name: "{{ wg_configs[wg_client]['owner'] }}"
   register: user_info
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   loop_control:
     loop_var: wg_client
   when: wg_client != "server"
@@ -160,7 +160,7 @@
     mode: u=rwX,g=rX,o=
   become: true
   become_user: "{{ wg_configs[item]['owner'] }}"
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Create user VPN config dirs
   ansible.builtin.file:
@@ -169,7 +169,7 @@
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
     mode: u=rwX,g=rX,o=
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Allow access to VPN configs
   ansible.posix.mount:
@@ -179,13 +179,13 @@
     state: mounted
     fstype: fuse.bindfs
   no_log: true
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Generate QR codes
   ansible.builtin.shell: "set -o pipefail && cat {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.conf | qrencode -o {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
   args:
     executable: /usr/bin/bash
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
   register: generate_vpn_qr_codes
   changed_when: generate_vpn_qr_codes.rc == 0
@@ -195,7 +195,7 @@
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
     mode: u=rw,g=r,o=
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Configure DynDNS
   tags:
@@ -250,7 +250,7 @@
       ttl: "3600"
       type: A
       content: "{{ (wg_configs[item]['cidr'].split(', ') | first).split('/') | first }}"
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Add VPN AAAA records
   tags:
@@ -264,7 +264,7 @@
       ttl: "3600"
       type: AAAA
       content: "{{ (wg_configs[item]['cidr'].split(', ') | last).split('/') | first }}"
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Add admin VPN A records
   tags:
