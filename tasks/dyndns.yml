@@ -110,7 +110,7 @@
   ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
-      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      zone: "dyndns.{{ mailserver_domain }}"
       name: "@"
       ttl: "3600"
       type: A
@@ -122,7 +122,7 @@
   ansible.builtin.import_tasks: add_dns_record.yml
   vars:
     record:
-      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      zone: "dyndns.{{ mailserver_domain }}"
       name: "@"
       ttl: "3600"
       type: AAAA
