@@ -103,6 +103,56 @@
       loop: "{{ [wg_configs.keys() | list] }}"
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
+- name: Add DynDNS root A record
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.import_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      name: "@"
+      ttl: "3600"
+      type: A
+      content: "{{ ansible_default_ipv4.address }}"
+- name: Add DynDNS root AAAA record
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.import_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      name: "@"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ ansible_default_ipv6.address }}"
+- name: Add generic DynDNS A records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "dyndns.{{ mailserver_domain }}"
+      name: "{{ dyndns_item | default('@') }}"
+      ttl: "3600"
+      type: A
+      content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}"
+  loop: "{{ wg_configs.keys() | list }}"
+- name: Add generic DynDNS AAAA records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "dyndns.{{ mailserver_domain }}"
+      name: "{{ dyndns_item | default('@') }}"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}"
+  loop: "{{ wg_configs.keys() | list }}"
 - name: Configure DynDNS subdomains
   ansible.builtin.include_tasks: configure_dyndns_subdomain.yml
   when: dyndns_item != "server"
@@ -150,6 +200,34 @@
   when: dyndns_item != "server"
   ansible.builtin.template:
     src: dyndns/dynamic_dns_client.sh.j2
+    dest: "{{ wireguard.config_dir }}/clients/generic/{{ dyndns_item }}/dynamic_dns_client.sh"
+    owner: "{{ mailserver_admin_user }}"
+    group: "{{ mailserver_admin_user }}"
+    mode: u=rwX
+    backup: true
+  vars:
+    dyndns_item: dyndns
+- name: Generate generic Python DynDNS clients
+  tags:
+    - dyndns
+    - poweradmin
+  when: dyndns_item != "server"
+  ansible.builtin.template:
+    src: dyndns/dynamic_dns_client.py.j2
+    dest: "{{ wireguard.config_dir }}/clients/generic/{{ dyndns_item }}/dynamic_dns_client.py"
+    owner: "{{ mailserver_admin_user }}"
+    group: "{{ mailserver_admin_user }}"
+    mode: u=rwX
+    backup: true
+  vars:
+    dyndns_item: dyndns
+- name: Generate user-specific BASH DynDNS clients
+  tags:
+    - dyndns
+    - poweradmin
+  when: dyndns_item != "server"
+  ansible.builtin.template:
+    src: dyndns/dynamic_dns_client.sh.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ dyndns_item }}/dynamic_dns_client.sh"
     owner: "{{ wg_configs[dyndns_item]['owner'] | default(mailserver_admin_user) }}"
     group: "{{ wg_configs[dyndns_item]['owner'] | default(mailserver_admin_user) }}"
@@ -158,7 +236,7 @@
   loop: "{{ ['dyndns'] + [wg_configs.keys() | list] }}"
   loop_control:
     loop_var: dyndns_item
-- name: Generate Python DynDNS clients
+- name: Generate user-specific Python DynDNS clients
   tags:
     - dyndns
     - poweradmin
