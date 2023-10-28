@@ -51,7 +51,6 @@
       type: A
       content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}"
   loop: "{{ wg_configs.keys() | list }}"
-  when: dyndns_item != "server"
 - name: Add DynDNS AAAA records
   tags:
     - dyndns
@@ -65,7 +64,6 @@
       type: AAAA
       content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}"
   loop: "{{ wg_configs.keys() | list }}"
-  when: dyndns_item != "server"
 - name: Configure PowerDNS recursor to forward DynDNS domains
   tags:
     - dyndns
@@ -77,5 +75,5 @@
     state: present
     backup: yes
   no_log: yes
-  when: (dyndns_item != "server") and (public_dns == "yes")
+  when: public_dns == "yes"
   notify: Restart pdns-recursor

@@ -76,7 +76,7 @@
       become: yes
       become_user: pdns
       loop: "{{ [wg_configs.keys() | list] }}"
-      when: public_dns == "yes"
+      when: public_dns == "yes" and item != "server"
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
   rescue:
@@ -85,11 +85,12 @@
       become: yes
       become_user: pdns
       loop: "{{ [wg_configs.keys() | list] }}"
-      when: reset and (public_dns == "yes")
+      when: reset and (public_dns == "yes" and item != "server")
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
 - name: Configure DynDNS subdomains
   ansible.builtin.include_tasks: configure_dyndns_subdomain.yml
+  when: dyndns_item != "server"
   loop: "{{ [''] + [wg_configs.keys() | list] }}"
   loop_control:
     loop_var: dyndns_item
@@ -99,7 +100,7 @@
     - poweradmin
   block:
     - name: Fill PowerDNS DB with DynDNS data using Blowfish 2y ident
-      when: 'public_dns == "yes"'
+      when: public_dns == "yes" and dyndns_item != "server"
       loop: "{{ [''] + [wg_configs.keys() | list] }}"
       loop_control:
         loop_var: dyndns_item
@@ -114,7 +115,7 @@
       no_log: yes
   rescue:
     - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
-      when: 'public_dns == "yes"'
+      when: public_dns == "yes" and dyndns_item != "server"
       loop: "{{ [''] + [wg_configs.keys() | list] }}"
       loop_control:
         loop_var: dyndns_item
@@ -131,6 +132,7 @@
   tags:
     - dyndns
     - poweradmin
+  when: dyndns_item != "server"
   ansible.builtin.template:
     src: dyndns/dynamic_dns_client.sh.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ dyndns_item }}/dynamic_dns_client.sh"
@@ -141,11 +143,11 @@
   loop: "{{ ['dyndns'] + [wg_configs.keys() | list] }}"
   loop_control:
     loop_var: dyndns_item
-  when: dyndns_item != "server"
 - name: Generate Python DynDNS clients
   tags:
     - dyndns
     - poweradmin
+  when: dyndns_item != "server"
   ansible.builtin.template:
     src: dyndns/dynamic_dns_client.py.j2
     dest: "{{ wireguard.config_dir }}/clients/{{ dyndns_item }}/dynamic_dns_client.py"
@@ -156,4 +158,3 @@
   loop: "{{ ['dyndns'] + [wg_configs.keys() | list] }}"
   loop_control:
     loop_var: dyndns_item
-  when: dyndns_item != "server"
