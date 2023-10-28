@@ -1,0 +1,81 @@
+---
+- name: Add DynDNS NS records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}dyndns.{% endif %}{{ mailserver_domain }}"
+      name: "{{ dyndns_item }}"
+      ttl: "3600"
+      type: NS
+      content: "ns.{{ mailserver_domain }}"
+- name: Add Dyndns root records
+  when: dyndns_item | length == 0
+  block:
+    - name: Add DynDNS root A record
+      tags:
+        - dyndns
+        - poweradmin
+      ansible.builtin.import_tasks: add_dns_record.yml
+      vars:
+        record:
+          zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+          name: "@"
+          ttl: "3600"
+          type: A
+          content: "{{ ansible_default_ipv4.address }}"
+    - name: Add DynDNS root AAAA record
+      tags:
+        - dyndns
+        - poweradmin
+      ansible.builtin.import_tasks: add_dns_record.yml
+      vars:
+        record:
+          zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+          name: "@"
+          ttl: "3600"
+          type: AAAA
+          content: "{{ ansible_default_ipv6.address }}"
+- name: Add DynDNS A records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      name: "{{ dyndns_item }}"
+      ttl: "3600"
+      type: A
+      content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: dyndns_item != "server"
+- name: Add DynDNS AAAA records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      name: "{{ dyndns_item }}"
+      ttl: "3600"
+      type: AAAA
+      content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}"
+  loop: "{{ wg_configs.keys() }}"
+  when: dyndns_item != "server"
+- name: Configure PowerDNS recursor to forward DynDNS domains
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "forward-zones+={% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
+    regex: "^forward-zones+={% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}="
+    state: present
+    backup: yes
+  no_log: yes
+  when: (dyndns_item != "server") and (public_dns == "yes")
+  notify: Restart pdns-recursor
