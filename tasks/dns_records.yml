@@ -53,7 +53,7 @@
   when: public_dns == "yes"
   register: enable_dnssec
   ignore_errors: yes
-  changed_when: enable_dnssec.item.rc == 0
+  changed_when: item.rc == 0
 - name: Fail if the issue is not about DNSSEC being already enabled
   ansible.builtin.fail:
     msg: "{{ item.stderr }}"
@@ -63,14 +63,14 @@
   ansible.builtin.command: 'pdnsutil list-zone {{ item }}'
   register: zone_records
   loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] + ['dyndns.' ~ mailserver_domain] }}"
-  changed_when: zone_records.item.rc == 0
+  changed_when: item.rc == 0
 - name: Correct SOA record for all domains
   ansible.builtin.command: 'pdnsutil replace-rrset {{ zone_record.item }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ zone_record.item }} {{ zone_record.stdout_lines | length }} 10800 3600 604800 3600"'
   loop: "{{ zone_records.results }}"
   loop_control:
     loop_var: zone_record
   register: zone_record
-  changed_when: zone_record.zone_record.rc == 0
+  changed_when: zone_record.rc == 0
 - name: Rectify all zones
   ansible.builtin.command: pdnsutil rectify-all-zones
   register: rectify_zones

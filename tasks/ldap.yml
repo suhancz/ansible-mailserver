@@ -34,7 +34,7 @@
     - name: Configure LDAP server
       ansible.builtin.command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
       register: dscreate_status
-      changed_when: dscreate_status.status.rc == 0
+      changed_when: dscreate_status.rc == 0
   rescue:
     - name: Start LDAP server
       ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
@@ -97,7 +97,7 @@
     - memberof
     - automember
   register: enable_ldap_plugin
-  changed_when: enable_ldap_plugin.item.rc == 0
+  changed_when: item.rc == 0
 - name: Configure the memberof plugin to search all entries
   ansible.builtin.command: "dsconf {{ mailserver_hostname }} plugin memberof set --scope dc={{ mailserver_domain.split('.') | join(',dc=') }}"
   register: enable_ldap_memberof_plugin

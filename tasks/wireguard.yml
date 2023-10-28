@@ -188,7 +188,7 @@
   loop: "{{ wg_configs.keys() }}"
   when: item != "server"
   register: generate_vpn_qr_codes
-  changed_when: generate_vpn_qr_codes.item.rc == 0
+  changed_when: item.rc == 0
 - name: Allow access to QR codes
   ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
