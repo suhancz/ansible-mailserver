@@ -89,3 +89,17 @@
     executable: /usr/bin/bash
   register: install_horde_themes
   changed_when: install_horde_themes.rc == 0
+- name: Render Horde web config templates
+  tags:
+    - horde
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/horde.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd

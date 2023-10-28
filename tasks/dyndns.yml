@@ -1,8 +1,23 @@
 ---
+- name: Render DynDNS web config templates
+  tags:
+    - dyndns
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/clientip.conf.j2", dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/clientip-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}-le-ssl.conf" }
+    - { src: "httpd/dyndns.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/dyndns-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
 - name: Fill PowerDNS DB with PowerAdmin data
   tags:
     - dyndns
-    - poweradmin
   block:
     - name: Fill PowerDNS DB with DynDNS data using Blowfish 2y ident
       when: 'public_dns == "yes"'

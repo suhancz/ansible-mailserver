@@ -1,4 +1,20 @@
 ---
+- name: Render WebDav web config templates
+  tags:
+    - dyndns
+    - wireguard
+    - webdav
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/webdav.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/webdav-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
 - name: Create WebDAV directory
   tags: wireguard
   ansible.builtin.file:

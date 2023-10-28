@@ -115,3 +115,18 @@
     path: /var/www/poweradmin/install/
     state: absent
   when: 'public_dns == "yes"'
+- name: Render PowerAdmin web config templates
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
