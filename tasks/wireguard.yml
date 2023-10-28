@@ -17,6 +17,18 @@
   ansible.builtin.import_tasks: firewall.yml
   vars:
     port: "{{ wireguard.listen_port }}/udp" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
+- name: Ensure user VPN config directories exist
+  tags: wireguard
+  ansible.builtin.file:
+    path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: ug=rwX,o=
+    state: directory
+  become: true
+  become_user: "{{ item.name }}"
+  loop: "{{ users }}"
+  no_log: true
 - name: Load kernel modules
   community.general.modprobe:
     name: "{{ item }}"
@@ -138,7 +150,7 @@
     owner: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
     group: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
     mode: u=rwX,g=rX,o=
-  loop: "{{ ['dyndns'] + [wg_configs.keys() | list] }}"
+  loop: "{{ ['dyndns'] + (wg_configs.keys() | list) }}"
   when: item != "server"
 - name: Generate client configs
   ansible.builtin.template:

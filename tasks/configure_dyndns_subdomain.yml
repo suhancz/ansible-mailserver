@@ -49,7 +49,7 @@
       name: "{{ dyndns_item }}"
       ttl: "3600"
       type: A
-      content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}"
+      content: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}{% else %}{{ ansible_default_ipv4.address }}{% endif %}"
 - name: Add DynDNS AAAA records
   tags:
     - dyndns
@@ -61,7 +61,7 @@
       name: "{{ dyndns_item }}"
       ttl: "3600"
       type: AAAA
-      content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}"
+      content: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}{% else %}{{ ansible_default_ipv6.address }}{% endif %}"
 - name: Configure PowerDNS recursor to forward DynDNS domains
   tags:
     - dyndns

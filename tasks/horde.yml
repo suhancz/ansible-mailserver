@@ -103,3 +103,13 @@
     - { src: "httpd/horde.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}.conf" }
     - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
+- name: Deploy Horde default config
+  tags: horde
+  ansible.builtin.copy:
+    src: httpd/php-horde-horde.conf
+    dest: /etc/httpd/conf.d/php-horde-horde.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  notify: Restart httpd

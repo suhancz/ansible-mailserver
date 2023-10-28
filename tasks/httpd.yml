@@ -61,16 +61,6 @@
     owner: root
     group: root
   notify: Restart httpd
-- name: Deploy Horde default config
-  tags: horde
-  ansible.builtin.copy:
-    src: httpd/php-horde-horde.conf
-    dest: /etc/httpd/conf.d/php-horde-horde.conf
-    mode: u=rw,og=r
-    backup: yes
-    owner: root
-    group: root
-  notify: Restart httpd
 - name: Serve user ~/public_html directories
   tags:
     - webdav
@@ -111,18 +101,6 @@
     recurse: yes
   loop: "{{ users }}"
   no_log: true
-- name: Ensure user certificate directories exist
-  tags: wireguard
-  ansible.builtin.file:
-    path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
-    owner: "{{ item.name }}"
-    group: "{{ item.name }}"
-    mode: ug=rwX,o=
-    state: directory
-  become: true
-  become_user: "{{ item.name }}"
-  loop: "{{ users }}"
-  no_log: true
 - name: BindFS mount SSL certificates to user public_html
   tags: ssl
   ansible.posix.mount:
@@ -133,16 +111,6 @@
     fstype: fuse.bindfs
   loop: "{{ users }}"
   no_log: true
-- name: Set postfixadmin ACLs
-  tags: postfixadmin
-  ansible.posix.acl:
-    path: /var/www/postfixadmin/templates_c
-    entity: apache
-    etype: user
-    permissions: rwX
-    state: present
-    recursive: yes
-    default: true
 - name: Create HTTPD SystemD drop-in directory
   ansible.builtin.file:
     path: /etc/systemd/system/httpd.service.d
@@ -158,42 +126,4 @@
     group: root
     mode: u=rwX,go=rX
     backup: yes
-  notify: Restart httpd
-- name: Create PAM module for HTTPD auth
-  tags: webdav
-  ansible.builtin.copy:
-    src: pam/httpd-auth
-    dest: /etc/pam.d/httpd-auth
-    owner: root
-    group: root
-    mode: u=rw,go=r
-    backup: yes
-  notify: Restart httpd
-- name: Deny blacklisted users from PAM authentication
-  ansible.builtin.lineinfile:
-    path: /etc/httpd/conf.d/denyusers
-    line: "{{ item }}"
-    owner: apache
-    group: apache
-    mode: u=rw,g=r
-    create: yes
-    backup: yes
-  loop: "{{ httpd_pam_deny_users }}"
-  notify: Restart httpd
-- name: Allow Apache read /etc/shadow
-  tags: webdav
-  ansible.builtin.file:
-    path: /etc/shadow
-    state: file
-    group: apache
-    mode: ug=r
-- name: Enable HTTPD PAM auth
-  tags: webdav
-  ansible.builtin.copy:
-    src: httpd/55-authnz_pam.conf
-    dest: /etc/httpd/conf.modules.d/55-authnz_pam.conf
-    mode: u=rw,og=r
-    backup: yes
-    owner: root
-    group: root
   notify: Restart httpd

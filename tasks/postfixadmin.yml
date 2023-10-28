@@ -100,3 +100,13 @@
     - { src: "httpd/postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
     - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
+- name: Set postfixadmin ACLs
+  tags: postfixadmin
+  ansible.posix.acl:
+    path: /var/www/postfixadmin/templates_c
+    entity: apache
+    etype: user
+    permissions: rwX
+    state: present
+    recursive: yes
+    default: true
