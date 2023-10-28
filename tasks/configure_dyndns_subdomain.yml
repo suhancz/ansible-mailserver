@@ -50,7 +50,6 @@
       ttl: "3600"
       type: A
       content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}"
-  loop: "{{ wg_configs.keys() | list }}"
 - name: Add DynDNS AAAA records
   tags:
     - dyndns
@@ -63,7 +62,6 @@
       ttl: "3600"
       type: AAAA
       content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}"
-  loop: "{{ wg_configs.keys() | list }}"
 - name: Configure PowerDNS recursor to forward DynDNS domains
   tags:
     - dyndns
