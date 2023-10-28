@@ -72,20 +72,20 @@
 - name: Create DynDNS zones
   block:
     - name: Create DynDNS zones
+      when: public_dns == "yes" and item != "server"
       ansible.builtin.command: "pdnsutil create-zone {{ wg_configs[item]['owner'] }}.dyndns ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
       loop: "{{ [wg_configs.keys() | list] }}"
-      when: public_dns == "yes" and item != "server"
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
   rescue:
     - name: Create DynDNS zones
+      when: reset and (public_dns == "yes" and item != "server")
       ansible.builtin.command: "pdnsutil --force create-zone {{ wg_configs[item]['owner'] }}.dyndns ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
       loop: "{{ [wg_configs.keys() | list] }}"
-      when: reset and (public_dns == "yes" and item != "server")
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
 - name: Configure DynDNS subdomains
