@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 client_ip4="$(/usr/bin/curl -L -4 https://clientip.{{ mailserver_domain }})"
 client_ip6="$(/usr/bin/curl -L -6 https://clientip.{{ mailserver_domain }})"
-username="{{ dyndns_item.owner | default('dyndns') }}"
-password="{% if dyndns_item.owner is defined %}{% for user in users %}{% if user.name == dyndns_item.owner %}{{ user.password }}{% endif %}{% endfor %}{% else %}{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}{% endif %}"
+username="{{ wg_configs[dyndns_item]['owner'] | default('dyndns') }}"
+password="{% if wg_configs[dyndns_item]['owner'] is defined %}{% for user in users %}{% if user.name == wg_configs[dyndns_item]['owner'] %}{{ user.password }}{% endif %}{% endfor %}{% else %}{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}{% endif %}"
 mixed_hostname="$(/bin/hostname -s)"
 target_hostname="${mixed_hostname,,}"
 /usr/bin/curl -L -u ${username}:${password} "https://dyndns.{{ mailserver_domain }}/?hostname=${target_hostname}.dyndns.{{ mailserver_domain }}&verbose=true&myip=${client_ip4}"

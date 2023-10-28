@@ -7,7 +7,7 @@
   vars:
     record:
       zone: "{% if dyndns_item | length > 0 %}dyndns.{% endif %}{{ mailserver_domain }}"
-      name: "{{ dyndns_item }}"
+      name: "{{ wg_configs[dyndns_item]['owner'] }}"
       ttl: "3600"
       type: NS
       content: "ns.{{ mailserver_domain }}"
@@ -21,7 +21,7 @@
       ansible.builtin.import_tasks: add_dns_record.yml
       vars:
         record:
-          zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+          zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
           name: "@"
           ttl: "3600"
           type: A
@@ -33,7 +33,7 @@
       ansible.builtin.import_tasks: add_dns_record.yml
       vars:
         record:
-          zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+          zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
           name: "@"
           ttl: "3600"
           type: AAAA
@@ -45,7 +45,7 @@
   ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
-      zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
       name: "{{ dyndns_item }}"
       ttl: "3600"
       type: A
@@ -59,7 +59,7 @@
   ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
-      zone: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
       name: "{{ dyndns_item }}"
       ttl: "3600"
       type: AAAA
@@ -72,8 +72,8 @@
     - poweradmin
   ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
-    line: "forward-zones+={% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
-    regex: "^forward-zones+={% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}="
+    line: "forward-zones+={% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
+    regex: "^forward-zones+={% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}="
     state: present
     backup: yes
   no_log: yes
