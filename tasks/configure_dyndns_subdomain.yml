@@ -7,7 +7,7 @@
   vars:
     record:
       zone: "{% if dyndns_item | length > 0 %}dyndns.{% endif %}{{ mailserver_domain }}"
-      name: "{{ wg_configs[dyndns_item]['owner'] }}"
+      name: "{{ wg_configs[dyndns_item]['owner'] | default('dyndns') }}"
       ttl: "3600"
       type: NS
       content: "ns.{{ mailserver_domain }}"
