@@ -193,14 +193,13 @@
           - REPLACE INTO `users` (`username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES ('{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}{% else %}dyndns{% endif %}', '{% for user in users %}{% if user.name == wg_configs[dyndns_item]['owner'] %}{{ user.password | password_hash("blowfish") | replace("$2b$", "$2y$") }}{% endif %}{% endfor %}{% else %}{% if user.name == mailserver_admin_user %}{{ user.password | password_hash("blowfish") | replace("$2b$", "$2y$") }}{% endif %}{% endfor %}{% endif %}', 'Dynamic DNS for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', '{{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}@{{ mailserver_domain }}', 'DNS updates for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', 2, 1, 0)
           - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = '{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}' and users.username = '{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}{% else %}dyndns{% endif %}'"
       no_log: yes
-- name: Generate BASH DynDNS clients
+- name: Generate generic BASH DynDNS clients
   tags:
     - dyndns
     - poweradmin
-  when: dyndns_item != "server"
   ansible.builtin.template:
     src: dyndns/dynamic_dns_client.sh.j2
-    dest: "{{ wireguard.config_dir }}/clients/generic/{{ dyndns_item }}/dynamic_dns_client.sh"
+    dest: "{{ wireguard.config_dir }}/clients/generic/dynamic_dns_client.sh"
     owner: "{{ mailserver_admin_user }}"
     group: "{{ mailserver_admin_user }}"
     mode: u=rwX
@@ -211,10 +210,9 @@
   tags:
     - dyndns
     - poweradmin
-  when: dyndns_item != "server"
   ansible.builtin.template:
     src: dyndns/dynamic_dns_client.py.j2
-    dest: "{{ wireguard.config_dir }}/clients/generic/{{ dyndns_item }}/dynamic_dns_client.py"
+    dest: "{{ wireguard.config_dir }}/clients/generic/dynamic_dns_client.py"
     owner: "{{ mailserver_admin_user }}"
     group: "{{ mailserver_admin_user }}"
     mode: u=rwX
