@@ -91,7 +91,7 @@
       ansible.builtin.command: "pdnsutil create-zone {{ wg_configs[item]['owner'] }}.dyndns ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
-      loop: "{{ [wg_configs.keys() | list] }}"
+      loop: "{{ wg_configs.keys() | list }}"
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
   rescue:
@@ -100,7 +100,7 @@
       ansible.builtin.command: "pdnsutil --force create-zone {{ wg_configs[item]['owner'] }}.dyndns ns.{{ mailserver_domain }}"
       become: yes
       become_user: pdns
-      loop: "{{ [wg_configs.keys() | list] }}"
+      loop: "{{ wg_configs.keys() | list }}"
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
 - name: Add DynDNS root A record
@@ -156,7 +156,7 @@
 - name: Configure DynDNS subdomains
   ansible.builtin.include_tasks: configure_dyndns_subdomain.yml
   when: dyndns_item != "server"
-  loop: "{{ [''] + [wg_configs.keys() | list] }}"
+  loop: "{{ [''] + (wg_configs.keys() | list) }}"
   loop_control:
     loop_var: dyndns_item
 - name: Fill PowerDNS DB with PowerAdmin data
@@ -166,7 +166,7 @@
   block:
     - name: Fill PowerDNS DB with DynDNS data using Blowfish 2y ident
       when: public_dns == "yes" and dyndns_item != "server"
-      loop: "{{ [''] + [wg_configs.keys() | list] }}"
+      loop: "{{ [''] + (wg_configs.keys() | list) }}"
       loop_control:
         loop_var: dyndns_item
       notify: Warn on passwords
@@ -181,7 +181,7 @@
   rescue:
     - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
       when: public_dns == "yes" and dyndns_item != "server"
-      loop: "{{ [''] + [wg_configs.keys() | list] }}"
+      loop: "{{ [''] + (wg_configs.keys() | list) }}"
       loop_control:
         loop_var: dyndns_item
       notify: Warn on passwords
@@ -231,7 +231,7 @@
     group: "{{ wg_configs[dyndns_item]['owner'] | default(mailserver_admin_user) }}"
     mode: u=rwX
     backup: true
-  loop: "{{ ['dyndns'] + [wg_configs.keys() | list] }}"
+  loop: "{{ ['dyndns'] + (wg_configs.keys() | list) }}"
   loop_control:
     loop_var: dyndns_item
 - name: Generate user-specific Python DynDNS clients
@@ -246,6 +246,6 @@
     group: "{{ wg_configs[dyndns_item]['owner'] | default(mailserver_admin_user) }}"
     mode: u=rwX
     backup: true
-  loop: "{{ ['dyndns'] + [wg_configs.keys() | list] }}"
+  loop: "{{ ['dyndns'] + (wg_configs.keys() | list) }}"
   loop_control:
     loop_var: dyndns_item
