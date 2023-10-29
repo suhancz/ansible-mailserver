@@ -203,12 +203,12 @@
   tags:
     - dyndns
     - poweradmin
-  loop: "{{ [''] + (wg_configs.keys() | list) }}"
-  loop_control:
-    loop_var: dyndns_item
   block:
     - name: Fill PowerDNS DB with DynDNS data using Blowfish 2y ident
       when: public_dns == "yes" and dyndns_item != "server"
+      loop: "{{ [''] + (wg_configs.keys() | list) }}"
+      loop_control:
+        loop_var: dyndns_item
       notify: Warn on passwords
       community.mysql.mysql_query:
         login_db: powerdnsdb
@@ -221,6 +221,9 @@
   rescue:
     - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
       when: public_dns == "yes" and dyndns_item != "server"
+      loop: "{{ [''] + (wg_configs.keys() | list) }}"
+      loop_control:
+        loop_var: dyndns_item
       notify: Warn on passwords
       community.mysql.mysql_query:
         login_db: powerdnsdb
