@@ -2,7 +2,7 @@
 $db_host = 'localhost';
 $db_name = 'powerdnsdb';
 $db_user = '{{ mailserver_admin_user }}@{{ mailserver_domain }}';
-$db_pass = '{{ users | selectattr("name", "equalto", mailserver_admin_user) | map(attribute="password") }}';
+$db_pass = '{{ users | selectattr("name", "equalto", mailserver_admin_user) | map(attribute="password") | first }}';
 $db_type = 'mysql';
 
 $session_key = '{{ poweradmin_session_key }}';
