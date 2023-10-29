@@ -11,7 +11,7 @@
     AllowOverride All
     <RequireAny>
       Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
-{% for domain name in wg_configs.keys() | list %}
+{% for dynamic_host_name in wg_configs.keys() | list %}
 {% if dynamic_host_name != "server "%}
       Require forward-dns {{ dynamic_host_name }}.dyndns.{{ mailserver_domain }}
       Require forward-dns {{ dynamic_host_name }}.{{ mailserver_admin_user }}.dyndns.{{ mailserver_domain }}
@@ -25,7 +25,7 @@
     AllowOverride All
     <RequireAny>
       Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
-{% for domain name in wg_configs.keys() | list %}
+{% for dynamic_host_name in wg_configs.keys() | list %}
 {% if dynamic_host_name != "server "%}
       Require forward-dns {{ dynamic_host_name }}.dyndns.{{ mailserver_domain }}
       Require forward-dns {{ dynamic_host_name }}.{{ mailserver_admin_user }}.dyndns.{{ mailserver_domain }}
