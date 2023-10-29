@@ -129,6 +129,35 @@
     wg_owner: "{{ item.owner }}"
     wg_cidr: "{{ item.cidr }}"
   loop: "{{ wg_clients }}"
+- name: Render PostfixAdmin web config templates
+  tags:
+    - postfixadmin
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
+- name: Render PowerAdmin web config templates
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
 - name: Deploy .htaccess for the WireGuard configs
   ansible.builtin.template:
     src: wireguard/htaccess.j2

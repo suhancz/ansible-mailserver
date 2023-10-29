@@ -136,6 +136,7 @@
     - dyndns
     - poweradmin
   ansible.builtin.include_tasks: add_dns_record.yml
+  when: dyndns_item != "server"
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -144,7 +145,10 @@
       type: A
       content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}"
   loop: "{{ wg_configs.keys() | list }}"
+  loop_control:
+    loop_var: dyndns_item
 - name: Add generic DynDNS AAAA records
+  when: dyndns_item != "server"
   tags:
     - dyndns
     - poweradmin
@@ -157,6 +161,8 @@
       type: AAAA
       content: "{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}"
   loop: "{{ wg_configs.keys() | list }}"
+  loop_control:
+    loop_var: dyndns_item
 - name: Configure DynDNS subdomains
   ansible.builtin.include_tasks: configure_dyndns_subdomain.yml
   when: dyndns_item != "server"

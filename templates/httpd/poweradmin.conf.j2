@@ -9,13 +9,29 @@
   <Directory />
     Options FollowSymLinks
     AllowOverride All
-    Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
+    <RequireAny>
+      Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
+{% for domain name in wg_configs.keys() | list %}
+{% if dynamic_host_name != "server "%}
+      Require forward-dns {{ dynamic_host_name }}.dyndns.{{ mailserver_domain }}
+      Require forward-dns {{ dynamic_host_name }}.{{ mailserver_admin_user }}.dyndns.{{ mailserver_domain }}
+{% endif %}
+{% endfor %}
+    </RequireAny>
   </Directory>
 
   <Directory /var/www/poweradmin/>
     Options FollowSymLinks MultiViews
     AllowOverride All
-    Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
+    <RequireAny>
+      Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
+{% for domain name in wg_configs.keys() | list %}
+{% if dynamic_host_name != "server "%}
+      Require forward-dns {{ dynamic_host_name }}.dyndns.{{ mailserver_domain }}
+      Require forward-dns {{ dynamic_host_name }}.{{ mailserver_admin_user }}.dyndns.{{ mailserver_domain }}
+{% endif %}
+{% endfor %}
+    </RequireAny>
   </Directory>
 
 RewriteEngine on

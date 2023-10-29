@@ -19,7 +19,7 @@
   vars:
     record:
       zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
-      name: "{{ dyndns_item | default('@') }}"
+      name: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}{% else %}@{% endif %}"
       ttl: "3600"
       type: A
       content: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}{% else %}{{ ansible_default_ipv4.address }}{% endif %}"
@@ -31,7 +31,7 @@
   vars:
     record:
       zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
-      name: "{{ dyndns_item | default('@') }}"
+      name: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}{% else %}@{% endif %}"
       ttl: "3600"
       type: AAAA
       content: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}{% else %}{{ ansible_default_ipv6.address }}{% endif %}"
