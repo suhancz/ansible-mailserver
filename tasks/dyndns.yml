@@ -107,8 +107,8 @@
         loop_var: user
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
-- name: Make sure local zones are master zones
-  when: public_dns == "yes" and dyndns_item != "server"
+- name: Make sure DynDNS zones are master zones
+  when: public_dns == "yes"
   ansible.builtin.command: "pdnsutil set-kind {{ user.name }}.dyndns.{{ mailserver_domain }} primary"
   become: yes
   become_user: pdns
@@ -118,7 +118,7 @@
   register: set_primary_zone
   changed_when: set_primary_zone.rc == 0
 - name: Count DNS records
-  when: public_dns == "yes" and dyndns_item != "server"
+  when: public_dns == "yes"
   ansible.builtin.command: "pdnsutil list-zone {{ user.name }}.dyndns.{{ mailserver_domain }}"
   register: zone_records
   loop: "{{ users }}"
