@@ -37,14 +37,7 @@
         executable: /usr/bin/bash
       register: generate_apache_selinux_policy
       changed_when: generate_apache_selinux_policy.rc == 0
-- name: Render web config templates
-  tags:
-    - dyndns
-    - horde
-    - postfixadmin
-    - poweradmin
-    - wireguard
-    - webdav
+- name: Render generic web config templates
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -53,22 +46,8 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/clientip.conf.j2", dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/clientip-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}.conf" }
     - { src: "httpd/domain-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/dyndns.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/dyndns-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/horde.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/horde-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/993-horde.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/vpn.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/vpn-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/webdav.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/webdav-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf" }
     - { src: "httpd/wildcard.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf" }
     - { src: "httpd/wildcard-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
@@ -77,16 +56,6 @@
   ansible.builtin.copy:
     src: httpd/options-ssl-apache.conf
     dest: /etc/letsencrypt/options-ssl-apache.conf
-    mode: u=rw,og=r
-    backup: yes
-    owner: root
-    group: root
-  notify: Restart httpd
-- name: Deploy Horde default config
-  tags: horde
-  ansible.builtin.copy:
-    src: httpd/php-horde-horde.conf
-    dest: /etc/httpd/conf.d/php-horde-horde.conf
     mode: u=rw,og=r
     backup: yes
     owner: root
@@ -132,18 +101,6 @@
     recurse: yes
   loop: "{{ users }}"
   no_log: true
-- name: Ensure user certificate directories exist
-  tags: wireguard
-  ansible.builtin.file:
-    path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
-    owner: "{{ item.name }}"
-    group: "{{ item.name }}"
-    mode: ug=rwX,o=
-    state: directory
-  become: true
-  become_user: "{{ item.name }}"
-  loop: "{{ users }}"
-  no_log: true
 - name: BindFS mount SSL certificates to user public_html
   tags: ssl
   ansible.posix.mount:
@@ -154,16 +111,6 @@
     fstype: fuse.bindfs
   loop: "{{ users }}"
   no_log: true
-- name: Set postfixadmin ACLs
-  tags: postfixadmin
-  ansible.posix.acl:
-    path: /var/www/postfixadmin/templates_c
-    entity: apache
-    etype: user
-    permissions: rwX
-    state: present
-    recursive: yes
-    default: true
 - name: Create HTTPD SystemD drop-in directory
   ansible.builtin.file:
     path: /etc/systemd/system/httpd.service.d
@@ -179,42 +126,4 @@
     group: root
     mode: u=rwX,go=rX
     backup: yes
-  notify: Restart httpd
-- name: Create PAM module for HTTPD auth
-  tags: webdav
-  ansible.builtin.copy:
-    src: pam/httpd-auth
-    dest: /etc/pam.d/httpd-auth
-    owner: root
-    group: root
-    mode: u=rw,go=r
-    backup: yes
-  notify: Restart httpd
-- name: Deny blacklisted users from PAM authentication
-  ansible.builtin.lineinfile:
-    path: /etc/httpd/conf.d/denyusers
-    line: "{{ item }}"
-    owner: apache
-    group: apache
-    mode: u=rw,g=r
-    create: yes
-    backup: yes
-  loop: "{{ httpd_pam_deny_users }}"
-  notify: Restart httpd
-- name: Allow Apache read /etc/shadow
-  tags: webdav
-  ansible.builtin.file:
-    path: /etc/shadow
-    state: file
-    group: apache
-    mode: ug=r
-- name: Enable HTTPD PAM auth
-  tags: webdav
-  ansible.builtin.copy:
-    src: httpd/55-authnz_pam.conf
-    dest: /etc/httpd/conf.modules.d/55-authnz_pam.conf
-    mode: u=rw,og=r
-    backup: yes
-    owner: root
-    group: root
   notify: Restart httpd

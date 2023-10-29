@@ -22,7 +22,8 @@
 - name: Update SPAMAssassin's signatures
   ansible.builtin.command: sa-update -D
   register: sa_update
-  failed_when: "{{ sa_update.rc >= 4 }}"
+  failed_when: sa_update.rc >= 4
+  changed_when: sa_update.rc != 0
   notify: Restart spamassassin
 - name: Enable systemd services
   ansible.builtin.systemd_service:

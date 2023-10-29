@@ -62,7 +62,7 @@
     - "smtp_tls_loglevel = 1"
   notify: Restart postfix
   register: configure_postfix
-  changed_when: configure_postfix.item.rc == 0
+  changed_when: configure_postfix.rc == 0
 - name: Configure main.cf
   ansible.builtin.lineinfile:
     regexp: '^{{ item.key }} = '

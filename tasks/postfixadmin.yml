@@ -86,3 +86,13 @@
     owner: apache
     group: apache
     mode: u=rw,og=r
+- name: Set postfixadmin ACLs
+  tags: postfixadmin
+  ansible.posix.acl:
+    path: /var/www/postfixadmin/templates_c
+    entity: apache
+    etype: user
+    permissions: rwX
+    state: present
+    recursive: yes
+    default: true
