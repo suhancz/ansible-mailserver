@@ -2,7 +2,7 @@
 client_ip4="$(/usr/bin/curl -L -4 https://clientip.{{ mailserver_domain }})"
 client_ip6="$(/usr/bin/curl -L -6 https://clientip.{{ mailserver_domain }})"
 username="{{ wg_configs[dyndns_item]['owner'] | default('dyndns') }}"
-password="{{ users | selectattr('name', 'equalto', dyndns_item.owner) | map(attribute='password') | first | default(users[mailserver_admin_user]['password') }}"
+password="{{ users | selectattr('name', 'equalto', (wg_configs[dyndns_item]['owner'] | default(users[mailserver_admin_user]))) | map(attribute='password') | first }}"
 mixed_hostname="$(/bin/hostname -s)"
 target_hostname="${mixed_hostname,,}{% if wg_configs[dyndns_item]['owner'] is defined %}.{{ wg_configs[dyndns_item]['owner'] }}{% endif %}"
 /usr/bin/curl -L -u ${username}:${password} "https://dyndns.{{ mailserver_domain }}/?hostname=${target_hostname}.dyndns.{{ mailserver_domain }}&verbose=true&myip=${client_ip4}"
