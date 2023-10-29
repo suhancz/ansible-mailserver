@@ -117,7 +117,7 @@
     loop_var: user
   register: set_primary_zone
   changed_when: set_primary_zone.rc == 0
-- name: Count DNS records
+- name: Count user DNS records
   when: public_dns == "yes"
   ansible.builtin.command: "pdnsutil list-zone {{ user.name }}.dyndns.{{ mailserver_domain }}"
   register: zone_records
@@ -125,9 +125,9 @@
   loop_control:
     loop_var: user
   changed_when: zone_records.rc == 0
-- name: Correct SOA record for all domains
+- name: Correct SOA record for user DynDNS domains
   when: public_dns == "yes"
-  ansible.builtin.command: 'pdnsutil replace-rrset {{ zone_record.user_zone }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ zone_record.item }} {{ zone_record.stdout_lines | length }} 10800 3600 604800 3600"'
+  ansible.builtin.command: 'pdnsutil replace-rrset {{ user_zone.item }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ user_zone.item }} {{ user_zone.stdout_lines | length }} 10800 3600 604800 3600"'
   loop: "{{ zone_records.results }}"
   loop_control:
     loop_var: user_zone
