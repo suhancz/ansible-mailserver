@@ -8,7 +8,7 @@ Address = {{ wireguard.ipv4_pool.split('/')|first|regex_replace('.0$','.1') }}, 
 PostUp = /etc/wireguard/helper/add-nat-routing.sh
 PostDown = /etc/wireguard/helper/remove-nat-routing.sh
 
-{% for client in wg_configs.keys() %}
+{% for client in wg_configs.keys() | list %}
 {% if client != "server" %}
 [Peer]
 # {{ client }} owned by {{ wg_configs[client].owner }}

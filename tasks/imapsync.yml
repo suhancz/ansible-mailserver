@@ -13,6 +13,7 @@
       register: sync_from_old_mail
       changed_when: sync_from_old_mail.rc == 0
     - name: Set up password environment variables for cron jobs
+      when: current_user.old_imap_mail.sync is defined and current_user.old_imap_mail.sync
       become: yes
       become_user: "{{ current_user.name }}"
       ansible.builtin.cron:
@@ -25,7 +26,8 @@
         - "{{ current_user.password }}"
       loop_control:
         index_var: imapsync_password_index
-    - name: Sync old IMAP account
+    - name: Daily sync old IMAP account
+      when: current_user.old_imap_mail.sync is defined and current_user.old_imap_mail.sync
       become: yes
       become_user: "{{ current_user.name }}"
       ansible.builtin.cron:
@@ -35,6 +37,7 @@
         backup: yes
         user: "{{ current_user.name }}"
     - name: "Save {{ current_user.old_imap_mail.user }}'s password in a file" # noqa name[template] we need to be informative, even if we deviate from the standards
+      when: current_user.imap_dedup is defined and current_user.imap_dedup
       ansible.builtin.lineinfile:
         path: '~{{ current_user.name }}/.cron_secrets'
         line: 'IMAP_PASSWORD={{ current_user.password }}'
@@ -45,6 +48,7 @@
         regexp: '^IMAP_PASSWORD='
         validate: 'grep ^IMAP_PASSWORD="{{ current_user.password }}"$ %s'
     - name: De-duplicate IMAP mail
+      when: current_user.imap_dedup is defined and current_user.imap_dedup
       become: yes
       become_user: "{{ current_user.name }}"
       ansible.builtin.cron:

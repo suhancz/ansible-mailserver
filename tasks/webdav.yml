@@ -1,4 +1,58 @@
 ---
+- name: Render WebDav web config templates
+  tags:
+    - dyndns
+    - wireguard
+    - webdav
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/webdav.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/webdav-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
+- name: Create PAM module for HTTPD auth
+  tags: webdav
+  ansible.builtin.copy:
+    src: pam/httpd-auth
+    dest: /etc/pam.d/httpd-auth
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  notify: Restart httpd
+- name: Deny blacklisted users from PAM authentication
+  ansible.builtin.lineinfile:
+    path: /etc/httpd/conf.d/denyusers
+    line: "{{ item }}"
+    owner: apache
+    group: apache
+    mode: u=rw,g=r
+    create: yes
+    backup: yes
+  loop: "{{ httpd_pam_deny_users }}"
+  notify: Restart httpd
+- name: Allow Apache read /etc/shadow
+  tags: webdav
+  ansible.builtin.file:
+    path: /etc/shadow
+    state: file
+    group: apache
+    mode: ug=r
+- name: Enable HTTPD PAM auth
+  tags: webdav
+  ansible.builtin.copy:
+    src: httpd/55-authnz_pam.conf
+    dest: /etc/httpd/conf.modules.d/55-authnz_pam.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  notify: Restart httpd
 - name: Create WebDAV directory
   tags: wireguard
   ansible.builtin.file:

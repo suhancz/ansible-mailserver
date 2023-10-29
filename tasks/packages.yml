@@ -194,7 +194,7 @@
     - "@389ds/389-directory-server"
     - "eclipseo/golang-ng custom-1-x86_64"
   register: enable_copr_repo
-  changed_when: enable_copr_repo.item.rc == 0
+  changed_when: enable_copr_repo.rc == 0
 - name: Install packages
   tags:
     - always

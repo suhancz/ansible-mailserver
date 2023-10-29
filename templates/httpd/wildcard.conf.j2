@@ -1,6 +1,6 @@
 <VirtualHost *:80>
   # ServerName {{ mailserver_domain }}
-  # ServerAlias {% for custom_domain in custom_domains %}{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+  # ServerAlias {{ custom_domains | join(' ') }}
 
   ErrorLog /var/log/httpd/wildcard_error.log
   CustomLog /var/log/httpd/wildcard_access.log combined

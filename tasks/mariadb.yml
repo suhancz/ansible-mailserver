@@ -35,6 +35,8 @@
         - name: Start MariaDB in safe mode
           when: reset == "yes" or forgotten_mariadb_root_password
           ansible.builtin.shell: "mysqld_safe --skip-grant-tables --skip-networking &"
+          register: mariadb_safe_mode
+          changed_when: mariadb_safe_mode.rc == 0
         - name: "Generate MariaDB root password reset SQL"
           when: reset == "yes" or forgotten_mariadb_root_password
           ansible.builtin.template:
