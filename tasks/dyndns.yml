@@ -127,7 +127,7 @@
   changed_when: zone_records.rc == 0
 - name: Correct SOA record for user DynDNS domains
   when: public_dns == "yes"
-  ansible.builtin.command: 'pdnsutil replace-rrset {{ user_zone.item }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ user_zone.item }} {{ user_zone.stdout_lines | length }} 10800 3600 604800 3600"'
+  ansible.builtin.command: 'pdnsutil replace-rrset {{ user_zone.user.name }}.{{ mailserver_domain }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ user_zone.user.name }}.{{ mailserver_domain }} {{ user_zone.stdout_lines | length }} 10800 3600 604800 3600"'
   loop: "{{ zone_records.results }}"
   loop_control:
     loop_var: user_zone
