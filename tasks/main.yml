@@ -34,7 +34,9 @@
     - dyndns
 - name: Configure PostfixAdmin
   ansible.builtin.import_tasks: postfixadmin.yml
-  tags: postfixadmin
+  tags:
+    - postfix
+    - postfixadmin
 - name: Set up SSL
   ansible.builtin.import_tasks: ssl.yml
   tags: ssl
@@ -74,9 +76,11 @@
   tags: postfix
 - name: Configure Dovecot
   ansible.builtin.import_tasks: dovecot.yml
-  tags: dovecot
+  tags:
+    - dovecot
+    - imapsync
 - name: Sync old IMAP account
-  # noqa jinja[invalid] however linter complains, this works
+  # noqa jinja[invalid] for some reason this was the only way I found to pass the variable to the included task list
   ansible.builtin.include_tasks: imapsync.yml
   loop: "{{ users }}"
   loop_control:
