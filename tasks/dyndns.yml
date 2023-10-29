@@ -15,45 +15,25 @@
     - { src: "httpd/dyndns.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}.conf" }
     - { src: "httpd/dyndns-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
-- name: Fill PowerDNS DB with PowerAdmin data
+- name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
   tags:
     - dyndns
-  block:
-    - name: Fill PowerDNS DB with DynDNS data using Blowfish 2y ident
-      when: 'public_dns == "yes"'
-      notify: Warn on passwords
-      community.mysql.mysql_query:
-        login_db: powerdnsdb
-        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-        login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
-        query:
-          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (2, 'Dynamic', 'For DNS updates')
-          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41, 'zone_master_add', 'User is allowed to add new master zones.'), (42, 'zone_slave_add', 'User is allowed to add new slave zones.'), (43, 'zone_content_view_own', 'User is allowed to see the content and meta data of zones he owns.'), (44, 'zone_content_edit_own', 'User is allowed to edit the content of zones he owns.'), (45, 'zone_meta_edit_own', 'User is allowed to edit the meta data of zones he owns.'), (46, 'zone_content_view_others', 'User is allowed to see the content and meta data of zones he does not own.'), (47, 'zone_content_edit_others', 'User is allowed to edit the content of zones he does not own.'), (48, 'zone_meta_edit_others', 'User is allowed to edit the meta data of zones he does not own.'), (49, 'search', 'User is allowed to perform searches.'), (50, 'supermaster_view', 'User is allowed to view supermasters.'), (51, 'supermaster_add', 'User is allowed to add new supermasters.'), (52, 'supermaster_edit', 'User is allowed to edit supermasters.'), (53, 'user_is_ueberuser', 'User has full access. God-like. Redeemer.'), (54, 'user_view_others', 'User is allowed to see other users and their details.'), (55, 'user_add_new', 'User is allowed to add new users.'), (56, 'user_edit_own', 'User is allowed to edit their own details.'), (57, 'user_edit_others', 'User is allowed to edit other users.'), (58, 'user_passwd_edit_others', 'User is allowed to edit the password of other users.'), (59, 'user_edit_templ_perm', 'User is allowed to change the permission template that is assigned to a user.'), (60, 'templ_perm_add', 'User is allowed to add new permission templates.'), (61, 'templ_perm_edit', 'User is allowed to edit existing permission templates.'), (62, 'zone_content_edit_own_as_client', 'User is allowed to edit record, but not SOA and NS.')
-          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (2, 'Dynamic', 'For DNS updates')
-          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (2, 2, 44)
-          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (3, 2, 43)
-          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (4, 2, 41)
-          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (2, 'dyndns', '{{ users | selectattr("name", "equalto", mailserver_admin_user) | map(attribute="password") | first | password_hash("blowfish") }}', 'Dynamic DNS', 'dyndns@{{ mailserver_domain }}', 'User for dynamic DNS updates', 2, 1, 0)
-          - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = 'dyndns.{{ mailserver_domain }}' and users.username = 'dyndns'"
-      no_log: yes
-  rescue:
-    - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
-      when: 'public_dns == "yes"'
-      notify: Warn on passwords
-      community.mysql.mysql_query:
-        login_db: powerdnsdb
-        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-        login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
-        query:
-          - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (2, 'Dynamic', 'For DNS updates')
-          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41, 'zone_master_add', 'User is allowed to add new master zones.'), (42, 'zone_slave_add', 'User is allowed to add new slave zones.'), (43, 'zone_content_view_own', 'User is allowed to see the content and meta data of zones he owns.'), (44, 'zone_content_edit_own', 'User is allowed to edit the content of zones he owns.'), (45, 'zone_meta_edit_own', 'User is allowed to edit the meta data of zones he owns.'), (46, 'zone_content_view_others', 'User is allowed to see the content and meta data of zones he does not own.'), (47, 'zone_content_edit_others', 'User is allowed to edit the content of zones he does not own.'), (48, 'zone_meta_edit_others', 'User is allowed to edit the meta data of zones he does not own.'), (49, 'search', 'User is allowed to perform searches.'), (50, 'supermaster_view', 'User is allowed to view supermasters.'), (51, 'supermaster_add', 'User is allowed to add new supermasters.'), (52, 'supermaster_edit', 'User is allowed to edit supermasters.'), (53, 'user_is_ueberuser', 'User has full access. God-like. Redeemer.'), (54, 'user_view_others', 'User is allowed to see other users and their details.'), (55, 'user_add_new', 'User is allowed to add new users.'), (56, 'user_edit_own', 'User is allowed to edit their own details.'), (57, 'user_edit_others', 'User is allowed to edit other users.'), (58, 'user_passwd_edit_others', 'User is allowed to edit the password of other users.'), (59, 'user_edit_templ_perm', 'User is allowed to change the permission template that is assigned to a user.'), (60, 'templ_perm_add', 'User is allowed to add new permission templates.'), (61, 'templ_perm_edit', 'User is allowed to edit existing permission templates.'), (62, 'zone_content_edit_own_as_client', 'User is allowed to edit record, but not SOA and NS.')
-          - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (2, 'Dynamic', 'For DNS updates')
-          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (2, 2, 44)
-          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (3, 2, 43)
-          - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (4, 2, 41)
-          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (2, 'dyndns', '{{ users | selectattr("name", "equalto", mailserver_admin_user) | map(attribute="password") | first | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Dynamic DNS', 'dyndns@{{ mailserver_domain }}', 'User for dynamic DNS updates', 2, 1, 0)
-          - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = 'dyndns.{{ mailserver_domain }}' and users.username = 'dyndns'"
-      no_log: yes
+  when: 'public_dns == "yes"'
+  notify: Warn on passwords
+  community.mysql.mysql_query:
+    login_db: powerdnsdb
+    login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
+    query:
+      - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (2, 'Dynamic', 'For DNS updates')
+      - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (41, 'zone_master_add', 'User is allowed to add new master zones.'), (42, 'zone_slave_add', 'User is allowed to add new slave zones.'), (43, 'zone_content_view_own', 'User is allowed to see the content and meta data of zones he owns.'), (44, 'zone_content_edit_own', 'User is allowed to edit the content of zones he owns.'), (45, 'zone_meta_edit_own', 'User is allowed to edit the meta data of zones he owns.'), (46, 'zone_content_view_others', 'User is allowed to see the content and meta data of zones he does not own.'), (47, 'zone_content_edit_others', 'User is allowed to edit the content of zones he does not own.'), (48, 'zone_meta_edit_others', 'User is allowed to edit the meta data of zones he does not own.'), (49, 'search', 'User is allowed to perform searches.'), (50, 'supermaster_view', 'User is allowed to view supermasters.'), (51, 'supermaster_add', 'User is allowed to add new supermasters.'), (52, 'supermaster_edit', 'User is allowed to edit supermasters.'), (53, 'user_is_ueberuser', 'User has full access. God-like. Redeemer.'), (54, 'user_view_others', 'User is allowed to see other users and their details.'), (55, 'user_add_new', 'User is allowed to add new users.'), (56, 'user_edit_own', 'User is allowed to edit their own details.'), (57, 'user_edit_others', 'User is allowed to edit other users.'), (58, 'user_passwd_edit_others', 'User is allowed to edit the password of other users.'), (59, 'user_edit_templ_perm', 'User is allowed to change the permission template that is assigned to a user.'), (60, 'templ_perm_add', 'User is allowed to add new permission templates.'), (61, 'templ_perm_edit', 'User is allowed to edit existing permission templates.'), (62, 'zone_content_edit_own_as_client', 'User is allowed to edit record, but not SOA and NS.')
+      - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (2, 'Dynamic', 'For DNS updates')
+      - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (2, 2, 44)
+      - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (3, 2, 43)
+      - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (4, 2, 41)
+      - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (2, 'dyndns', '{{ users | selectattr("name", "equalto", mailserver_admin_user) | map(attribute="password") | first | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Dynamic DNS', 'dyndns@{{ mailserver_domain }}', 'User for dynamic DNS updates', 2, 1, 0)
+      - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = 'dyndns.{{ mailserver_domain }}' and users.username = 'dyndns'"
+  no_log: yes
 - name: Check if DynDNS .htaccess exists
   tags:
     - dyndns
@@ -199,40 +179,23 @@
   loop: "{{ [''] + (wg_configs.keys() | list) }}"
   loop_control:
     loop_var: dyndns_item
-- name: Fill PowerDNS DB with PowerAdmin data
+- name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
   tags:
     - dyndns
     - poweradmin
-  block:
-    - name: Fill PowerDNS DB with DynDNS data using Blowfish 2y ident
-      when: public_dns == "yes" and dyndns_item != "server"
-      loop: "{{ [''] + (wg_configs.keys() | list) }}"
-      loop_control:
-        loop_var: dyndns_item
-      notify: Warn on passwords
-      community.mysql.mysql_query:
-        login_db: powerdnsdb
-        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-        login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
-        query:
-          - REPLACE INTO `users` (`username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES ('{{ dyndns_item.owner | default("dyndns") }}', '{{ users | selectattr("name", "equalto", dyndns_item.owner) | map(attribute="password") | first | default(users[mailserver_admin_user]["password"]) | password_hash("blowfish") }}', 'Dynamic DNS for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', '{{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}@{{ mailserver_domain }}', 'DNS updates for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', 2, 1, 0)
-          - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = '{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}' and users.username = '{{ dyndns_item.owner | default('dyndns') }}'"
-      no_log: yes
-  rescue:
-    - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
-      when: public_dns == "yes" and dyndns_item != "server"
-      loop: "{{ [''] + (wg_configs.keys() | list) }}"
-      loop_control:
-        loop_var: dyndns_item
-      notify: Warn on passwords
-      community.mysql.mysql_query:
-        login_db: powerdnsdb
-        login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-        login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
-        query:
-          - REPLACE INTO `users` (`username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES ('{{ dyndns_item.owner | default("dyndns") }}', '{{ users | selectattr("name", "equalto", dyndns_item.owner) | map(attribute="password") | first | default(users[mailserver_admin_user]["password"]) | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Dynamic DNS for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', '{{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}@{{ mailserver_domain }}', 'DNS updates for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', 2, 1, 0)
-          - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = '{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}' and users.username = '{{ dyndns_item.owner | default('dyndns') }}'"
-      no_log: yes
+  when: public_dns == "yes" and dyndns_item != "server"
+  loop: "{{ [''] + (wg_configs.keys() | list) }}"
+  loop_control:
+    loop_var: dyndns_item
+  notify: Warn on passwords
+  community.mysql.mysql_query:
+    login_db: powerdnsdb
+    login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
+    query:
+      - REPLACE INTO `users` (`username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES ('{{ dyndns_item.owner | default("dyndns") }}', '{{ users | selectattr("name", "equalto", dyndns_item.owner) | map(attribute="password") | first | default(users[mailserver_admin_user]["password"]) | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Dynamic DNS for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', '{{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}@{{ mailserver_domain }}', 'DNS updates for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', 2, 1, 0)
+      - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = '{% if dyndns_item | length > 0 %}{{ dyndns_item }}.{% endif %}dyndns.{{ mailserver_domain }}' and users.username = '{{ dyndns_item.owner | default('dyndns') }}'"
+  no_log: yes
 - name: Generate generic BASH DynDNS clients
   tags:
     - dyndns
