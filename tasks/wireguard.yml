@@ -70,6 +70,7 @@
     mode: u=rwX,go=rX
   loop:
     - /etc/wireguard/clients
+    - /etc/wireguard/clients/generic
     - /etc/wireguard/helper
     - "{{ wireguard.config_dir }}"
     - /var/www/html/.vpn
