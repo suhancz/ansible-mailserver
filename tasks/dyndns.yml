@@ -193,8 +193,8 @@
     login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
     login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
     query:
-      - REPLACE INTO `users` (`username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES ('{{ user }}', '{{ user | map(attribute="password") | first | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Dynamic DNS for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', '{{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}@{{ mailserver_domain }}', 'DNS updates for user {{ wg_configs[dyndns_item]['owner'] | default("dyndns") }}', 2, 1, 0)
-      - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = '{{ user }}.dyndns.{{ mailserver_domain }}' and users.username = '{{ user }}'"
+      - REPLACE INTO `users` (`username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES ('{{ user.name }}', '{{ user | map(attribute="password") | first | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Dynamic DNS for user {{ user.name }}', '{{ user.name }}@{{ mailserver_domain }}', 'DNS updates for user {{ user.name }}', 2, 1, 0)
+      - "REPLACE INTO `zones` (`domain_id`, `owner`, `comment`, `zone_templ_id`) SELECT domains.id, users.id, '', 0 FROM domains, users WHERE domains.name = '{{ user.name }}.dyndns.{{ mailserver_domain }}' and users.username = '{{ user.nmame }}'"
   no_log: yes
 - name: Generate generic BASH DynDNS clients
   tags:
