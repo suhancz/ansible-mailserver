@@ -118,7 +118,7 @@
   register: set_primary_zone
   changed_when: set_primary_zone.rc == 0
 - name: Count DNS records
-  ansible.builtin.command: 'pdnsutil list-zone {{ wg_configs[dyndns_item]['owner'] }}.dyndns.{{ mailserver_domain }}'
+  ansible.builtin.command: "pdnsutil list-zone {{ wg_configs[dyndns_item]['owner'] }}.dyndns.{{ mailserver_domain }}"
   register: zone_records
   loop: "{{ wg_configs.keys() | list }}"
   loop_control:
