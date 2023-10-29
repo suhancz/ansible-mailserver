@@ -9,7 +9,7 @@
   block:
     - name: "Open firewall for numeric port {{ port }}"
       ansible.posix.firewalld:
-        port : "{{ port }}"
+        port: "{{ port }}"
         permanent: yes
         state: enabled
         immediate: yes

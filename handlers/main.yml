@@ -129,7 +129,7 @@
     force: true
     owner: root
     group: root
-    mode: 0644
+    mode: u=rw,og=r
 - name: Restart systemd-resolved
   ansible.builtin.systemd_service:
     name: systemd-resolved

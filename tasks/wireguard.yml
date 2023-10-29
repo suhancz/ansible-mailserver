@@ -1,8 +1,34 @@
 ---
+- name: Render VPN web config templates
+  tags:
+    - wireguard
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/vpn.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/vpn-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
 - name: Open firewall
   ansible.builtin.import_tasks: firewall.yml
   vars:
     port: "{{ wireguard.listen_port }}/udp" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
+- name: Ensure user VPN config directories exist
+  tags: wireguard
+  ansible.builtin.file:
+    path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: ug=rwX,o=
+    state: directory
+  become: true
+  become_user: "{{ item.name }}"
+  loop: "{{ users }}"
+  no_log: true
 - name: Load kernel modules
   community.general.modprobe:
     name: "{{ item }}"
@@ -14,6 +40,7 @@
   ansible.builtin.lineinfile:
     path: "/etc/modules-load.d/{{ item }}.conf"
     line: "{{ item }}"
+    regexp: "^{{ item }}"
     owner: root
     group: root
     mode: u=rw,go=r
@@ -43,6 +70,7 @@
     mode: u=rwX,go=rX
   loop:
     - /etc/wireguard/clients
+    - /etc/wireguard/clients/generic
     - /etc/wireguard/helper
     - "{{ wireguard.config_dir }}"
     - /var/www/html/.vpn
@@ -102,6 +130,35 @@
     wg_owner: "{{ item.owner }}"
     wg_cidr: "{{ item.cidr }}"
   loop: "{{ wg_clients }}"
+- name: Render PostfixAdmin web config templates
+  tags:
+    - postfixadmin
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/postfixadmin.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/postfixadmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/001-postfixadmin.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
+- name: Render PowerAdmin web config templates
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
+    - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
+  notify: Restart httpd
 - name: Deploy .htaccess for the WireGuard configs
   ansible.builtin.template:
     src: wireguard/htaccess.j2
@@ -121,10 +178,10 @@
   ansible.builtin.file:
     state: directory
     name: "{{ wireguard.config_dir }}/clients/{{ item }}"
-    owner: "{{ wg_configs[item]['owner'] }}"
-    group: "{{ wg_configs[item]['owner'] }}"
+    owner: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
+    group: "{{ wg_configs[item]['owner'] | default(mailserver_admin_user) }}"
     mode: u=rwX,g=rX,o=
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ ['dyndns'] + (wg_configs.keys() | list) }}"
   when: item != "server"
 - name: Generate client configs
   ansible.builtin.template:
@@ -134,7 +191,7 @@
     group: "{{ wg_configs[wg_client]['owner'] }}"
     mode: u=rw,g=r,o=
     backup: yes
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   loop_control:
     loop_var: wg_client
   when: wg_client != "server"
@@ -142,7 +199,7 @@
   ansible.builtin.user:
     name: "{{ wg_configs[wg_client]['owner'] }}"
   register: user_info
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   loop_control:
     loop_var: wg_client
   when: wg_client != "server"
@@ -160,7 +217,7 @@
     mode: u=rwX,g=rX,o=
   become: true
   become_user: "{{ wg_configs[item]['owner'] }}"
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Create user VPN config dirs
   ansible.builtin.file:
@@ -169,7 +226,7 @@
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
     mode: u=rwX,g=rX,o=
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Allow access to VPN configs
   ansible.posix.mount:
@@ -179,91 +236,41 @@
     state: mounted
     fstype: fuse.bindfs
   no_log: true
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Generate QR codes
   ansible.builtin.shell: "set -o pipefail && cat {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.conf | qrencode -o {{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
   args:
     executable: /usr/bin/bash
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
   register: generate_vpn_qr_codes
-  changed_when: generate_vpn_qr_codes.item.rc == 0
+  changed_when: generate_vpn_qr_codes.rc == 0
 - name: Allow access to QR codes
   ansible.builtin.file:
     path: "{{ user_home[wg_configs[item]['owner']] }}/public_html/.vpn/{{ item }}/wg0.png"
     owner: "{{ wg_configs[item]['owner'] }}"
     group: "{{ wg_configs[item]['owner'] }}"
     mode: u=rw,g=r,o=
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
-- name: Add DynDNS NS records
+- name: Configure DynDNS
   tags:
     - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: dyndns.yml
+- name: Add VPN NS record
+  tags:
+    - wireguard
     - poweradmin
   ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
       zone: "{{ mailserver_domain }}"
-      name: "{{ item }}"
+      name: vpn
       ttl: "3600"
       type: NS
       content: "ns.{{ mailserver_domain }}"
-  loop:
-    - dyndns
-    - vpn
-- name: Add DynDNS root A record
-  tags:
-    - dyndns
-    - poweradmin
-  ansible.builtin.import_tasks: add_dns_record.yml
-  vars:
-    record:
-      zone: "dyndns.{{ mailserver_domain }}"
-      name: "@"
-      ttl: "3600"
-      type: A
-      content: "{{ ansible_default_ipv4.address }}"
-- name: Add DynDNS root AAAA record
-  tags:
-    - dyndns
-    - poweradmin
-  ansible.builtin.import_tasks: add_dns_record.yml
-  vars:
-    record:
-      zone: "dyndns.{{ mailserver_domain }}"
-      name: "@"
-      ttl: "3600"
-      type: AAAA
-      content: "{{ ansible_default_ipv6.address }}"
-- name: Add DynDNS A records
-  tags:
-    - dyndns
-    - poweradmin
-  ansible.builtin.include_tasks: add_dns_record.yml
-  vars:
-    record:
-      zone: "dyndns.{{ mailserver_domain }}"
-      name: "{{ item }}"
-      ttl: "3600"
-      type: A
-      content: "{{ wg_configs[item]['cidr'].split(', ') | first }}"
-  loop: "{{ wg_configs.keys() }}"
-  when: item != "server"
-- name: Add DynDNS AAAA records
-  tags:
-    - dyndns
-    - poweradmin
-  ansible.builtin.include_tasks: add_dns_record.yml
-  vars:
-    record:
-      zone: "dyndns.{{ mailserver_domain }}"
-      name: "{{ item }}"
-      ttl: "3600"
-      type: AAAA
-      content: "{{ wg_configs[item]['cidr'].split(', ') | last }}"
-  loop: "{{ wg_configs.keys() }}"
-  when: item != "server"
 - name: Add VPN root A record
   tags:
     - wireguard
@@ -300,7 +307,7 @@
       ttl: "3600"
       type: A
       content: "{{ (wg_configs[item]['cidr'].split(', ') | first).split('/') | first }}"
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Add VPN AAAA records
   tags:
@@ -314,7 +321,7 @@
       ttl: "3600"
       type: AAAA
       content: "{{ (wg_configs[item]['cidr'].split(', ') | last).split('/') | first }}"
-  loop: "{{ wg_configs.keys() }}"
+  loop: "{{ wg_configs.keys() | list }}"
   when: item != "server"
 - name: Add admin VPN A records
   tags:
@@ -362,45 +369,6 @@
   no_log: yes
   when: 'public_dns == "yes"'
   notify: Restart pdns-recursor
-- name: Configure PowerDNS recursor to forward DynDNS domains
-  tags:
-    - dyndns
-    - poweradmin
-  ansible.builtin.lineinfile:
-    path: /etc/pdns-recursor/recursor.conf
-    line: "forward-zones+=dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
-    regex: "^forward-zones+=dyndns.{{ mailserver_domain }}="
-    state: present
-    backup: yes
-  no_log: yes
-  when: 'public_dns == "yes"'
-  notify: Restart pdns-recursor
-- name: Generate BASH DynDNS clients
-  tags:
-    - dyndns
-    - poweradmin
-  ansible.builtin.template:
-    src: dyndns/dynamic_dns_client.sh.j2
-    dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.sh"
-    owner: "{{ wg_configs[item]['owner'] }}"
-    group: "{{ wg_configs[item]['owner'] }}"
-    mode: u=rwX
-    backup: true
-  loop: "{{ wg_configs.keys() }}"
-  when: item != "server"
-- name: Generate Python DynDNS clients
-  tags:
-    - dyndns
-    - poweradmin
-  ansible.builtin.template:
-    src: dyndns/dynamic_dns_client.py.j2
-    dest: "{{ wireguard.config_dir }}/clients/{{ item }}/dynamic_dns_client.py"
-    owner: "{{ wg_configs[item]['owner'] }}"
-    group: "{{ wg_configs[item]['owner'] }}"
-    mode: u=rwX
-    backup: true
-  loop: "{{ wg_configs.keys() }}"
-  when: item != "server"
 - name: Deploy WireGuard SystemD config path watcher
   tags: wireguard
   ansible.builtin.copy:

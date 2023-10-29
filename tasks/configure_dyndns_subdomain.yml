@@ -1,0 +1,50 @@
+---
+- name: Add DynDNS NS records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}dyndns.{% endif %}{{ mailserver_domain }}"
+      name: "{{ wg_configs[dyndns_item]['owner'] | default('dyndns') }}"
+      ttl: "3600"
+      type: NS
+      content: "ns.{{ mailserver_domain }}"
+- name: Add DynDNS A records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      name: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}{% else %}@{% endif %}"
+      ttl: "3600"
+      type: A
+      content: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['cidr'].split(', ') | first }}{% else %}{{ ansible_default_ipv4.address }}{% endif %}"
+- name: Add DynDNS AAAA records
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.include_tasks: add_dns_record.yml
+  vars:
+    record:
+      zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
+      name: "{% if dyndns_item | length > 0 %}{{ dyndns_item }}{% else %}@{% endif %}"
+      ttl: "3600"
+      type: AAAA
+      content: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['cidr'].split(', ') | last }}{% else %}{{ ansible_default_ipv6.address }}{% endif %}"
+- name: Configure PowerDNS recursor to forward DynDNS domains
+  tags:
+    - dyndns
+    - poweradmin
+  ansible.builtin.lineinfile:
+    path: /etc/pdns-recursor/recursor.conf
+    line: "forward-zones+={% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}=127.0.0.1:5300"
+    regex: "^forward-zones+={% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}="
+    state: present
+    backup: yes
+  no_log: yes
+  when: public_dns == "yes"
+  notify: Restart pdns-recursor

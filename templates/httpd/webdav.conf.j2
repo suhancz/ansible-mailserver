@@ -1,6 +1,6 @@
 <VirtualHost *:80>
   ServerName webdav.{{ mailserver_domain }}
-  ServerAlias {% for custom_domain in custom_domains %}webdav.{{ custom_domain }}{% if loop.index != loop.length %} {% endif %}{% endfor %}
+  ServerAlias {{ custom_domains | join(' webdav.') }}
 
   DocumentRoot /var/www/html/webdav/
 

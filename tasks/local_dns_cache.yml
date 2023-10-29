@@ -7,7 +7,7 @@
         dest: /etc/resolv.conf
         owner: root
         group: root
-        mode: 0644
+        mode: u=rw,og=r
         backup: yes
       notify:
         - Default to localhost in resolv.conf
@@ -44,7 +44,7 @@
       [Resolve]
       Cache=yes
       # CacheFromLocalhost=yes
-      Domains={% for custom_domain in [mailserver_domain] + custom_domains %}{{ custom_domain }} {% if loop.index != loop.length %} {% endif %}{% endfor %}
+      Domains={{ ([mailserver_domain] + custom_domains) | join(' ') }}
 
       DNS=127.0.0.1 ::1 8.8.8.8 2001:4860:4860::8888 1.1.1.1 2606:4700:4700::1111
       DNSStubListener=No
