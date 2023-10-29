@@ -108,16 +108,17 @@
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
 - name: Make sure local zones are master zones
+  when: public_dns == "yes" and dyndns_item != "server"
   ansible.builtin.command: "pdnsutil set-kind {{ wg_configs[dyndns_item]['owner'] }}.dyndns.{{ mailserver_domain }} primary"
   become: yes
   become_user: pdns
   loop: "{{ wg_configs.keys() | list }}"
   loop_control:
     loop_var: dyndns_item
-  when: public_dns == "yes"
   register: set_primary_zone
   changed_when: set_primary_zone.rc == 0
 - name: Count DNS records
+  when: public_dns == "yes" and dyndns_item != "server"
   ansible.builtin.command: "pdnsutil list-zone {{ wg_configs[dyndns_item]['owner'] }}.dyndns.{{ mailserver_domain }}"
   register: zone_records
   loop: "{{ wg_configs.keys() | list }}"
@@ -125,6 +126,7 @@
     loop_var: dyndns_item
   changed_when: zone_records.rc == 0
 - name: Correct SOA record for all domains
+  when: public_dns == "yes"
   ansible.builtin.command: 'pdnsutil replace-rrset {{ zone_record.item }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ zone_record.item }} {{ zone_record.stdout_lines | length }} 10800 3600 604800 3600"'
   loop: "{{ zone_records.results }}"
   loop_control:
