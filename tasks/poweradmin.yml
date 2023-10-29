@@ -55,7 +55,7 @@
     - poweradmin
   community.mysql.mysql_user:
     name: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-    password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+    password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') }}"
     priv: 'powerdnsdb.*:SELECT,INSERT,UPDATE,DELETE'
     host: localhost
     login_user: root
@@ -72,12 +72,12 @@
       community.mysql.mysql_query:
         login_db: powerdnsdb
         login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-        login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+        login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') }}"
         query:
           - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1, 'Administrator', 'Administrator template with full rights.')
           - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (1, 'Administrator', 'Administrator template with full rights.')
           - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1, 1, 53)
-          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password | password_hash("blowfish") | replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{{ users | selectattr("name", "equalto", mailserver_admin_user) | map(attribute="password") | password_hash("blowfish") }}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
       no_log: yes
       when: 'public_dns == "yes"'
       notify: Warn on passwords
@@ -86,11 +86,11 @@
       community.mysql.mysql_query:
         login_db: powerdnsdb
         login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
-        login_password: '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}'
+        login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') }}"
         query:
           - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1, 'Administrator', 'Administrator template with full rights.')
           - REPLACE INTO `perm_items` (`id`, `name`, `descr`) VALUES (1, 'Administrator', 'Administrator template with full rights.')
-          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password | password_hash("blowfish") | replace("$2b$", "$2y$") }}{% endif %}{% endfor %}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
+          - REPLACE INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES (1, 'admin', '{{ users | selectattr("name", "equalto", mailserver_admin_user) | map(attribute="password") | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Administrator', 'hostmaster@{{ mailserver_domain }}', 'Administrator with full rights.', 1, 1, 0)
           - REPLACE INTO `perm_templ_items` (`id`, `templ_id`, `perm_id`) VALUES (1, 1, 53)
       no_log: yes
       when: 'public_dns == "yes"'

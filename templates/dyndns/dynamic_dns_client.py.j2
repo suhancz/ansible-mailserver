@@ -7,7 +7,7 @@ from requests.auth import HTTPBasicAuth
 
 # change these values if not given by arguments to the script
 login = "{{ wg_configs[dyndns_item]['owner'] | default('dyndns') }}"
-password = "{% if wg_configs[dyndns_item]['owner'] is defined %}{% for user in users %}{% if user.name == wg_configs[dyndns_item]['owner'] %}{{ user.password }}{% endif %}{% endfor %}{% else %}{% for user in users %}{% if user.name == mailserver_admin_user %}{{ user.password }}{% endif %}{% endfor %}{% endif %}"
+password = "{{ users | selectattr('name', 'equalto', dyndns_item.owner) | map(attribute='password') | default(users[mailserver_admin_user]['password') }}"
 dyndns = socket.gethostname().split('.', 1)[0].lower() + "{% if wg_configs[dyndns_item]['owner'] is defined %}.{{ wg_configs[dyndns_item]['owner'] }}{% endif %}.dyndns.{{ mailserver_domain }}"
 dyndns_server = 'https://dyndns.{{ mailserver_domain }}'
 ip_lookup_url = 'https://clientip.{{ mailserver_domain }}'
