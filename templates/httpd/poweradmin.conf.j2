@@ -1,41 +1,8 @@
 <VirtualHost *:80>
   ServerName poweradmin.vpn.{{ mailserver_domain }}
 
-  DocumentRoot /var/www/poweradmin/
+  RewriteEngine on
+  RewriteCond %{SERVER_NAME} =poweradmin.vpn.{{ mailserver_domain }}
 
-  ErrorLog /var/log/httpd/poweradmin_error.log
-  CustomLog /var/log/httpd/poweradmin_access.log combined
-
-  <Directory />
-    Options FollowSymLinks
-    AllowOverride All
-    <RequireAny>
-      Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
-{% for dynamic_host_name in wg_configs.keys() | list %}
-{% if dynamic_host_name != "server "%}
-      Require forward-dns {{ dynamic_host_name }}.dyndns.{{ mailserver_domain }}
-      Require forward-dns {{ dynamic_host_name }}.{{ mailserver_admin_user }}.dyndns.{{ mailserver_domain }}
-{% endif %}
-{% endfor %}
-    </RequireAny>
-  </Directory>
-
-  <Directory /var/www/poweradmin/>
-    Options FollowSymLinks MultiViews
-    AllowOverride All
-    <RequireAny>
-      Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
-{% for dynamic_host_name in wg_configs.keys() | list %}
-{% if dynamic_host_name != "server "%}
-      Require forward-dns {{ dynamic_host_name }}.dyndns.{{ mailserver_domain }}
-      Require forward-dns {{ dynamic_host_name }}.{{ mailserver_admin_user }}.dyndns.{{ mailserver_domain }}
-{% endif %}
-{% endfor %}
-    </RequireAny>
-  </Directory>
-
-RewriteEngine on
-RewriteCond %{SERVER_NAME} =poweradmin.vpn.{{ mailserver_domain }}
-
-RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+  RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
