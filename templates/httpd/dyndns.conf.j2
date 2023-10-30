@@ -3,7 +3,7 @@
 
   RewriteEngine on
   RewriteCond %{HTTPS} off
-  RewriteCond %{SERVER_NAME} =dynsdns.{{ mailserver_domain }}
+  RewriteCond %{SERVER_NAME} =dyndns.{{ mailserver_domain }}
 
   RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
