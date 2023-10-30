@@ -1,15 +1,8 @@
 <VirtualHost *:80>
   ServerName vpn.{{ mailserver_domain }}
 
+  RewriteEngine on
+  RewriteCond %{SERVER_NAME} =vpn.{{ mailserver_domain }}
 
-  ErrorLog /var/log/httpd/vpn_error.log
-  CustomLog /var/log/httpd/vpn_access.log combined
-
-  AddExternalAuth pwauth /usr/bin/pwauth
-  SetExternalAuthMethod pwauth pipe
-
-RewriteEngine on
-RewriteCond %{SERVER_NAME} =vpn.{{ mailserver_domain }}
-
-RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+  RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>

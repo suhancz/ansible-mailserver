@@ -1,25 +1,9 @@
 <VirtualHost *:80>
   ServerName clientip.{{ mailserver_domain }}
 
-  DocumentRoot /var/www/poweradmin/
+  RewriteEngine on
+  RewriteCond %{HTTPS} off
+  RewriteCond %{SERVER_NAME} =clientip.{{ mailserver_domain }}
 
-  ErrorLog /var/log/httpd/poweradmin_error.log
-  CustomLog /var/log/httpd/poweradmin_access.log combined
-
-  <Directory />
-    Options FollowSymLinks
-    AllowOverride All
-  </Directory>
-
-  <Directory /var/www/poweradmin/>
-    Options FollowSymLinks MultiViews
-    AllowOverride All
-    Order allow,deny
-    allow from all
-  </Directory>
-
-RewriteEngine on
-RewriteCond %{SERVER_NAME} =clientip.{{ mailserver_domain }}
-
-RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+  RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
