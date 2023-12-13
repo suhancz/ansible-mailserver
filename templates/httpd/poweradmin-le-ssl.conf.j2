@@ -2,6 +2,7 @@
 SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
 <VirtualHost *:443>
   ServerName poweradmin.vpn.{{ mailserver_domain }}
+  ServerAlias poweradmin.{{ mailserver_domain }}
 
   DocumentRoot /var/www/poweradmin/
 
