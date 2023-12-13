@@ -1,5 +1,6 @@
 <VirtualHost *:80>
   ServerName poweradmin.vpn.{{ mailserver_domain }}
+  ServerAlias poweradmin.{{ mailserver_domain }}
 
   RewriteEngine on
   RewriteCond %{SERVER_NAME} =poweradmin.vpn.{{ mailserver_domain }}
