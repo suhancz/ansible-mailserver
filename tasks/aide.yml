@@ -1,0 +1,23 @@
+---
+- name: Check for existing aide database
+  ansible.builtin.stat:
+    path: /var/lib/aide/aide.db.gz
+  register: aide_db_check
+  changed_when: not aide_db_check.stat.exists
+  notify:
+    - Initialize aide database
+    - Move new aide database into place
+- name: Ensure AIDE check is setup in crontab
+  ansible.builtin.cron:
+    special_time: daily
+    name: AIDE scheduled database checkup
+    backup: yes
+    user: root
+    state: present
+    job: /usr/sbin/aide --check
+- name: Update AIDE database
+  when: aide_db_check.stat.exists
+  ansible.builtin.command: /usr/sbin/aide -u
+  register: aide_update
+  failed_when: aide_update.rc > 7
+  notify: Move new aide database into place
