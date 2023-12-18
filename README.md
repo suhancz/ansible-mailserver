@@ -76,3 +76,8 @@ Author Information
 ------------------
 
 Akos Balla
+
+External sources
+----------------
+
+Inspiration for the AIDE steps taken from [Andrew J. Huffman's Ansible role](https://github.com/ahuffman/ansible-aide)

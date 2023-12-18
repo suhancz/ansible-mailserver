@@ -338,6 +338,7 @@
       - perl-Proc-ProcessTable
       - perl-CGI
       - imapsync
+      - aide
       # - php56-php-bcmath
       # - php56-php-channel-horde
       # - php56-php-horde-horde-lz4

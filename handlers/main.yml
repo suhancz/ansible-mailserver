@@ -155,3 +155,8 @@
 - name: Warn on passwords
   ansible.builtin.debug:
     msg: "!!!WARNING!!! All web UI admin passwords are set to the same as your admin user's password. For your own safety, change them before going live"
+- name: Initialize aide database
+  ansible.builtin.command: /usr/sbin/aide -i
+  when: not aide_db_check.stat.exists
+- name: Move new aide database into place
+  ansible.builtin.command: mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
