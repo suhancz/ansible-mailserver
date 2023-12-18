@@ -109,3 +109,4 @@
   tags: ssl
 - name: Configure AIDE
   ansible.builtin.import_tasks: aide.yml
+  tags: aide
