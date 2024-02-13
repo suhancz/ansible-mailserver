@@ -80,7 +80,7 @@
       name=Kolab 16: Stable Release (CentOS_{{ ansible_distribution_major_version }})
       type=rpm-md
       baseurl=http://obs.kolabsys.com/repositories/Kolab:/16/CentOS_$releasever/
-      gpgcheck=1
+      gpgcheck=0
       enabled=1
       gpgkey=https://ssl.kolabsys.com/community.asc
       priority=60
