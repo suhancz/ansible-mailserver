@@ -70,26 +70,15 @@
     state: present
     backup: yes
     create: yes
+- name: Accept Kolab GPG key
+  tags: kolab
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://mirror.apheleia-it.ch/repos/Kolab:/16/key.asc
 - name: Set up Kolab repository
   tags: kolab
-  ansible.builtin.blockinfile:
-    path: /etc/yum.repos.d/kolab.repo
-    marker: "# {mark} ANSIBLE MANAGED BLOCK Kolab 16 repository"
-    block: |
-      [Kolab_16]
-      name=Kolab 16: Stable Release (CentOS_{{ ansible_distribution_major_version }})
-      type=rpm-md
-      baseurl=http://obs.kolabsys.com/repositories/Kolab:/16/CentOS_$releasever/
-      gpgcheck=0
-      enabled=1
-      gpgkey=https://ssl.kolabsys.com/community.asc
-      priority=60
-    mode: u=rw,og=r
-    owner: root
-    group: root
-    state: present
-    backup: yes
-    create: yes
+  ansible.builtin.dnf:
+    name: "https://mirror.apheleia-it.ch/repos/Kolab:/16/kolab-16-for-el{{ ansible_distribution_major_version }}.rpm"
 - name: Set up Extra Packages for Enterprise Linux 7 repository
   ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/epel-el7.repo
