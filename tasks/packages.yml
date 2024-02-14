@@ -301,7 +301,7 @@
       - openssh-ldap-authkeys
       - postfix-ldap
       - sssd-ldap
-      - 389-ds-base
+      # - 389-ds-base
       - fortune-mod
       - mongodb-org
       - fail2ban-all
