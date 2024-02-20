@@ -81,3 +81,4 @@ External sources
 ----------------
 
 Inspiration for the AIDE steps taken from [Andrew J. Huffman's Ansible role](https://github.com/ahuffman/ansible-aide)
+Inspiration for Kolab customization taken from [Simon Bärlocher's Ansible role](https://github.com/chriswayg/ansible-kolab)

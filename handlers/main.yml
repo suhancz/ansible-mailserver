@@ -47,6 +47,12 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Restart kolab
+  ansible.builtin.systemd_service:
+    name: kolabd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Restart mongod
   ansible.builtin.systemd_service:
     name: mongod

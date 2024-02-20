@@ -1,4 +1,12 @@
 ---
+- name: Enable UNIX socket authentication
+  community.general.ini_file:
+    path: /etc/my.cnf.d/mariadb-server.cnf
+    section: mariadb
+    option: plugin_load_add
+    value: auth_socket
+    mode: u=rw,go=r
+    backup: true
 - name: Make sure MariaDB is running
   ansible.builtin.systemd_service:
     name: mariadb

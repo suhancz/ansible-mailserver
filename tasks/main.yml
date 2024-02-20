@@ -46,6 +46,9 @@
 # - name: Set up Horde
 #   ansible.builtin.import_tasks: horde.yml
 #   tags: horde
+- name: Set up Kolab
+  ansible.builtin.import_tasks: kolab.yml
+  tags: kolab
 - name: Set up ElasticSearch
   ansible.builtin.import_tasks: elasticsearch.yml
   tags: elasticsearch
@@ -57,7 +60,8 @@
   tags:
     - httpd
     - dyndns
-    - horde
+    # - horde
+    - kolab
     - postfixadmin
     - poweradmin
     - wireguard
