@@ -1,9 +1,9 @@
 ---
 - name: Setup kolab
-  ansible.builtin.shell: "set -o pipefail && echo 2 | setup-kolab --default --timezone={{ ansible_date_time.tz }} --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} --domain={{ mailserver_domain }}"
-  args:
-    executable: /usr/bin/bash
+  ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} --domain={{ mailserver_domain }}"
   register: kolab_setup
+  failed_when: kolab_setup.rc != 0 and "existing" not in kolab_setup.stderr
+  changed_when: kolab_setup.rc == 0
   tags:
     - configuration
 
