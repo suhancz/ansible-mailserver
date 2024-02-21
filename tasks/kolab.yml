@@ -64,7 +64,6 @@
     dest: /usr/src/KolabScripts
     version: Kolab16
     update: yes
-  register: kolab_patch
 
 - name: Change kolab patch premissons
   ansible.builtin.file: 
@@ -74,7 +73,6 @@
     mode: u=rwx,og=
 
 - name: Patch kolab
-  when: kolab_patch.changed
   ansible.builtin.command: "bash /usr/src/KolabScripts/kolab/{{ item }}"
   args:
     chdir: /usr/src/KolabScripts/kolab
