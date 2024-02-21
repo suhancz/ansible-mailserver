@@ -7,12 +7,16 @@
     value: auth_socket
     mode: u=rw,go=r
     backup: true
+  tags:
+    - kolab
 - name: Make sure MariaDB is running
   ansible.builtin.systemd_service:
     name: mariadb
     daemon_reload: yes
     enabled: yes
     state: restarted
+  tags:
+    - kolab
 - name: Set MariaDB root password
   block:
     - name: Set the MariaDB root password
@@ -126,6 +130,13 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
+- name: Secure the MySQL root user for UNIX socket connections
+  community.mysql.mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  tags:
+    - kolab
 - name: Remove the MySQL test database
   community.mysql.mysql_db:
     db: test
