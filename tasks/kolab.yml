@@ -76,6 +76,8 @@
 - name: Patch kolab
   when: kolab_patch.changed
   ansible.builtin.command: "bash /usr/src/KolabScripts/kolab/{{ item }}"
+  args:
+    chdir: /usr/src/KolabScripts/kolab
   with_items:
     - initRoundcubePlugins.sh
     - initMultiDomain.sh
