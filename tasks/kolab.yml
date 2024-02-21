@@ -3,7 +3,6 @@
   ansible.builtin.shell: "set -o pipefail && echo 2 | setup-kolab --default --timezone={{ ansible_date_time.tz }} --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} --domain={{ mailserver_domain }}"
   args:
     executable: /usr/bin/bash
-  when: '"existing" not in kolab_check.stderr'
   register: kolab_setup
   tags:
     - configuration
