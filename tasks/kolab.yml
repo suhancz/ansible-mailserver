@@ -1,46 +1,47 @@
 ---
-- name: setup kolab
-  shell: "echo 2 | setup-kolab --default --timezone={{ ansible_date_time.tz }} --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} --domain={{ mailserver_domain }}"
+- name: Setup kolab
+  ansible.builtin.shell: "set -o pipefail && echo 2 | setup-kolab --default --timezone={{ ansible_date_time.tz }} --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} --domain={{ mailserver_domain }}"
+  args:
+    executable: /usr/bin/bash
   when: '"existing" not in kolab_check.stderr'
   register: kolab_setup
   tags:
     - configuration
 
 # Disable version info
-- block:
-  - name: add config httpd.conf
-    lineinfile: 
-      dest: "/etc/httpd/conf/httpd.conf"
-      regexp: "^(.*){{ item.regexp }}(.*)$" 
-      line: "{{ item.line }}" 
-      backup: yes
-    with_items:
-      - { regexp: "ServerTokens", line: "ServerTokens ProductOnly" }
-      - { regexp: "ServerSignature", line: "ServerSignature Off" }
-      - { regexp: "SSLCipherSuite", line: "SSLCipherSuite ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256" }
-      - { regexp: "SSLProtocol", line: "SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1" }
-      - { regexp: "SSLHonorCipherOrder", line: "SSLHonorCipherOrder on" }
-      - { regexp: "SSLCompression", line: "SSLCompression off" }
-    notify: 
-      - Restart httpd
+- name: Add config httpd.conf
+  ansible.builtin.lineinfile:
+    dest: "/etc/httpd/conf/httpd.conf"
+    regexp: "^(.*){{ item.regexp }}(.*)$" 
+    line: "{{ item.line }}" 
+    backup: yes
+  with_items:
+    - { regexp: "ServerTokens", line: "ServerTokens ProductOnly" }
+    - { regexp: "ServerSignature", line: "ServerSignature Off" }
+    - { regexp: "SSLCipherSuite", line: "SSLCipherSuite ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256" }
+    - { regexp: "SSLProtocol", line: "SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1" }
+    - { regexp: "SSLHonorCipherOrder", line: "SSLHonorCipherOrder on" }
+    - { regexp: "SSLCompression", line: "SSLCompression off" }
+  notify: 
+    - Restart httpd
 
-  - name: disable php version
-    community.general.ini_file:
-      path: "{{ item }}"
-      section: PHP
-      option: expose_php
-      value: off
-      mode: u=rw,go=r
-      backup: true
-    loop:
-      - /etc/php.ini
-      - /etc/opt/remi/php74/php.ini
-    notify: 
-      - Restart httpd
+- name: Disable php version
+  community.general.ini_file:
+    path: "{{ item }}"
+    section: PHP
+    option: expose_php
+    value: off
+    mode: u=rw,go=r
+    backup: true
+  loop:
+    - /etc/php.ini
+    - /etc/opt/remi/php74/php.ini
+  notify: 
+    - Restart httpd
   tags:
     - configuration
 
-- name: configure kolab.conf
+- name: Configure kolab.conf
   community.general.ini_file:
     path: /etc/kolab/kolab.conf
     section: kolab
@@ -58,45 +59,44 @@
     - configuration
 
 # Kolab Patch for Multidomains
-- block:
-  - name: kolab patch load
-    git: 
-      repo: https://github.com/suhancz/KolabScripts.git # I use my own mirror here so we're sure the upstream doesn't get lost
-      dest: /usr/src/KolabScripts
-      version: Kolab16
-      update: yes
-    register: kolab_patch
+- name: Kolab patch download
+  ansible.builtin.git:
+    repo: https://github.com/suhancz/KolabScripts.git # I use my own mirror here so we're sure the upstream doesn't get lost
+    dest: /usr/src/KolabScripts
+    version: Kolab16
+    update: yes
+  register: kolab_patch
 
-  - name: change kolab patch premisson 
-    file: 
-      path: /usr/src/KolabScripts
-      owner: root 
-      group: root 
-      mode: u=rwx,og=
+- name: Change kolab patch premissons
+  ansible.builtin.file: 
+    path: /usr/src/KolabScripts
+    owner: root 
+    group: root 
+    mode: u=rwx,og=
 
-  - name: kolab script run
-    when: kolab_patch.changed
-    shell: "bash /usr/src/KolabScripts/kolab/{{ item }} 1>/dev/null"
-    with_items:
-      - initRoundcubePlugins.sh
-      - initMultiDomain.sh
-      - initMailForward.sh
-      - initMailCatchall.sh
+- name: Patch kolab
+  when: kolab_patch.changed
+  ansible.builtin.command: "bash /usr/src/KolabScripts/kolab/{{ item }}"
+  with_items:
+    - initRoundcubePlugins.sh
+    - initMultiDomain.sh
+    - initMailForward.sh
+    - initMailCatchall.sh
 
-  - name: configure kolab for multidomains
-    lineinfile: 
-      dest: "/usr/share/roundcubemail/program/localization/{{ item.lang }}/labels.inc"
-      regexp: "{{ item.regexp }}" 
-      line: "{{ item.line }}" 
-      backup: yes
-    with_items:
-      - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "en_US" }
-      - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "de_DE" }
-      - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "de_CH" }
-      - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "fr_FR" }
-      - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "it_IT" }
-    notify: 
-      - Restart kolab
+- name: Configure kolab for multidomains
+  ansible.builtin.lineinfile: 
+    dest: "/usr/share/roundcubemail/program/localization/{{ item.lang }}/labels.inc"
+    regexp: "{{ item.regexp }}" 
+    line: "{{ item.line }}" 
+    backup: yes
+  with_items:
+    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "en_US" }
+    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "de_DE" }
+    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "de_CH" }
+    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "fr_FR" }
+    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "it_IT" }
+  notify: 
+    - Restart kolab
 
 - name: Render Kolab web config templates
   tags:
@@ -113,13 +113,16 @@
     - { src: "httpd/kolab-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}-le-ssl.conf" }
   notify: Restart httpd
 
-- block:
-  - name: check domains list
-    shell: "kolab list-domains"
+- name: Enable domains
+  tags:
+    - configuration
+  block:
+  - name: Check domains list
+    ansible.builtin.command: "kolab list-domains"
     register: kolab_domains_list
 
-  - name: add Domain
-    shell: "kolab add-domain {{ item }}"
+  - name: Add Domain
+    ansible.builtin.command: "kolab add-domain {{ item }}"
     loop:
       - "{{ [mailserver_domain] + custom_domains }}"
     when: item is defined and item not in kolab_domains_list.stdout
@@ -135,5 +138,3 @@
       - "{{ [mailserver_domain] + custom_domains }}"
     notify: 
       - Restart kolab
-  tags:
-    - configuration
