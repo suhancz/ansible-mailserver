@@ -114,7 +114,7 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
-- name: Secure the MySQL root user for localhost domain (localhost)
+- name: "Secure the MySQL root user for domain: {{ item }}"
   community.mysql.mysql_user:
     user: root
     password: "{{ mysql_root_password }}"
@@ -122,20 +122,15 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
-- name: Secure the MySQL root user for server_hostname domain
-  community.mysql.mysql_user:
-    user: root
-    password: "{{ mysql_root_password }}"
-    host: "{{ ansible_fqdn }}"
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
-  no_log: yes
+  loop: "{{ ['localhost'] + [ansible_fqdn] + custom_domains }}"
 - name: Secure the MySQL root user for UNIX socket connections
   community.mysql.mysql_user:
     name: root
-    password: "{{ mysql_root_password }}"
     host: localhost
-    login_unix_socket: /var/run/mysqld/mysqld.sock
+    plugin_auth_string: unix_socket
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
   tags:
     - kolab
 - name: Remove the MySQL test database
