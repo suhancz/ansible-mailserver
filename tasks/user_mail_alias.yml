@@ -1,0 +1,9 @@
+---
+- name: "Set up mail aliases for {{ user }}"
+  ansible.builtin.lineinfile: 
+    dest: /etc/postfix/virtual_alias_maps_manual.cf
+    line: '{{ item }} {{ user.name }}@{{ mailserver_domain }}'
+    backup: yes
+    create: yes
+  loop: {{ user.aliases }}
+  notify: Restart postfix

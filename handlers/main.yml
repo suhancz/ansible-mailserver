@@ -11,6 +11,12 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Restart cyrus-imapd
+  ansible.builtin.systemd_service:
+    name: cyrus-imapd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: "Restart dirsrv@{{ mailserver_hostname }}"
   ansible.builtin.systemd_service:
     name: "dirsrv@{{ mailserver_hostname }}"
@@ -49,10 +55,15 @@
     state: restarted
 - name: Restart kolab
   ansible.builtin.systemd_service:
-    name: kolabd
+    name: "{{ kolab_service }}"
     daemon_reload: yes
     enabled: yes
     state: restarted
+  loop:
+    - kolabd
+    - kolab-saslauthd
+  loop_control:
+    loop_var: kolab_service
 - name: Restart mongod
   ansible.builtin.systemd_service:
     name: mongod
