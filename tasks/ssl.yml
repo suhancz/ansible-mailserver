@@ -1,7 +1,9 @@
 ---
 - name: Determine ACME directory
   ansible.builtin.set_fact:
-    acme_directory: "https://acme-{{ 'staging-' if production is not defined or not production else '' }}v02.api.letsencrypt.org/directory"
+    acme_directory: "https://acme-{{ 'staging-' \
+      if production is not defined or not production \
+      else '' }}v02.api.letsencrypt.org/directory"
 - name: Create Certbot config directories
   ansible.builtin.file:
     state: directory
@@ -10,13 +12,20 @@
     group: root
     mode: "{{ item.mode }}"
   loop:
-    - { path: "archive", mode: "u=rwx,g=rx" }
-    - { path: "archive/{{ mailserver_domain }}", mode: "u=rwx,go=rx" }
-    - { path: "csr", mode: "u=rwx,go=rx" }
-    - { path: "keys", mode: "u=rw" }
-    - { path: "live", mode: "u=rwx,g=rx" }
-    - { path: "live/{{ mailserver_domain }}", mode: "u=rwx,go=rx" }
-    - { path: "renewal", mode: "u=rwX,g=rX" }
+    - path: "archive/{{ mailserver_domain }}"
+      mode: "u=rwx,go=rx"
+    - path: "csr"
+      mode: "u=rwx,go=rx"
+    - path: "keys"
+      mode: "u=rw"
+    - path: "archive"
+      mode: "u=rwx,g=rx"
+    - path: "live"
+      mode: "u=rwx,g=rx"
+    - path: "live/{{ mailserver_domain }}"
+      mode: "u=rwx,go=rx"
+    - path: "renewal"
+      mode: "u=rwX,g=rX"
 # - name: Generate Let's Encrypt account key
 #   openssl_privatekey:
 #     path: "/etc/letsencrypt/keys/0000_key-certbot.pem"
@@ -35,7 +44,9 @@
 #   openssl_csr:
 #     path: /etc/letsencrypt/csr/0000_csr-certbot.pem
 #     privatekey_path: "/etc/letsencrypt/archive/{{ mailserver_domain }}/privkey1.pem"
-#     subject_alt_name: 'DNS:{{ ([mailserver_domain] + custom_domains) | join(',DNS:') }},{{ ([mailserver_domain] + custom_domains) | join(',DNS:*.') }}DNS:*.vpn.{{ mailserver_domain }}'
+#     subject_alt_name: 'DNS:{{ ([mailserver_domain] + custom_domains) | join(',DNS:') }},\
+#       {{ ([mailserver_domain] + custom_domains) | join(',DNS:*.') }}\
+#       DNS:*.vpn.{{ mailserver_domain }}'
 #     backup: yes
 #     mode: u=rw,go=r
 #     owner: root
@@ -107,11 +118,20 @@
     group: root
     mode: u=rw,go=
   loop:
-    - { key: "EXEC_PROPAGATION_TIMEOUT", value: 4242 }
-    - { key: "PDNS_API_URL", value: http://127.0.0.1:8081/ }
-    - { key: "PDNS_API_KEY", value: "{{ powerdns_api_key }}" }
+    - key: "EXEC_PROPAGATION_TIMEOUT"
+      value: "4242"
+    - key: "PDNS_API_URL"
+      value: http://127.0.0.1:8081/
+    - key: "PDNS_API_KEY"
+      value: "{{ powerdns_api_key }}"
 - name: Generate LetsEncrypt certificates
-  ansible.builtin.command: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns -d {{ ([mailserver_domain] + custom_domains) | join(' -d ') }} {{ ([mailserver_domain] + custom_domains) | join(' -d *.') }} -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
+  ansible.builtin.command: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 \
+    --dns.resolvers {{ ansible_default_ipv4.address }} \
+    --email ssl@{{ mailserver_domain }} --dns pdns \
+    -d {{ ([mailserver_domain] + custom_domains) | join(' -d ') }} \
+    {{ ([mailserver_domain] + custom_domains) | join(' -d *.') }} \
+    -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' \
+    --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
   environment:
     EXEC_PROPAGATION_TIMEOUT: 4242
     PDNS_API_URL: http://127.0.0.1:8081/
@@ -142,8 +162,14 @@
     state: present
     recursive: yes
   loop:
-    - { path: "/etc/letsencrypt/live", entity: "apache", etype: "user", permissions: "rx"}
-    - { path: "/etc/letsencrypt/archive", entity: "apache", etype: "user", permissions: "rx"}
+    - path: "/etc/letsencrypt/live"
+      entity: "apache"
+      etype: "user"
+      permissions: "rx"
+    - path: "/etc/letsencrypt/archive"
+      entity: "apache"
+      etype: "user"
+      permissions: "rx"
 - name: Generate OpenSSL DHParam
   community.crypto.openssl_dhparam:
     path: /etc/letsencrypt/dh.pem
@@ -175,6 +201,22 @@
     name: certificate-auto-renewal
     special_time: monthly
     # job: certbot renew --quiet && systemctl reload postfix dovecot httpd
-    # job: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns -d {{ ([mailserver_domain] + custom_domains) | join(' -d ') }} {{ ([mailserver_domain] + custom_domains) | join(' -d *.') }} -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew --days 90 --must-staple --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
-    job: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 --dns.resolvers {{ ansible_default_ipv4.address }} --email ssl@{{ mailserver_domain }} --dns pdns -d {{ ([mailserver_domain] + custom_domains) | join(' -d ') }} {{ ([mailserver_domain] + custom_domains) | join(' -d *.') }} -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew --days 90 --must-staple --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
+    # job: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 \
+    #   --dns.resolvers {{ ansible_default_ipv4.address }} \
+    #   --email ssl@{{ mailserver_domain }} \
+    #   --dns pdns -d {{ ([mailserver_domain] + custom_domains) | join(' -d ') }} \
+    #   {{ ([mailserver_domain] + custom_domains) | join(' -d *.') }} \
+    #   -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' \
+    #   --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew \
+    #   --days 90 --must-staple \
+    #   --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
+    job: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 \
+      --dns.resolvers {{ ansible_default_ipv4.address }} \
+      --email ssl@{{ mailserver_domain }} --dns pdns \
+      -d {{ ([mailserver_domain] + custom_domains) | join(' -d ') }} \
+      {{ ([mailserver_domain] + custom_domains) | join(' -d *.') }} \
+      -d '*.dyndns.{{ mailserver_domain }}' \
+      -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} \
+      --path /etc/letsencrypt --pem renew --days 90 --must-staple \
+      --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
     backup: yes
