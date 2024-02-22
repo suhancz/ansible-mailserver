@@ -111,7 +111,6 @@
         - key: "ldap_domain_base_dn"
           value: "cn=kolab,cn=config"
         - key: "ldap_domain_filter"
-          # noqa yaml[line-length]
           value: "(&(objectclass=domainrelatedobject)(associateddomain=%s))"
         - key: "ldap_domain_name_attribute"
           value: "associatedDomain"
@@ -154,7 +153,6 @@
       ansible.builtin.lineinfile: 
         dest: /etc/postfix/ldap/mydestination_3.cf
         regexp: "^query_filter = .*$"
-        # noqa yaml[line-length]
         line: 'query_filter = (\&(associateddomain=%s)(associateddomain=*.*.*))'
         backup: yes
       notify: Restart postfix
@@ -182,7 +180,6 @@
         backup: yes
       loop:
         - key: "transport_maps"
-          # noqa yaml[line-length]
           value: "ldap:/etc/postfix/ldap/transport_maps.cf, \
             ldap:/etc/postfix/ldap/transport_maps_3.cf, hash:/etc/postfix/transport"
         - key: "virtual_alias_maps"
