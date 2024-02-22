@@ -1,6 +1,9 @@
 ---
 - name: Setup kolab
-  ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} --domain={{ mailserver_domain }}"
+  ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
+    --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} \
+    --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} \
+    --domain={{ mailserver_domain }}"
   register: kolab_setup
   failed_when: kolab_setup.rc != 0 and "existing" not in kolab_setup.stderr
   changed_when: kolab_setup.rc == 0
@@ -17,7 +20,8 @@
   with_items:
     - { regexp: "ServerTokens", line: "ServerTokens ProductOnly" }
     - { regexp: "ServerSignature", line: "ServerSignature Off" }
-    - { regexp: "SSLCipherSuite", line: "SSLCipherSuite ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256" }
+    - { regexp: "SSLCipherSuite", line: "SSLCipherSuite \
+      ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256" }
     - { regexp: "SSLProtocol", line: "SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1" }
     - { regexp: "SSLHonorCipherOrder", line: "SSLHonorCipherOrder on" }
     - { regexp: "SSLCompression", line: "SSLCompression off" }
@@ -88,7 +92,8 @@
         - { key: "ldap_group_base", value: "dc=%2,dc=%1" }
         - { key: "ldap_member_base", value: "ou=People,dc=%2,dc=%1" }
         - { key: "ldap_domain_base_dn", value: "cn=kolab,cn=config" }
-        - { key: "ldap_domain_filter", value: "(&(objectclass=domainrelatedobject)(associateddomain=%s))" }
+        - key: "ldap_domain_filter"
+          value: "(&(objectclass=domainrelatedobject)(associateddomain=%s))"
         - { key: "ldap_domain_name_attribute", value: "associatedDomain" }
         - { key: "ldap_domain_scope", value: "sub" }
         - { key: "ldap_domain_result_attribute", value: "inetdomainbasedn" }
@@ -153,9 +158,25 @@
         line: '{{ item.key }} = {{ item.value }}'
         backup: yes
       loop:
-        - { key: "transport_maps", value: "ldap:/etc/postfix/ldap/transport_maps.cf, ldap:/etc/postfix/ldap/transport_maps_3.cf, hash:/etc/postfix/transport" }
-        - { key: "virtual_alias_maps", value: "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, hash:/etc/postfix/virtual_alias_maps_manual.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_3.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups_3.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups_3.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders_3.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_mailforwarding.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf, ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_catchall.cf, ldap:/etc/postfix/ldap/virtual_alias_maps_catchall_3.cf" }
-        - { key: "local_recipient_maps", value: "ldap:/etc/postfix/ldap/local_recipient_maps.cf, ldap:/etc/postfix/ldap/local_recipient_maps_3.cf" }
+        - key: "transport_maps"
+          value: "ldap:/etc/postfix/ldap/transport_maps.cf, \
+            ldap:/etc/postfix/ldap/transport_maps_3.cf, hash:/etc/postfix/transport"
+        - key: "virtual_alias_maps"
+          value: "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, \
+            hash:/etc/postfix/virtual_alias_maps_manual.cf, \
+            ldap:/etc/postfix/ldap/virtual_alias_maps_3.cf, \
+            ldap:/etc/postfix/ldap/mailenabled_distgroups_3.cf, \
+            ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups_3.cf, \
+            ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders_3.cf, \
+            ldap:/etc/postfix/ldap/virtual_alias_maps_mailforwarding.cf, \
+            ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf, \
+            ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, \
+            ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf, \
+            ldap:/etc/postfix/ldap/virtual_alias_maps_catchall.cf, \
+            ldap:/etc/postfix/ldap/virtual_alias_maps_catchall_3.cf"
+        - key: "local_recipient_maps"
+          value: "ldap:/etc/postfix/ldap/local_recipient_maps.cf, \
+            ldap:/etc/postfix/ldap/local_recipient_maps_3.cf"
       notify: Restart postfix
     - name: Set up domain aliases
       ansible.builtin.lineinfile: 
@@ -168,7 +189,8 @@
     - name: Set up default mail aliases
       ansible.builtin.lineinfile:
         dest: /etc/postfix/virtual_alias_maps_manual.cf
-        line: '{{ item }}@{{ mailserver_domain }} {{ mailserver_admin_user }}@{{ mailserver_domain }}'
+        line: '{{ item }}@{{ mailserver_domain }} \
+          {{ mailserver_admin_user }}@{{ mailserver_domain }}'
         backup: yes
         create: yes
       loop:
@@ -196,7 +218,8 @@
         backup: yes
       loop:
         - "'domain_base_dn'            => 'cn=kolab,cn=config'"
-        - "'domain_filter'             => '(\\&(objectclass=domainrelatedobject)(associateddomain=%s))',"
+        - "'domain_filter'             => \
+          '(\\&(objectclass=domainrelatedobject)(associateddomain=%s))',"
         - "'domain_name_attr'          => 'associateddomain',"
       notify: Restart kolab
     - name: Configure Roundcube organizational units
@@ -291,8 +314,10 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/kolab.conf.j2", dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/kolab-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}-le-ssl.conf" }
+    - src: "httpd/kolab.conf.j2"
+      dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}.conf"
+    - src: "httpd/kolab-le-ssl.conf.j2"
+      dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}-le-ssl.conf"
   notify: Restart httpd
 
 - name: Enable domains
