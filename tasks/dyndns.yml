@@ -101,7 +101,7 @@
   when: public_dns == "yes"
   ansible.builtin.command: "pdnsutil list-zone {{ user }}.dyndns.{{ mailserver_domain }}"
   register: zone_records
-  loop: "{{ users | map(attribute='name')}}"
+  loop: "{{ users | map(attribute='name') }}"
   loop_control:
     loop_var: user
   changed_when: zone_records.rc == 0

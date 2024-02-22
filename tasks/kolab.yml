@@ -17,6 +17,9 @@
     dest: "/etc/httpd/conf/httpd.conf"
     regexp: "^(.*){{ item.regexp }}(.*)$" 
     line: "{{ item.line }}" 
+    owner: root
+    group: root
+    mode: u=rw,og=r
     backup: yes
   with_items:
     - regexp: "ServerTokens"
@@ -42,7 +45,9 @@
     section: PHP
     option: expose_php
     value: off
-    mode: u=rw,go=r
+    owner: root
+    group: root
+    mode: u=rw,og=r
     backup: true
   loop:
     - /etc/php.ini
@@ -58,7 +63,9 @@
     section: kolab
     option: "{{ item.key }}"
     value: "{{ item.value }}"
-    mode: u=rw,go=r
+    owner: kolab-n
+    group: kolab
+    mode: u=rw,g=r,o=
     backup: true
   register: kolab_configure
   with_items:
@@ -99,7 +106,10 @@
       ansible.builtin.lineinfile: 
         dest: /etc/imapd.conf
         regexp: "^{{ item.key }}: " 
-        line: "{{ item.key }}: {{ item.value}}" 
+        line: "{{ item.key }}: {{ item.value }}" 
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
       loop:
         - key: "ldap_base"
@@ -133,7 +143,9 @@
         section: kolab
         option: unique_uid_across_domains
         value: "true"
-        mode: u=rw,go=r
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
         backup: true
       notify: Restart kolab
     - name: Collect LDAP Postfix .cf files
@@ -144,7 +156,7 @@
     - name: Create custom LDAP Postfix .cf files
       ansible.builtin.copy:
         src: "{{ item.path }}"
-        dest: "{{ item.path | replace('.cf', '_3.cf')}}"
+        dest: "{{ item.path | replace('.cf', '_3.cf') }}"
         remote_src: yes
         backup: true
       loop: "{{ postfix_ldap_cf_files.files }}"
@@ -154,6 +166,9 @@
         dest: /etc/postfix/ldap/mydestination_3.cf
         regexp: "^query_filter = .*$"
         line: 'query_filter = (\&(associateddomain=%s)(associateddomain=*.*.*))'
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
       notify: Restart postfix
     - name: "Set search base in {{ item }}"
@@ -161,6 +176,9 @@
         dest: "{{ item.path }}"
         regexp: "^search_base = .*$" 
         line: 'search_base = dc=%2,dc=%1'
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
       loop: "{{ postfix_ldap_cf_files.files }}"
       notify: Restart postfix
@@ -169,6 +187,9 @@
         dest: "{{ item.path | replace('.cf', '_3.cf') }}"
         regexp: "^domain = .*$" 
         line: 'domain = ldap:/etc/postfix/ldap/mydestination_3.cf'
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
       loop: "{{ postfix_ldap_cf_files.files }}"
       notify: Restart postfix
@@ -177,6 +198,9 @@
         dest: /etc/postfix/main.cf
         regexp: "^{{ item.key }} = .*$" 
         line: '{{ item.key }} = {{ item.value }}'
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
       loop:
         - key: "transport_maps"
@@ -203,6 +227,9 @@
       ansible.builtin.lineinfile: 
         dest: /etc/postfix/virtual_alias_maps_manual.cf
         line: '@{{ item }} @{{ mailserver_domain }}'
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
         create: yes
       loop: "{{ custom_domains }}"
@@ -212,6 +239,9 @@
         dest: /etc/postfix/virtual_alias_maps_manual.cf
         line: '{{ item }}@{{ mailserver_domain }} \
           {{ mailserver_admin_user }}@{{ mailserver_domain }}'
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
         create: yes
       loop:
@@ -236,6 +266,9 @@
         dest: /etc/roundcubemail/kolab_auth.inc.php
         insertafter: '=> 389,'
         line: "{{ item }}"
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
       loop:
         - "'domain_base_dn'            => 'cn=kolab,cn=config'"
@@ -248,6 +281,9 @@
         path: /etc/roundcubemail/kolab_auth.inc.php
         regexp: "'ou={{ item }},.*'"
         replace: "'ou={{ item }},%dc'"
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: yes
       loop:
         - People
@@ -259,8 +295,11 @@
         section: 'directory "kolab-people"'
         option: domain_base_dn
         value: "%dc"
+        owner: root
+        group: root
         mode: u=rw,go=r
         backup: true
+        create: yes
       notify: Restart kolab
     - name: Enable freebusy for all domains
       community.general.ini_file:
@@ -268,8 +307,11 @@
         section: "{{ item }}"
         option: base_dn
         value: "%dc"
+        owner: root
+        group: root
         mode: u=rw,go=r
         backup: true
+        create: yes
       loop:
         - 'directory "kolab-people"'
         - 'directory "kolab-resources"'
@@ -281,6 +323,9 @@
         path: /etc/roundcubemail/config.inc.php
         regexp: "'ou={{ item }},.*'"
         replace: "'ou={{ item }},%dc'"
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=
         backup: yes
       loop:
         - People
@@ -292,7 +337,9 @@
         section: kolab_wap
         option: "{{ item.key }}"
         value: "{{ item.value }}"
-        mode: u=rw,go=r
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
         backup: true
       loop:
         - key: 'memcache_hosts'
@@ -317,6 +364,9 @@
     dest: "/usr/share/roundcubemail/program/localization/{{ item.lang }}/labels.inc"
     regexp: "{{ item.regexp }}" 
     line: "{{ item.line }}" 
+    mode: u=rw,og=r
+    owner: root
+    group: root
     backup: yes
   with_items:
     - regexp: "username"
@@ -374,7 +424,9 @@
         section: "{{ item }}"
         option: primary_mail
         value: "'%(givenname)s'[0:1]@%(domain)s"
-        mode: u=rw,go=r
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
         backup: true
       loop:
         - "{{ [mailserver_domain] + custom_domains }}"
@@ -386,7 +438,9 @@
         section: ldap
         option: modifytimestamp_format
         value: "%%Y%%m%%d%%H%%M%%SZ"
-        mode: u=rw,go=r
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
         backup: true
     - name: Set IMAP virtual domains
       community.general.ini_file:
@@ -394,7 +448,9 @@
         section: imap
         option: virtual_domains
         value: userid
-        mode: u=rw,go=r
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
         backup: true
 - name: Restart kolab
   ansible.builtin.systemd_service:

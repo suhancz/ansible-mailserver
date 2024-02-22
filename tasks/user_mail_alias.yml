@@ -5,5 +5,8 @@
     line: '{{ item }} {{ user.name }}@{{ mailserver_domain }}'
     backup: yes
     create: yes
+    owner: root
+    group: root
+    mode: u=rw,og=r
   loop: "{{ user.aliases }}"
   notify: Restart postfix
