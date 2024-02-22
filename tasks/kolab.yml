@@ -299,43 +299,43 @@
   tags:
     - configuration
   block:
-  - name: Check domains list
-    ansible.builtin.command: "kolab list-domains"
-    register: kolab_domains_list
+    - name: Check domains list
+      ansible.builtin.command: "kolab list-domains"
+      register: kolab_domains_list
 
-  - name: Add Domain
-    ansible.builtin.command: "kolab add-domain {{ item }}"
-    loop:
-      - "{{ [mailserver_domain] + custom_domains }}"
-    when: item is defined and item not in kolab_domains_list.stdout
-  - name: Configure primary mail
-    community.general.ini_file:
-      path: /etc/kolab/kolab.conf
-      section: "{{ item }}"
-      option: primary_mail
-      value: "'%(givenname)s'[0:1]@%(domain)s"
-      mode: u=rw,go=r
-      backup: true
-    loop:
-      - "{{ [mailserver_domain] + custom_domains }}"
-    notify: 
-      - Restart kolab
-  - name: Set timestamp format
-    community.general.ini_file:
-      path: /etc/kolab/kolab.conf
-      section: ldap
-      option: modifytimestamp_format
-      value: "%%Y%%m%%d%%H%%M%%SZ"
-      mode: u=rw,go=r
-      backup: true
-  - name: Set IMAP virtual domains
-    community.general.ini_file:
-      path: /etc/kolab/kolab.conf
-      section: imap
-      option: virtual_domains
-      value: userid
-      mode: u=rw,go=r
-      backup: true
+    - name: Add Domain
+      ansible.builtin.command: "kolab add-domain {{ item }}"
+      loop:
+        - "{{ [mailserver_domain] + custom_domains }}"
+      when: item is defined and item not in kolab_domains_list.stdout
+    - name: Configure primary mail
+      community.general.ini_file:
+        path: /etc/kolab/kolab.conf
+        section: "{{ item }}"
+        option: primary_mail
+        value: "'%(givenname)s'[0:1]@%(domain)s"
+        mode: u=rw,go=r
+        backup: true
+      loop:
+        - "{{ [mailserver_domain] + custom_domains }}"
+      notify: 
+        - Restart kolab
+    - name: Set timestamp format
+      community.general.ini_file:
+        path: /etc/kolab/kolab.conf
+        section: ldap
+        option: modifytimestamp_format
+        value: "%%Y%%m%%d%%H%%M%%SZ"
+        mode: u=rw,go=r
+        backup: true
+    - name: Set IMAP virtual domains
+      community.general.ini_file:
+        path: /etc/kolab/kolab.conf
+        section: imap
+        option: virtual_domains
+        value: userid
+        mode: u=rw,go=r
+        backup: true
 - name: Restart kolab
   ansible.builtin.systemd_service:
     name: "{{ kolab_service }}"
