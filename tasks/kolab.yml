@@ -188,7 +188,6 @@
       loop: "{{ users }}"
       loop_control:
         loop_var: user
-      notify: Restart postfix
     - name: Configure Roundcube authentication
       ansible.builtin.lineinfile:
         dest: /etc/roundcubemail/kolab_auth.inc.php
