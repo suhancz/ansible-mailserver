@@ -18,13 +18,19 @@
     line: "{{ item.line }}" 
     backup: yes
   with_items:
-    - { regexp: "ServerTokens", line: "ServerTokens ProductOnly" }
-    - { regexp: "ServerSignature", line: "ServerSignature Off" }
-    - { regexp: "SSLCipherSuite", line: "SSLCipherSuite \
-      ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256" }
-    - { regexp: "SSLProtocol", line: "SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1" }
-    - { regexp: "SSLHonorCipherOrder", line: "SSLHonorCipherOrder on" }
-    - { regexp: "SSLCompression", line: "SSLCompression off" }
+    - regexp: "ServerTokens"
+      line: "ServerTokens ProductOnly"
+    - regexp: "ServerSignature"
+      line: "ServerSignature Off"
+    - regexp: "SSLCipherSuite"
+      line: "SSLCipherSuite \
+        ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
+    - regexp: "SSLProtocol"
+      line: "SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1"
+    - regexp: "SSLHonorCipherOrder"
+      line: "SSLHonorCipherOrder on"
+    - regexp: "SSLCompression"
+      line: "SSLCompression off"
   notify: 
     - Restart httpd
 
@@ -54,11 +60,16 @@
     backup: true
   register: kolab_configure
   with_items:
-    - { key: 'quota', value: '0'}
-    - { key: 'partition', value: 'archive' }
-    - { key: 'policy_uid', value: "'%(givenname)s'[0:1].lower()" }
-    - { key: 'primary_mail', value: "'%(givenname)s'[0:1]@%(domain)s" }
-    - { key: 'postfix_virtual_file', value: '/etc/postfix/virtual_alias_maps_manual.cf' }
+    - key: 'quota'
+      value: '0'
+    - key: 'partition'
+      value: 'archive'
+    - key: 'policy_uid'
+      value: "'%(givenname)s'[0:1].lower()"
+    - key: 'primary_mail'
+      value: "'%(givenname)s'[0:1]@%(domain)s"
+    - key: 'postfix_virtual_file'
+      value: '/etc/postfix/virtual_alias_maps_manual.cf'
   notify: 
     - Restart kolab
   tags:
@@ -88,15 +99,22 @@
         line: "{{ item.key }}: {{ item.value}}" 
         backup: yes
       loop:
-        - { key: "ldap_base", value: "dc=%2,dc=%1" }      
-        - { key: "ldap_group_base", value: "dc=%2,dc=%1" }
-        - { key: "ldap_member_base", value: "ou=People,dc=%2,dc=%1" }
-        - { key: "ldap_domain_base_dn", value: "cn=kolab,cn=config" }
+        - key: "ldap_base"
+          value: "dc=%2,dc=%1"
+        - key: "ldap_group_base"
+          value: "dc=%2,dc=%1"
+        - key: "ldap_member_base"
+          value: "ou=People,dc=%2,dc=%1"
+        - key: "ldap_domain_base_dn"
+          value: "cn=kolab,cn=config"
         - key: "ldap_domain_filter"
           value: "(&(objectclass=domainrelatedobject)(associateddomain=%s))"
-        - { key: "ldap_domain_name_attribute", value: "associatedDomain" }
-        - { key: "ldap_domain_scope", value: "sub" }
-        - { key: "ldap_domain_result_attribute", value: "inetdomainbasedn" }
+        - key: "ldap_domain_name_attribute"
+          value: "associatedDomain"
+        - key: "ldap_domain_scope"
+          value: "sub"
+        - key: "ldap_domain_result_attribute"
+          value: "inetdomainbasedn"
       register: kolab_imapd_config_patch
       notify: Restart cyrus-imapd
     - name: Restart cyrus-imapd
@@ -274,8 +292,10 @@
         mode: u=rw,go=r
         backup: true
       loop:
-        - { key: 'memcache_hosts', value: '127.0.0.1:11211' }
-        - { key: 'memcache_pconnect', value: 'true' }
+        - key: 'memcache_hosts'
+          value: '127.0.0.1:11211'
+        - key: 'memcache_pconnect'
+          value: 'true'
       notify: Restart kolab
       
 - name: Patch kolab
@@ -295,11 +315,21 @@
     line: "{{ item.line }}" 
     backup: yes
   with_items:
-    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "en_US" }
-    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "de_DE" }
-    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "de_CH" }
-    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "fr_FR" }
-    - { regexp: "username", line: "$labels['username']  = 'Email';", lang: "it_IT" }
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "en_US"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "de_DE"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "de_CH"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "fr_FR"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "it_IT"
   notify: 
     - Restart kolab
 
