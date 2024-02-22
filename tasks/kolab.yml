@@ -197,7 +197,7 @@
         backup: yes
       loop:
         - "'domain_base_dn'            => 'cn=kolab,cn=config'"
-        - "'domain_filter'             => '(\&(objectclass=domainrelatedobject)(associateddomain=%s))',"
+        - "'domain_filter'             => '(\\&(objectclass=domainrelatedobject)(associateddomain=%s))',"
         - "'domain_name_attr'          => 'associateddomain',"
       notify: Restart kolab
     - name: Configure Roundcube organizational units
