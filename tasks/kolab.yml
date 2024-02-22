@@ -1,5 +1,6 @@
 ---
 - name: Setup kolab
+  # noqa yaml[line-length]
   ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
     --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} \
     --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} \
@@ -23,6 +24,7 @@
     - regexp: "ServerSignature"
       line: "ServerSignature Off"
     - regexp: "SSLCipherSuite"
+      # noqa yaml[line-length]
       line: "SSLCipherSuite \
         ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
     - regexp: "SSLProtocol"
@@ -78,6 +80,7 @@
 # Kolab Patch for Multidomains
 - name: Kolab patch download
   ansible.builtin.git:
+    # noqa yaml[line-length]
     repo: https://github.com/suhancz/KolabScripts.git # I use my own mirror here so we're sure the upstream doesn't get lost
     dest: /usr/src/KolabScripts
     version: Kolab16
@@ -108,6 +111,7 @@
         - key: "ldap_domain_base_dn"
           value: "cn=kolab,cn=config"
         - key: "ldap_domain_filter"
+          # noqa yaml[line-length]
           value: "(&(objectclass=domainrelatedobject)(associateddomain=%s))"
         - key: "ldap_domain_name_attribute"
           value: "associatedDomain"
@@ -149,7 +153,8 @@
     - name: Set query filter in mydestination_3.cf
       ansible.builtin.lineinfile: 
         dest: /etc/postfix/ldap/mydestination_3.cf
-        regexp: "^query_filter = .*$" 
+        regexp: "^query_filter = .*$"
+        # noqa yaml[line-length]
         line: 'query_filter = (\&(associateddomain=%s)(associateddomain=*.*.*))'
         backup: yes
       notify: Restart postfix
@@ -177,6 +182,7 @@
         backup: yes
       loop:
         - key: "transport_maps"
+          # noqa yaml[line-length]
           value: "ldap:/etc/postfix/ldap/transport_maps.cf, \
             ldap:/etc/postfix/ldap/transport_maps_3.cf, hash:/etc/postfix/transport"
         - key: "virtual_alias_maps"
@@ -309,7 +315,8 @@
     - initMailCatchall.sh
 
 - name: Configure kolab for multidomains
-  ansible.builtin.lineinfile: 
+  ansible.builtin.lineinfile:
+    # noqa yaml[line-length]
     dest: "/usr/share/roundcubemail/program/localization/{{ item.lang }}/labels.inc"
     regexp: "{{ item.regexp }}" 
     line: "{{ item.line }}" 
@@ -347,6 +354,7 @@
     - src: "httpd/kolab.conf.j2"
       dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}.conf"
     - src: "httpd/kolab-le-ssl.conf.j2"
+      # noqa yaml[line-length]
       dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}-le-ssl.conf"
   notify: Restart httpd
 
