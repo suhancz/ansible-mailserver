@@ -133,7 +133,7 @@
     -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' \
     --server {{ acme_directory }} --path /etc/letsencrypt --pem run --must-staple"
   environment:
-    EXEC_PROPAGATION_TIMEOUT: 4242
+    EXEC_PROPAGATION_TIMEOUT: "4242"
     PDNS_API_URL: http://127.0.0.1:8081/
     PDNS_API_KEY: "{{ powerdns_api_key }}"
   register: generate_certificates
@@ -193,9 +193,12 @@
     job: "{{ item.value }}"
     backup: yes
   loop:
-    - { key: "EXEC_PROPAGATION_TIMEOUT", value: 4242 }
-    - { key: "PDNS_API_URL", value: http://127.0.0.1:8081/ }
-    - { key: "PDNS_API_KEY", value: "{{ powerdns_api_key }}" }
+    - key: "EXEC_PROPAGATION_TIMEOUT"
+      value: "4242"
+    - key: "PDNS_API_URL"
+      value: http://127.0.0.1:8081/
+    - key: "PDNS_API_KEY"
+      value: "{{ powerdns_api_key }}"
 - name: Auto-renew certificates
   ansible.builtin.cron:
     name: certificate-auto-renewal
