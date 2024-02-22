@@ -158,6 +158,9 @@
         src: "{{ item.path }}"
         dest: "{{ item.path | replace('.cf', '_3.cf') }}"
         remote_src: yes
+        owner: root
+        group: root
+        mode: u=rw,go=r
         backup: true
       loop: "{{ postfix_ldap_cf_files.files }}"
       notify: Restart postfix
