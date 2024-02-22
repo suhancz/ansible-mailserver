@@ -184,7 +184,7 @@
         - webmaster
       notify: Restart postfix
     - name: Set up user mail aliases
-      ansible.builtin.import_tasks: user_mail_alias.yml
+      ansible.builtin.include_tasks: user_mail_alias.yml
       loop: "{{ users }}"
       loop_control:
         loop_var: user
