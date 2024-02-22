@@ -1,3 +1,2 @@
 tasks/ssl.yml schema[tasks] # no idea why the linter complains on this one, the whole thing works
 meta/main.yml schema[meta] # the platform EL versin 8 does exist - not sure why the liner complains about it
-tasks/kolab.yml 
