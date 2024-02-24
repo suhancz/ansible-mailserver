@@ -78,11 +78,10 @@
 - name: Configure Postfix
   ansible.builtin.import_tasks: postfix.yml
   tags: postfix
-- name: Configure Dovecot
-  ansible.builtin.import_tasks: dovecot.yml
-  tags:
-    - dovecot
-    - imapsync
+# - name: Configure Dovecot
+#   ansible.builtin.import_tasks: dovecot.yml
+#   tags:
+#     - dovecot
 - name: Sync old IMAP account
   # noqa jinja[invalid] for some reason this was the only way I found to pass the variable to the included task list
   ansible.builtin.include_tasks: imapsync.yml

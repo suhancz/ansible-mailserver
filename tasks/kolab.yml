@@ -128,6 +128,10 @@
           value: "sub"
         - key: "ldap_domain_result_attribute"
           value: "inetdomainbasedn"
+        - key: "tls_server_cert"
+          value: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
+        - key: "tls_server_key"
+          value: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
       register: kolab_imapd_config_patch
       notify: Restart cyrus-imapd
     - name: Restart cyrus-imapd
