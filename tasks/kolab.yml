@@ -470,3 +470,8 @@
     - kolab-saslauthd
   loop_control:
     loop_var: kolab_service
+- name: "Add user to Kolab: {{ user.name }}"
+  ansible.builtin.include_tasks: add_kolab_user.yml
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user
