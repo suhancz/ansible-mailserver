@@ -1,0 +1,12 @@
+---
+- name: Authenticate against the Kolab API
+  ansible.builtin.uri:
+    url: "https://kolab.{{ mailserver_domain }}/api/system.authenticate"
+    method: POST
+    body_format: json
+    body:
+      username: "cn=Directory Manager"
+      password: "{{ ldap_admin_password }}"
+    return_content: true
+  register: kolab_api_auth
+  failed_when: kolab_api_auth.json.status != 'OK'
