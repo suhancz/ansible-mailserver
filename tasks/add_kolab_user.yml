@@ -1,5 +1,6 @@
 ---
 - name: Authenticate against the Kolab API
+  when: (kolab_api_auth is not defined) or (kolab_api_auth.cookies_string is not defined) or (kolab_api_auth.cookies_string | length == 0)
   ansible.builtin.include_tasks: kolab_auth.yml
   # TODO: Figure how to store auth tokens
 - name: "Find Kolab user with e-mail {{ user.name ~ '@' ~ mailserver_domain }}"
