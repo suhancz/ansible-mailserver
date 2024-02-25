@@ -37,6 +37,13 @@ CustomLog /var/log/httpd/kolab_access.log combined
     </ifModule>
 </Directory>
 
+# ActiveSync
+Alias /Microsoft-Server-ActiveSync /usr/share/kolab-syncroton/index.php
+Alias /autodiscover/autodiscover.xml /usr/share/kolab-syncroton/index.php
+Alias /Autodiscover/Autodiscover.xml /usr/share/kolab-syncroton/index.php
+Alias /AutoDiscover/AutoDiscover.xml /usr/share/kolab-syncroton/index.php
+ProxyTimeout 5400
+
 SSLCertificateFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.pem
 SSLCertificateKeyFile /etc/letsencrypt/certificates/{{ mailserver_domain }}.key
 Include /etc/letsencrypt/options-ssl-apache.conf
