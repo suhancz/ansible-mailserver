@@ -13,8 +13,10 @@
     - /backup/opendmarc
     - /backup/vsftpd
     - /backup/ssl
-    - /backup/horde
-    - /backup/dovecot
+    - /backup/kolab
+    - /backup/cyrus-imap
+    # - /backup/horde
+    # - /backup/dovecot
     - /backup/postfix
     - /backup/pdns
     - /var/www/webdav/.backup
@@ -36,7 +38,10 @@
   loop:
     - { name: "opendkim", paths: ["/etc/opendkim", "/etc/opendkim.conf"], service: True }
     - { name: "opendmarc", paths: ["/etc/opendmarc", "/etc/opendmarc.conf"], service: True }
-    - { name: "horde", paths: ["/etc/horde"] }
+    # - { name: "horde", paths: ["/etc/horde"] }
+    # - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
+    - { name: "kolab", paths: ["/etc/kolab"] }
+    - { name: "cyrus-imap", paths: ["/etc/imap"] }
     - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
@@ -69,8 +74,10 @@
     - opendmarc
     - vsftpd
     - ssl
-    - horde
-    - dovecot
+    # - horde
+    - kolab
+    - cyrus-imap
+    # - dovecot
     - postfix
     - pdns
     - wg_vpn
@@ -87,8 +94,10 @@
     - opendmarc
     - vsftpd
     - ssl
-    - horde
-    - dovecot
+    - kolab
+    - cyrus-imap
+    # - horde
+    # - dovecot
     - postfix
     - pdns
     - wg_vpn
@@ -105,8 +114,10 @@
     - opendmarc
     - vsftpd
     - ssl
-    - horde
-    - dovecot
+    - kolab
+    - cyrus-imap
+    # - horde
+    # - dovecot
     - postfix
     - pdns
     - wg_vpn
@@ -157,7 +168,8 @@
         state: started
     - name: Stop LDAP server
       when: ldap_backup_path is defined
-      ansible.builtin.command: "dsctl {{ mailserver_hostname }} stop"
+      ansible.builtin.command: "dsctl {{ mailserver_domain.split('.')[0] }} stop"
+      # ansible.builtin.command: "dsctl {{ mailserver_hostname }} stop"
       register: stop_ldap_server
       changed_when: stop_ldap_server.rc == 0
     - name: Prepare LDAP backup
@@ -170,12 +182,14 @@
       register: ldap_backup_files
     - name: Restore LDAP backup
       when: ldap_backup_path is defined
-      ansible.builtin.command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
+      ansible.builtin.command: "dsctl {{ mailserver_domain.split('.')[0] }} bak2db /{{ ldap_backup_files.files[0] }}"
+      # ansible.builtin.command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
       register: restore_ldap_server
       changed_when: restore_ldap_server.rc == 0
     - name: Start LDAP server
       when: ldap_backup_path is defined
-      ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
+      ansible.builtin.command: "dsctl {{ mailserver_domain.split('.')[0] }} start"
+      # ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
       register: start_ldap_server
       changed_when: start_ldap_server.rc == 0
     - name: Restore service tarball backups
@@ -188,7 +202,9 @@
         - opendkim
         - opendmarc
         - vsftpd
-        - dovecot
+        - kolab
+        - cyrus-imap
+        # - dovecot
         - postfix
         - pdns
         - wg_vpn
@@ -199,5 +215,5 @@
         dest: /
         remote_src: yes
       loop:
-        - horde
+        # - horde
         - ssl
