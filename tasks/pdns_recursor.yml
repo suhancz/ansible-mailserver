@@ -38,7 +38,8 @@
 - name: Add VPN addresses to hosts file
   tags: wireguard
   ansible.builtin.lineinfile:
-    line: "{{ item }} postfixadmin.vpn.{{ mailserver_domain }} poweradmin.vpn.{{ mailserver_domain }}"
+    # line: "{{ item }} postfixadmin.vpn.{{ mailserver_domain }} poweradmin.vpn.{{ mailserver_domain }}"
+    line: "{{ item }} poweradmin.vpn.{{ mailserver_domain }}"
     path: /etc/hosts
     backup: yes
   loop:

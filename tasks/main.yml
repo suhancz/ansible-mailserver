@@ -32,11 +32,11 @@
     - dns
     - poweradmin
     - dyndns
-- name: Configure PostfixAdmin
-  ansible.builtin.import_tasks: postfixadmin.yml
-  tags:
-    - postfix
-    - postfixadmin
+# - name: Configure PostfixAdmin
+#   ansible.builtin.import_tasks: postfixadmin.yml
+#   tags:
+#     - postfix
+#     - postfixadmin
 - name: Set up SSL
   ansible.builtin.import_tasks: ssl.yml
   tags: ssl

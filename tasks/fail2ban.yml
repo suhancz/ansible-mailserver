@@ -1,14 +1,14 @@
 ---
-- name: Create custom fail2ban filters
-  ansible.builtin.copy:
-    src: "fail2ban/{{ item }}"
-    dest: "/etc/fail2ban/filter.d/{{ item }}"
-    owner: root
-    group: root
-    mode: u=rw,go=r
-  loop:
-    - postfixadmin.conf
-  notify: Restart fail2ban
+# - name: Create custom fail2ban filters
+#   ansible.builtin.copy:
+#     src: "fail2ban/{{ item }}"
+#     dest: "/etc/fail2ban/filter.d/{{ item }}"
+#     owner: root
+#     group: root
+#     mode: u=rw,go=r
+#   loop:
+#     - postfixadmin.conf
+#   notify: Restart fail2ban
 
 - name: Enable fail2ban jails
   community.general.ini_file:

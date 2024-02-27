@@ -43,7 +43,8 @@
     - { name: "kolab", paths: ["/etc/kolab"] }
     - { name: "cyrus-imap", paths: ["/etc/imap"] }
     - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
-    - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
+    # - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
+    - { name: "postfix", paths: ["/etc/postfix", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
     - { name: "pdns", paths: ["/etc/pdns", "/etc/pdns-recursor", "/etc/dnsdist"], service: True }
     - { name: "wg_vpn", paths: ["/etc/wireguard"], service: True }
