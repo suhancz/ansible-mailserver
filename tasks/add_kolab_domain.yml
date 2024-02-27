@@ -1,15 +1,13 @@
 ---
 - name: Authenticate against the Kolab API
-  when: (kolab_api_auth is not defined) or (kolab_api_auth.cookies_string is not defined) or (kolab_api_auth.cookies_string | length == 0)
+  when: (kolab_api_auth is not defined) or (kolab_api_auth.cookies_string is not defined) or (kolab_api_auth.cookies_string | length == 0) or (kolab_api_auth.json.result.session_token is not defined) or (kolab_api_auth.json.result.session_token | length == 0)
   ansible.builtin.include_tasks: kolab_auth.yml
-  # TODO: Figure how to store auth tokens
-- name: "Find Kolab domain {{ kolab_domain }}"
+- name: "List domains {{ kolab_domain }}"
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domains.list"
     method: GET
     body_format: json
     body:
-      mail: "{{ user.name }}@{{ mailserver_domain }}"
       session_token: "{{ kolab_api_auth.json.result.session_token }}"
     return_content: true
     headers:
