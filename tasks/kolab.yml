@@ -163,6 +163,7 @@
         patterns: '*.cf'
       register: postfix_ldap_cf_files
     - name: Create custom LDAP Postfix .cf files
+      when: item.path is not regex(".*_3\.cf$")
       ansible.builtin.copy:
         src: "{{ item.path }}"
         dest: "{{ item.path | replace('.cf', '_3.cf') }}"
@@ -171,6 +172,7 @@
         group: root
         mode: u=rw,go=r
         backup: true
+        force: false
       loop: "{{ postfix_ldap_cf_files.files }}"
       notify: Restart postfix
     - name: Set query filter in mydestination_3.cf

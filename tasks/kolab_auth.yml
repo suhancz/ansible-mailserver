@@ -10,3 +10,5 @@
     return_content: true
   register: kolab_api_auth
   failed_when: kolab_api_auth.json.status != 'OK'
+- debug:
+   var: kolab_api_auth.json

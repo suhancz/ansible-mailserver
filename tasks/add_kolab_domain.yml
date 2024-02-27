@@ -2,10 +2,10 @@
 - name: Authenticate against the Kolab API
   when: (kolab_api_auth is not defined) or (kolab_api_auth.cookies_string is not defined) or (kolab_api_auth.cookies_string | length == 0) or (kolab_api_auth.json.result.session_token is not defined) or (kolab_api_auth.json.result.session_token | length == 0)
   ansible.builtin.include_tasks: kolab_auth.yml
-- name: "List domains {{ kolab_domain }}"
+- name: "List domains"
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domains.list"
-    method: GET
+    method: POST
     body_format: json
     body:
       session_token: "{{ kolab_api_auth.json.result.session_token }}"
@@ -14,22 +14,31 @@
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: kolab_domains
   failed_when: kolab_domains.json.status != 'OK'
-- name: Display Kolab domains
-  debug:
-    var: kolab_domains.json.result
-- name: "Add Kolab domain {{ kolab_domain }}"
-  # TODO: find the needed variables
-  when: kolab_domains.json.result.
+- name: "List domain types"
   ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.add"
-    method: GET
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain_types.list"
+    method: POST
     body_format: json
     body:
-      object_type: user
-      type_id:
-      givenname: "{{ user.name }}"
-      sn:
-      userPassword: "{{ user.password }}"
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
+    return_content: true
+    headers:
+      Cookie: "{{ kolab_api_auth.cookies_string }}"
+  register: kolab_domain_types
+  failed_when: kolab_domain_types.json.status != 'OK'
+- name: Display Kolab domain types
+  debug:
+    var: kolab_domain_types.json.result
+- name: "Add Kolab domain {{ kolab_domain }}"
+  # when:  ('associateddomain=' ~ kolab_domain ~ ',' not) in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
+  when:  kolab_domains.json.result.list | selectattr(none)
+  ansible.builtin.uri:
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.add"
+    method: POST
+    body_format: json
+    body:
+      type_id: 1
+      associateddomain: "{{ kolab_domain }}"
       session_token: "{{ kolab_api_auth.json.result.session_token }}"
     return_content: true
     headers:
