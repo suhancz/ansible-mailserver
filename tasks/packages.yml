@@ -349,7 +349,7 @@
       - imapsync
       - aide
       - kolab
-      - php-pecl-memcache
+      - php74-php-pecl-memcache
       # - php56-php-bcmath
       # - php56-php-channel-horde
       # - php56-php-horde-horde-lz4
