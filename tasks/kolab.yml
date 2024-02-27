@@ -183,7 +183,7 @@
         mode: u=rw,go=r
         backup: yes
       notify: Restart postfix
-    - name: "Set search base in {{ item }}"
+    - name: "Set search base in {{ item.path }}"
       ansible.builtin.lineinfile: 
         dest: "{{ item.path }}"
         regexp: "^search_base = .*$" 
@@ -194,7 +194,7 @@
         backup: yes
       loop: "{{ postfix_ldap_cf_files.files }}"
       notify: Restart postfix
-    - name: "Set domain in {{ item | replace('.cf', '_3.cf') }}"
+    - name: "Set domain in {{ item.path | replace('.cf', '_3.cf') }}"
       ansible.builtin.lineinfile: 
         dest: "{{ item.path | replace('.cf', '_3.cf') }}"
         regexp: "^domain = .*$" 
@@ -420,15 +420,12 @@
   tags:
     - configuration
   block:
-    - name: Check domains list
-      ansible.builtin.command: "kolab list-domains"
-      register: kolab_domains_list
-
     - name: Add Domain
-      ansible.builtin.command: "kolab add-domain {{ item }}"
+      ansible.builtin.include_tasks: add_kolab_domain.yml
       loop:
         - "{{ [mailserver_domain] + custom_domains }}"
-      when: item is defined and item not in kolab_domains_list.stdout
+      loop_control:
+        loop_var: kolab_domain
     - name: Configure primary mail
       community.general.ini_file:
         path: /etc/kolab/kolab.conf

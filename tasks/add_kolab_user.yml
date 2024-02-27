@@ -10,6 +10,7 @@
     body_format: json
     body:
       mail: "{{ user.name }}@{{ mailserver_domain }}"
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
@@ -23,6 +24,8 @@
     method: GET
     body_format: json
     return_content: true
+    body:
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: user_types
@@ -40,6 +43,7 @@
       givenname: "{{ user.name }}"
       sn:
       userPassword: "{{ user.password }}"
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
@@ -58,6 +62,7 @@
       givenname: "{{ user.name }}"
       sn:
       userPassword: "{{ user.password }}"
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
