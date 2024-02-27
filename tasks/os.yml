@@ -82,9 +82,9 @@
     - poweradmin
     - wireguard
     - dns
-    - horde
+    # - horde
     - ldap
-    - postfixadmin
+    # - postfixadmin
 - name: Enable ip_conntrack
   community.general.modprobe:
     name: ip_conntrack

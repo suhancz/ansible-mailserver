@@ -4,7 +4,7 @@
   ansible.builtin.setup:
 - name: Generate passwords if they don't exist yet
   ansible.builtin.set_fact:
-    postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"
+    # postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"
     horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.horde_db_password chars=ascii_letters,digits')) }}"
     powerdns_db_password: "{{ powerdns_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_db_password chars=ascii_letters,digits')) }}"
     powerdns_api_key: "{{ powerdns_api_key | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_api_key chars=ascii_letters,digits')) }}"
@@ -62,7 +62,7 @@
     - dyndns
     # - horde
     - kolab
-    - postfixadmin
+    # - postfixadmin
     - poweradmin
     - wireguard
     - webdav
@@ -110,7 +110,7 @@
     - wireguard
     - dyndns
     - poweradmin
-    - postfixadmin
+    # - postfixadmin
 - name: Set up backups
   ansible.builtin.import_tasks: backups.yml
   tags: backup

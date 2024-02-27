@@ -100,6 +100,11 @@
     group: root 
     mode: u=rwx,og=
 
+- name: Initiate Roundcube plugins
+  ansible.builtin.command: bash /usr/src/KolabScripts/kolab/initRoundcubePlugins.sh
+  args:
+    chdir: /usr/src/KolabScripts/kolab
+
 - name: Initiate multi-domain
   block:
     - name: Configure IMAPD
@@ -169,7 +174,7 @@
       loop: "{{ postfix_ldap_cf_files.files }}"
       notify: Restart postfix
     - name: Set query filter in mydestination_3.cf
-      ansible.builtin.lineinfile: 
+      ansible.builtin.lineinfile:
         dest: /etc/postfix/ldap/mydestination_3.cf
         regexp: "^query_filter = .*$"
         line: 'query_filter = (\&(associateddomain=%s)(associateddomain=*.*.*))'
@@ -360,7 +365,6 @@
   args:
     chdir: /usr/src/KolabScripts/kolab
   with_items:
-    - initRoundcubePlugins.sh
     # - initMultiDomain.sh
     - initMailForward.sh
     - initMailCatchall.sh

@@ -327,7 +327,7 @@
   tags:
     - wireguard
     - poweradmin
-    - postfixadmin
+    # - postfixadmin
   ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
@@ -337,13 +337,13 @@
       type: A
       content: "{{ wireguard.ipv4_pool.split('/') | first | regex_replace('.0$', '.1') }}"
   loop:
-    - postfixadmin
+    # - postfixadmin
     - poweradmin
 - name: Add admin VPN AAAA records
   tags:
     - wireguard
     - poweradmin
-    - postfixadmin
+    # - postfixadmin
   ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
@@ -353,13 +353,13 @@
       type: AAAA
       content: "{{ wireguard.ipv6_pool.split('/') | first | regex_replace(':0$', ':1') }}"
   loop:
-    - postfixadmin
+    # - postfixadmin
     - poweradmin
 - name: Configure PowerDNS recursor to forward VPN domains
   tags:
     - wireguard
     - poweradmin
-    - postfixadmin
+    # - postfixadmin
   ansible.builtin.lineinfile:
     path: /etc/pdns-recursor/recursor.conf
     line: "forward-zones+=vpn.{{ mailserver_domain }}=127.0.0.1:5301"
