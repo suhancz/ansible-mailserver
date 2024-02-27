@@ -5,7 +5,7 @@
   # TODO: Figure how to store auth tokens
 - name: "Find Kolab user with e-mail {{ user.name ~ '@' ~ mailserver_domain }}"
   ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/api/user.find"
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.find"
     method: GET
     body_format: json
     body:
@@ -20,7 +20,7 @@
 - name: Find user types
   # TODO: find the right user types
   ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/api/user_types.list"
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user_types.list"
     method: GET
     body_format: json
     return_content: true
@@ -34,7 +34,7 @@
   # TODO: find the needed variables
   when: user_found.json.status == 'OK' and user_found.json.result | length > 0
   ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/api/user.add"
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.add"
     method: GET
     body_format: json
     body:
@@ -53,7 +53,7 @@
   # TODO: find the needed variables
   when: user_found.json.status != 'OK' or user_found.json.result | length > 0
   ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/api/user.edit"
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.edit"
     method: GET
     body_format: json
     body:

@@ -1,7 +1,7 @@
 ---
 - name: Authenticate against the Kolab API
   ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/api/system.authenticate"
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/system.authenticate"
     method: POST
     body_format: json
     body:
