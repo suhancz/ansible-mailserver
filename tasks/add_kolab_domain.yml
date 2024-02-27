@@ -1,0 +1,59 @@
+---
+- name: Authenticate against the Kolab API
+  when: (kolab_api_auth is not defined) or (kolab_api_auth.cookies_string is not defined) or (kolab_api_auth.cookies_string | length == 0)
+  ansible.builtin.include_tasks: kolab_auth.yml
+  # TODO: Figure how to store auth tokens
+- name: "Find Kolab domain {{ kolab_domain }}"
+  ansible.builtin.uri:
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domains.list"
+    method: GET
+    body_format: json
+    body:
+      mail: "{{ user.name }}@{{ mailserver_domain }}"
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
+    return_content: true
+    headers:
+      Cookie: "{{ kolab_api_auth.cookies_string }}"
+  register: kolab_domains
+  failed_when: kolab_domains.json.status != 'OK'
+- name: Display Kolab domains
+  debug:
+    var: kolab_domains.json.result
+- name: "Add Kolab domain {{ kolab_domain }}"
+  # TODO: find the needed variables
+  when: kolab_domains.json.result.
+  ansible.builtin.uri:
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.add"
+    method: GET
+    body_format: json
+    body:
+      object_type: user
+      type_id:
+      givenname: "{{ user.name }}"
+      sn:
+      userPassword: "{{ user.password }}"
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
+    return_content: true
+    headers:
+      Cookie: "{{ kolab_api_auth.cookies_string }}"
+  register: user_add
+  failed_when: user_add.json.status != 'OK'
+- name: "Update Kolab user {{ user.name }}"
+  # TODO: find the needed variables
+  when: user_found.json.status != 'OK' or user_found.json.result | length > 0
+  ansible.builtin.uri:
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.edit"
+    method: GET
+    body_format: json
+    body:
+      object_type: user
+      type_id:
+      givenname: "{{ user.name }}"
+      sn:
+      userPassword: "{{ user.password }}"
+      session_token: "{{ kolab_api_auth.json.result.session_token }}"
+    return_content: true
+    headers:
+      Cookie: "{{ kolab_api_auth.cookies_string }}"
+  register: user_edit
+  failed_when: user_edit.json.status != 'OK'
