@@ -53,7 +53,10 @@
       [php-url-fopen]
       enabled  = true
 
-      [horde]
+      # [horde]
+      # enabled  = true
+
+      [cyrus-imap]
       enabled  = true
 
       # [vsftpd]
