@@ -12,7 +12,7 @@
   ansible.builtin.lineinfile:
     path: /etc/hosts
     regexp: '^{{ item }}'
-    line: '{{ item }} {{ mailserver_hostname }}.{{ mailserver_domain }} {{ mailserver_domain }} {{ custome_domains | join(" ") }}'
+    line: '{{ item }} {{ mailserver_hostname }}.{{ mailserver_domain }} {{ mailserver_domain }} {{ custom_domains | join(" ") }}'
     mode: u=rw,og=r
     owner: root
     group: root
