@@ -204,6 +204,13 @@
     - "eclipseo/golang-ng custom-1-x86_64"
   register: enable_copr_repo
   changed_when: enable_copr_repo.rc == 0
+- name: Enable the php:remi-7.4 DNF module
+  tags:
+    # - horde
+    - always
+  ansible.builtin.command: dnf module enable php:remi-7.4 -y
+  register: enable_php74_module
+  changed_when: enable_php74_module.rc == 0
 - name: Install packages
   tags:
     - always
