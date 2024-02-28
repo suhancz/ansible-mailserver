@@ -278,6 +278,7 @@
       loop: "{{ users }}"
       loop_control:
         loop_var: user
+      no_log: true
     - name: Configure Roundcube authentication
       ansible.builtin.lineinfile:
         dest: /etc/roundcubemail/kolab_auth.inc.php
@@ -494,6 +495,7 @@
   loop_control:
     loop_var: kolab_service
 - name: Add Kolab users
+  no_log: true
   block:
     - name: "Add user to Kolab: {{ user.name }}"
       ansible.builtin.include_tasks: add_kolab_user.yml
