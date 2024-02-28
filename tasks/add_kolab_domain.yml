@@ -33,29 +33,28 @@
 - name: Empty domain update variable
   ansible.builtin.set_fact:
     kolab_domain_update:
-- name: "Update Kolab domain {{ kolab_domain }}"
-  # when:  ('associateddomain=' ~ kolab_domain ~ ',') in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
-  when: kolab_domain in current_kolab_domain.value.associateddomain
-  ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.edit"
-    method: POST
-    body_format: json
-    body:
-      type_id: 1
-      associateddomain: "{{ kolab_domain }}"
-      session_token: "{{ kolab_api_auth.json.result.session_token }}"
-    return_content: true
-    headers:
-      Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: kolab_domain_update
-  failed_when: kolab_domain_update.json.status != 'OK'
-  changed_when: kolab_domain_update.json.status == 'OK'
-  loop: "{{ kolab_domains.json.result.list | dict2items }}"
-  loop_control:
-    loop_var: current_kolab_domain
+# TODO: figure out (probably via reverse-enigneering) how to add subdomains via the API
+# - name: "Update Kolab domain {{ kolab_domain }}"
+#   when: kolab_domain in current_kolab_domain.value.associateddomain
+#   ansible.builtin.uri:
+#     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.edit"
+#     method: POST
+#     body_format: json
+#     body:
+#       type_id: 1
+#       associateddomain: "{{ kolab_domain }}"
+#       session_token: "{{ kolab_api_auth.json.result.session_token }}"
+#     return_content: true
+#     headers:
+#       Cookie: "{{ kolab_api_auth.cookies_string }}"
+#   register: kolab_domain_update
+#   failed_when: kolab_domain_update.json.status != 'OK'
+#   changed_when: kolab_domain_update.json.status == 'OK'
+#   loop: "{{ kolab_domains.json.result.list | dict2items }}"
+#   loop_control:
+#     loop_var: current_kolab_domain
 - name: "Add Kolab domain {{ kolab_domain }}"
-  # when:  ('associateddomain=' ~ kolab_domain ~ ',') not in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
-  when: not kolab_domain_update.changed
+  # when: not kolab_domain_update.changed
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.add"
     method: POST
