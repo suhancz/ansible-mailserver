@@ -41,7 +41,7 @@
     method: POST
     body_format: json
     body:
-      associateddomain: "{{ current_kolab_domain.value.associateddomain | default([]) + [kolab_domain] }}"
+      associateddomain: "{{ (current_kolab_domain.value.associateddomain | default([]) | list + [kolab_domain]) | unique }}"
       session_token: "{{ kolab_api_auth.json.result.session_token }}"
       inetdomainstatus: ''
       domainrelatedobject_only: ''
