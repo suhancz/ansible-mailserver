@@ -14,24 +14,24 @@
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: kolab_domains
   failed_when: kolab_domains.json.status != 'OK'
-- name: "List domain types"
-  ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain_types.list"
-    method: POST
-    body_format: json
-    body:
-      session_token: "{{ kolab_api_auth.json.result.session_token }}"
-    return_content: true
-    headers:
-      Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: kolab_domain_types
-  failed_when: kolab_domain_types.json.status != 'OK'
-- name: Display Kolab domain types
-  debug:
-    var: kolab_domain_types.json.result
+# - name: "List domain types"
+#   ansible.builtin.uri:
+#     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain_types.list"
+#     method: POST
+#     body_format: json
+#     body:
+#       session_token: "{{ kolab_api_auth.json.result.session_token }}"
+#     return_content: true
+#     headers:
+#       Cookie: "{{ kolab_api_auth.cookies_string }}"
+#   register: kolab_domain_types
+#   failed_when: kolab_domain_types.json.status != 'OK'
+# - name: Display Kolab domain types
+#   debug:
+#     var: kolab_domain_types.json.result
 - name: "Add Kolab domain {{ kolab_domain }}"
-  # when:  ('associateddomain=' ~ kolab_domain ~ ',' not) in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
-  when:  kolab_domains.json.result.list | selectattr(none)
+  # when:  ('associateddomain=' ~ kolab_domain ~ ',') not in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
+  when: kolab_domain not in kolab_domains.json.result.list | dict2items | map(attribute='associateddomain')
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.add"
     method: POST
@@ -43,24 +43,21 @@
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: user_add
-  failed_when: user_add.json.status != 'OK'
-- name: "Update Kolab user {{ user.name }}"
-  # TODO: find the needed variables
-  when: user_found.json.status != 'OK' or user_found.json.result | length > 0
+  register: domain_add
+  failed_when: domain_add.json.status != 'OK'
+- name: "Add Kolab domain {{ kolab_domain }}"
+  # when:  ('associateddomain=' ~ kolab_domain ~ ',') in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
+  when: kolab_domain in kolab_domains.json.result.list | dict2items | map(attribute='associateddomain')
   ansible.builtin.uri:
-    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.edit"
-    method: GET
+    url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.edit"
+    method: POST
     body_format: json
     body:
-      object_type: user
-      type_id:
-      givenname: "{{ user.name }}"
-      sn:
-      userPassword: "{{ user.password }}"
+      type_id: 1
+      associateddomain: "{{ kolab_domain }}"
       session_token: "{{ kolab_api_auth.json.result.session_token }}"
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: user_edit
-  failed_when: user_edit.json.status != 'OK'
+  register: domain_edit
+  failed_when: domain_edit.json.status != 'OK'
