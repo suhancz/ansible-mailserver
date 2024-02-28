@@ -417,7 +417,15 @@
     - src: "httpd/kolab-le-ssl.conf.j2"
       # noqa yaml[line-length]
       dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}-le-ssl.conf"
+  register: kolab_apache_config
   notify: Restart httpd
+- name: Restart httpd
+  when: kolab_apache_config.changed
+  ansible.builtin.systemd_service:
+    name: httpd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 
 - name: Enable domains
   tags:
