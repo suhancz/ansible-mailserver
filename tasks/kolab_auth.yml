@@ -8,5 +8,6 @@
       username: "cn=Directory Manager"
       password: "{{ ldap_admin_password }}"
     return_content: true
+  no_log: true
   register: kolab_api_auth
   failed_when: kolab_api_auth.json.status != 'OK'

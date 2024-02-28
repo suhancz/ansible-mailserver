@@ -8,6 +8,7 @@
   register: kolab_setup
   failed_when: kolab_setup.rc != 0 and "existing" not in kolab_setup.stderr
   changed_when: kolab_setup.rc == 0
+  no_log: true
   tags:
     - configuration
 

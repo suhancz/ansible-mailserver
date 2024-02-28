@@ -17,6 +17,7 @@
   register: kolab_user_found
   failed_when: kolab_user_found.json.status != 'OK' and kolab_user_found.json.result | length > 0
   changed_when: kolab_user_found.json.status == 'OK' and kolab_user_found.json.result | length == 0
+  no_log: true
 - name: Display Kolab user find results
   ansible.builtin.debug:
     var: kolab_user_found.json.result
@@ -55,6 +56,7 @@
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: kolab_user_add
   failed_when: kolab_user_add.json.status != 'OK'
+  # no_log: true
 - name: "Update Kolab user {{ user.name }}"
   # TODO: find the needed variables
   when: kolab_user_found.changed
@@ -74,3 +76,4 @@
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: kolab_user_edit
   failed_when: kolab_user_edit.json.status != 'OK'
+  # no_log: true
