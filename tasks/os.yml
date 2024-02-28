@@ -8,6 +8,20 @@
   ansible.builtin.command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
   register: set_hostname
   changed_when: set_hostname.rc == 0
+- name: Add hostnames to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^{{ item }}'
+    line: '{{ item }} {{ mailserver_hostname }}.{{ mailserver_domain }} {{ mailserver_domain }} {{ custome_domains | join(" ") }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - 127.0.0.1 localhost.localdomain localhost
+    - ::1 localhost6.localdomain6 localhost6
+
 - name: Enable IPv6
   when: ansible_default_ipv6.address is not defined
   block:
