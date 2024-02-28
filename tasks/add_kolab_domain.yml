@@ -14,10 +14,7 @@
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: kolab_domains
   failed_when: kolab_domains.json.status != 'OK'
-  # changed_when: kolab_domain not in kolab_domains.json.result.list | dict2items | map(attribute='associateddomain')
-- name: Display Kolab domains
-  ansible.builtin.debug:
-    msg: "{{ kolab_domains.json.result.list | dict2items }}"
+  changed_when: kolab_domain not in (kolab_domains.json.result.list | dict2items).value.associateddomain
 # - name: "List domain types"
 #   ansible.builtin.uri:
 #     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain_types.list"
