@@ -59,7 +59,7 @@
   loop_control:
     loop_var: current_kolab_domain
 - name: "Add Kolab domain {{ kolab_domain }}"
-  # when: not kolab_domain_update.changed
+  when: not kolab_domain_update.changed
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.add"
     method: POST
