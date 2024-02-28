@@ -21,6 +21,7 @@
   loop:
     - 127.0.0.1 localhost.localdomain localhost
     - ::1 localhost6.localdomain6 localhost6
+  tags: kolab
 
 - name: Enable IPv6
   when: ansible_default_ipv6.address is not defined
