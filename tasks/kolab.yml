@@ -187,6 +187,7 @@
         backup: yes
       notify: Restart postfix
     - name: "Set search base in {{ item.path }}"
+      when: item.path is not regex(".*_3\.cf$")
       ansible.builtin.lineinfile: 
         dest: "{{ item.path }}"
         regexp: "^search_base = .*$" 
@@ -198,6 +199,7 @@
       loop: "{{ postfix_ldap_cf_files.files }}"
       notify: Restart postfix
     - name: "Set domain in {{ item.path | replace('.cf', '_3.cf') }}"
+      when: item.path is not regex(".*_3\.cf$")
       ansible.builtin.lineinfile: 
         dest: "{{ item.path | replace('.cf', '_3.cf') }}"
         regexp: "^domain = .*$" 
