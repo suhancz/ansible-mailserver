@@ -50,6 +50,7 @@
   register: kolab_domain_update
   failed_when: kolab_domain_update.json.status != 'OK'
   changed_when: kolab_domain_update.json.status == 'OK'
+  loop: "{{ kolab_domains.json.result.list | dict2items }}"
   loop_control:
     loop_var: current_kolab_domain
 - name: "Add Kolab domain {{ kolab_domain }}"
@@ -69,6 +70,3 @@
   register: kolab_domain_add
   failed_when: kolab_domain_add.json.status != 'OK'
   changed_when: kolab_domain_add.json.status == 'OK'
-  loop: kolab_domains.json.result.list | dict2items
-  loop_control:
-    loop_var: current_kolab_domain
