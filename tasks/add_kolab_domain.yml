@@ -14,6 +14,7 @@
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: kolab_domains
   failed_when: kolab_domains.json.status != 'OK'
+  changed_when: kolab_domain not in kolab_domains.json.result.list | dict2items | map(attribute='associateddomain')
 # - name: "List domain types"
 #   ansible.builtin.uri:
 #     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain_types.list"
@@ -31,7 +32,7 @@
 #     var: kolab_domain_types.json.result
 - name: "Add Kolab domain {{ kolab_domain }}"
   # when:  ('associateddomain=' ~ kolab_domain ~ ',') not in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
-  when: kolab_domain not in kolab_domains.json.result.list | dict2items | map(attribute='associateddomain')
+  when: not kolab_domains.changed
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.add"
     method: POST
@@ -47,7 +48,7 @@
   failed_when: kolab_domain_add.json.status != 'OK'
 - name: "Update Kolab domain {{ kolab_domain }}"
   # when:  ('associateddomain=' ~ kolab_domain ~ ',') in lookup('ansible.builtin.dict', kolab_domains.json.result.list).key
-  when: kolab_domain in kolab_domains.json.result.list | dict2items | map(attribute='associateddomain')
+  when: kolab_domains.changed
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/domain.edit"
     method: POST

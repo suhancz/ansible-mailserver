@@ -14,11 +14,13 @@
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: user_found
-  failed_when: user_found.json.status != 'OK' and user_found.json.result | length > 0
-  changed_when: user_found.json.status == 'OK' and user_found.json.result | length == 0
+  register: kolab_user_found
+  failed_when: kolab_user_found.json.status != 'OK' and kolab_user_found.json.result | length > 0
+  changed_when: kolab_user_found.json.status == 'OK' and kolab_user_found.json.result | length == 0
+- name: Display Kolab user find results
+  ansible.builtin.debug:
+    var: kolab_user_found.json.result
 - name: Find user types
-  # TODO: find the right user types
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user_types.list"
     method: GET
@@ -28,11 +30,15 @@
       session_token: "{{ kolab_api_auth.json.result.session_token }}"
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: user_types
-  failed_when: user_types.json.status != 'OK'
+  register: kolab_user_types
+  failed_when: kolab_user_types.json.status != 'OK'
+- name: Display Kolab domain types
+  # TODO: find the right user types
+  ansible.builtin.debug:
+    var: kolab_user_types.json.result
 - name: "Add Kolab user {{ user.name }}"
   # TODO: find the needed variables
-  when: user_found.json.status == 'OK' and user_found.json.result | length > 0
+  when: not kolab_user_found.changed
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.add"
     method: GET
@@ -47,11 +53,11 @@
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: user_add
-  failed_when: user_add.json.status != 'OK'
+  register: kolab_user_add
+  failed_when: kolab_user_add.json.status != 'OK'
 - name: "Update Kolab user {{ user.name }}"
   # TODO: find the needed variables
-  when: user_found.json.status != 'OK' or user_found.json.result | length > 0
+  when: kolab_user_found.changed
   ansible.builtin.uri:
     url: "https://kolab.{{ mailserver_domain }}/kolab-webadmin/api/user.edit"
     method: GET
@@ -66,5 +72,5 @@
     return_content: true
     headers:
       Cookie: "{{ kolab_api_auth.cookies_string }}"
-  register: user_edit
-  failed_when: user_edit.json.status != 'OK'
+  register: kolab_user_edit
+  failed_when: kolab_user_edit.json.status != 'OK'
