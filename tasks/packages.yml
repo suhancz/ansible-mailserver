@@ -221,7 +221,7 @@
       - certbot
       - httpd
       - python3-certbot-apache
-      - dovecot
+      # - dovecot
       - mariadb-server
       - mariadb
       - python3-mysqlclient
@@ -233,7 +233,7 @@
       - policycoreutils-python3
       - policycoreutils-devel
       - postfix-mysql
-      - dovecot-mysql
+      # - dovecot-mysql
       - pypolicyd-spf
       - opendkim
       - opendkim-tools
@@ -246,7 +246,7 @@
       - nm-connection-editor
       - spamassassin
       - spamass-milter
-      - dovecot-pigeonhole
+      # - dovecot-pigeonhole
       - ImageMagick
       - aspell
       - memcached

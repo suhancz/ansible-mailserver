@@ -64,6 +64,12 @@
     - kolab-saslauthd
   loop_control:
     loop_var: kolab_service
+- name: Restart memcached
+  ansible.builtin.systemd_service:
+    name: memcached
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Restart mongod
   ansible.builtin.systemd_service:
     name: mongod

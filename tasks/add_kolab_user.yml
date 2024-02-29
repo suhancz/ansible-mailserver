@@ -1,4 +1,6 @@
 ---
+# TODO: make surname optional for my personal case- the query on the 'kolab' MariaDB database might help: select user_types.attributes from user_types  where user_types.key = 'kolab_posix';
+# TODO: Users probably also need to be crated via plain LDAP
 - name: Authenticate against the Kolab API
   when: (kolab_api_auth is not defined) or (kolab_api_auth.cookies_string is not defined) or (kolab_api_auth.cookies_string | length == 0)
   ansible.builtin.include_tasks: kolab_auth.yml
@@ -75,4 +77,4 @@
       Cookie: "{{ kolab_api_auth.cookies_string }}"
   register: kolab_user_edit
   failed_when: kolab_user_edit.json.status != 'OK'
-  # no_log: true
+  no_log: true
