@@ -2,7 +2,7 @@
 - name: Setup kolab
   # noqa yaml[line-length]
   ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
-    --mysqlserver=unix_socket --mysqlrootpw={{ mysql_root_password }} \
+    --mysqlserver=existing --mysqlhost=127.0.0.1 --mysqlrootpw={{ mysql_root_password }} \
     --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} \
     --domain={{ mailserver_domain }}"
   register: kolab_setup
