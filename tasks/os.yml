@@ -100,6 +100,7 @@
     # - horde
     - ldap
     # - postfixadmin
+    - users
 - name: Enable ip_conntrack
   community.general.modprobe:
     name: ip_conntrack

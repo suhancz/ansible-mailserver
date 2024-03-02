@@ -74,16 +74,17 @@
       value: '0'
     - key: 'partition'
       value: 'archive'
-    - key: 'policy_uid'
-      value: "%(givenname)s.lower()"
-    - key: 'primary_mail'
-      value: "%(givenname)s@%(domain)s"
     - key: 'postfix_virtual_file'
       value: '/etc/postfix/virtual_alias_maps_manual.cf'
+    - key: 'policy_uid'
+      value: "'%(givenname)s'{{ '[0:1]%(surname)s' if not family_mode | bool }}.lower()"
+    - key: 'primary_mail'
+      value: "'%(givenname)s'{{ '[0:1].%(surname)s' if not family_mode | bool }}@%(domain)s"
   notify: 
     - Restart kolab
   tags:
     - configuration
+    - users
 
 # Kolab Patch for Multidomains
 - name: Kolab patch download
@@ -273,12 +274,16 @@
         - vpn
         - webmaster
       notify: Restart postfix
+      tags:
+        - users
     - name: Set up user mail aliases
       ansible.builtin.include_tasks: user_mail_alias.yml
       loop: "{{ users }}"
       loop_control:
         loop_var: user
       no_log: true
+      tags:
+        - users
     - name: Configure Roundcube authentication
       ansible.builtin.lineinfile:
         dest: /etc/roundcubemail/kolab_auth.inc.php
@@ -467,7 +472,7 @@
         path: /etc/kolab/kolab.conf
         section: "{{ item }}"
         option: primary_mail
-        value: "%(givenname)s@%(domain)s"
+        value: "%(givenname)s{{ '.%(surname)s' if not family_mode | bool }}@%(domain)s"
         owner: kolab-n
         group: kolab
         mode: u=rw,g=r,o=
@@ -476,6 +481,8 @@
         - "{{ [mailserver_domain] + custom_domains }}"
       notify: 
         - Restart kolab
+      tags:
+        - users
     - name: Set timestamp format
       community.general.ini_file:
         path: /etc/kolab/kolab.conf
@@ -507,6 +514,25 @@
     - kolab-saslauthd
   loop_control:
     loop_var: kolab_service
+- name: Disable mandatory surname setting
+  when: family_mode | bool
+  block:
+    - name: Query all user types
+      community.mysql.mysql_query:
+        login_db: kolab
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        query: select user_types.key,user_types.attributes from user_types;
+      register: user_type_attributes
+    - name: Disable mandatory surname field
+      when: (user_type_item.attributes | from_json).form_fields.sn is defined
+      ansible.builtin.include_tasks: kolab_disable_mandatory_surname.yml
+      loop: "{{ user_type_attributes.query_result[0] }}"
+      loop_control:
+        loop_var: user_type_item
+  tags:
+    - users
+
 - name: Add Kolab users
   no_log: true
   block:
@@ -523,3 +549,5 @@
       loop: "{{ users }}"
       loop_control:
         loop_var: user
+  tags:
+    - users

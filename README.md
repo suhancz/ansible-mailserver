@@ -57,6 +57,7 @@ Role Variables
       allowed_ips: # list of IP addresses to reach via VPN
       keepalive: # VPN keepalive in seconds
     httpd_pam_deny_users: # list of users who shouldn't authenticate against HTTPD using PAM
+    family_mode: yes # boolean if users would be identified only by given name (assuming the surname is identical)
 
 Example Playbook
 ----------------

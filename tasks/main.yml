@@ -91,7 +91,9 @@
   vars:
     current_user: "{{ current_user }}"
   no_log: yes
-  tags: imapsync
+  tags:
+    - imapsync
+    - users
 - name: Set up DKIM
   ansible.builtin.import_tasks: dkim.yml
   tags: dkim

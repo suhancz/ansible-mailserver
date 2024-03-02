@@ -18,6 +18,7 @@
 - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
   tags:
     - dyndns
+    - users
   when: 'public_dns == "yes"'
   notify: Warn on passwords
   community.mysql.mysql_query:
@@ -87,6 +88,8 @@
         loop_var: user
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
+  tags:
+    - users
 - name: Make sure DynDNS zones are master zones
   when: public_dns == "yes"
   ansible.builtin.command: "pdnsutil set-kind {{ user.name }}.dyndns.{{ mailserver_domain }} primary"
@@ -105,6 +108,8 @@
   loop_control:
     loop_var: user
   changed_when: zone_records.rc == 0
+  tags:
+    - users
 - name: Correct SOA record for user DynDNS domains
   when: public_dns == "yes"
   ansible.builtin.command: 'pdnsutil replace-rrset {{ user_zone.user }}.dyndns.{{ mailserver_domain }} @ SOA 3600 "ns.{{ mailserver_domain }} hostmaster\\.{{ user_zone.user }}.{{ mailserver_domain }} {{ user_zone.stdout_lines | length }} 10800 3600 604800 3600"'
@@ -113,6 +118,8 @@
     loop_var: user_zone
   register: zone_record
   changed_when: zone_record.rc == 0
+  tags:
+    - users
 - name: Rectify all zones
   ansible.builtin.command: pdnsutil rectify-all-zones
   register: rectify_zones
@@ -145,6 +152,7 @@
   tags:
     - dyndns
     - poweradmin
+    - users
   ansible.builtin.include_tasks: add_dns_record.yml
   when: dyndns_item != "server"
   vars:
@@ -162,6 +170,7 @@
   tags:
     - dyndns
     - poweradmin
+    - users
   ansible.builtin.include_tasks: add_dns_record.yml
   vars:
     record:
@@ -179,10 +188,13 @@
   loop: "{{ [''] + (wg_configs.keys() | list) }}"
   loop_control:
     loop_var: dyndns_item
+  tags:
+    - users
 - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
   tags:
     - dyndns
     - poweradmin
+    - users
   when: public_dns == "yes"
   loop: "{{ users }}"
   loop_control:
@@ -226,6 +238,7 @@
   tags:
     - dyndns
     - poweradmin
+    - users
   when: dyndns_item != "server"
   ansible.builtin.template:
     src: dyndns/dynamic_dns_client.sh.j2
@@ -241,6 +254,7 @@
   tags:
     - dyndns
     - poweradmin
+    - users
   when: dyndns_item != "server"
   ansible.builtin.template:
     src: dyndns/dynamic_dns_client.py.j2

@@ -66,6 +66,8 @@
   loop: "{{ users }}"
   no_log: yes
   notify: Restart vsftpd
+  tags:
+    - users
 - name: Set SELinux booleans
   when: getenforce.stdout != 'Disabled'
   ansible.posix.seboolean:
@@ -82,6 +84,8 @@
     mode: a-w
   loop: "{{ users }}"
   no_log: yes
+  tags:
+    - users
 - name: Create user FTP directories
   ansible.builtin.file:
     path: "/home/{{ item.name }}/ftp/files"
@@ -92,3 +96,5 @@
     mode: u=rwX
   loop: "{{ users }}"
   no_log: yes
+  tags:
+    - users

@@ -85,6 +85,8 @@
     - { key: "recipient_delimiter", value: "+" }
     - { key: "propagate_unmatched_extensions", value: "" }
   notify: Restart postfix
+  tags:
+    - users
 # - name: Render Postfix SQL templates
 #   ansible.builtin.template:
 #     src: "postfix/sql/{{ item }}.j2"

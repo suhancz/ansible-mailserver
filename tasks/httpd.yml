@@ -79,6 +79,7 @@
     - webdav
     - ftp
     - wireguard
+    - users
   ansible.builtin.file:
     path: "~{{ item.name }}"
     state: directory
@@ -92,6 +93,7 @@
     - webdav
     - ftp
     - wireguard
+    - users
   ansible.builtin.file:
     path: "~{{ item.name }}/public_html"
     state: directory
@@ -102,7 +104,9 @@
   loop: "{{ users }}"
   no_log: true
 - name: BindFS mount SSL certificates to user public_html
-  tags: ssl
+  tags:
+    - ssl
+    - users
   ansible.posix.mount:
     path: "~{{ item.name }}/public_html/.certificates"
     src: /etc/letsencrypt/certificates

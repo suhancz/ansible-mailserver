@@ -18,7 +18,9 @@
   vars:
     port: "{{ wireguard.listen_port }}/udp" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
 - name: Ensure user VPN config directories exist
-  tags: wireguard
+  tags:
+    - wireguard
+    - users
   ansible.builtin.file:
     path: "~{{ item.name }}/{{ item.name }}/public_html/.vpn"
     owner: "{{ item.name }}"
@@ -120,6 +122,8 @@
   loop: "{{ users }}"
   loop_control:
     loop_var: vpn_user
+  tags:
+    - users
 - name: Generate WireGuard client keys
   ansible.builtin.include_tasks: generate_wireguard_keys.yml
   vars:
