@@ -8,7 +8,7 @@
     bind_pw: "{{ ldap_admin_password }}"
   register: kolab_user_entry
 - name: Display user entry
-  ansible.bultin.debug:
+  ansible.builtin.debug:
     var: kolab_user_entry
 - name: Delete old user LDAP entry
   community.general.ldap_entry:
