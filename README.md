@@ -10,7 +10,9 @@ Role Variables
     mailserver_domain # primary domain name
     mailserver_admin_user # user to administer the mail server
     users:
-      - name
+      - name # system username
+        firstname
+        surname # in family mode defaults to `default_surname`
         password
         aliases:
           - alias@domain.com
@@ -58,6 +60,7 @@ Role Variables
       keepalive: # VPN keepalive in seconds
     httpd_pam_deny_users: # list of users who shouldn't authenticate against HTTPD using PAM
     family_mode: yes # boolean if users would be identified only by given name (assuming the surname is identical)
+    default_surname: Doe # used in family mode so adding users via the role don't need surname to be added
 
 Example Playbook
 ----------------

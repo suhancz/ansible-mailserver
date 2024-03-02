@@ -77,9 +77,9 @@
     - key: 'postfix_virtual_file'
       value: '/etc/postfix/virtual_alias_maps_manual.cf'
     - key: 'policy_uid'
-      value: "'%(givenname)s'{{ '[0:1]%(surname)s' if not family_mode | bool }}.lower()"
+      value: "{% if not family_mode | bool %}}'{% endif %}%(givenname)s{% if not family_mode | bool %}}'{% endif %}{{ '[0:1]%(surname)s' if not family_mode | bool }}.lower()"
     - key: 'primary_mail'
-      value: "'%(givenname)s'{{ '[0:1].%(surname)s' if not family_mode | bool }}@%(domain)s"
+      value: "{% if not family_mode | bool %}}'{% endif %}%(givenname)s{% if not family_mode | bool %}}'{% endif %}{{ '[0:1]%(surname)s' if not family_mode | bool }}@%(domain)s"
   notify: 
     - Restart kolab
   tags:
@@ -514,25 +514,6 @@
     - kolab-saslauthd
   loop_control:
     loop_var: kolab_service
-- name: Disable mandatory surname setting
-  when: family_mode | bool
-  block:
-    - name: Query all user types
-      community.mysql.mysql_query:
-        login_db: kolab
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
-        query: select user_types.key,user_types.attributes from user_types;
-      register: user_type_attributes
-    - name: Disable mandatory surname field
-      when: (user_type_item.attributes | from_json).form_fields.sn is defined
-      ansible.builtin.include_tasks: kolab_disable_mandatory_surname.yml
-      loop: "{{ user_type_attributes.query_result[0] }}"
-      loop_control:
-        loop_var: user_type_item
-  tags:
-    - users
-
 - name: Add Kolab users
   no_log: true
   block:

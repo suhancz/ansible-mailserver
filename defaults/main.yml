@@ -184,3 +184,4 @@ wireguard:
     - fd00::10:42:0/120
   keepalive: 42
 family_mode: yes
+default_surname: Doe
