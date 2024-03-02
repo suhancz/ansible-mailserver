@@ -66,6 +66,8 @@
         group: apache
         mode: ug=rw,o=r
 - name: Create DynDNS zones
+  tags:
+    - users
   block:
     - name: Create DynDNS zones
       when: public_dns == "yes"
@@ -88,8 +90,6 @@
         loop_var: user
       register: create_dns_zones
       changed_when: create_dns_zones.rc == 0
-  tags:
-    - users
 - name: Make sure DynDNS zones are master zones
   when: public_dns == "yes"
   ansible.builtin.command: "pdnsutil set-kind {{ user.name }}.dyndns.{{ mailserver_domain }} primary"
