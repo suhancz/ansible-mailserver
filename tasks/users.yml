@@ -1,0 +1,46 @@
+---
+# - name: Create OpenLDAP SUDO schema
+#   ansible.builtin.copy:
+#     src: /usr/share/doc/sudo/schema.OpenLDAP
+#     dest: /etc/openldap/schema/sudo.schema
+#     remote_src: yes
+#     owner: root
+#     group: root
+#     mode: u=rw,og=r
+# - name: Create SUDO LDIF file
+#   ansible.builtin.copy:
+#     src: ldap/sudo.ldif
+#     dest: /etc/openldap/schema/sudo.ldif
+#     owner: root
+#     group: root
+#     mode: u=rw,og=r
+# - name: Enable OpenLDAP schemas
+#   ansible.builtin.command: "ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/{{ ldif_item }}.ldif"
+#   loop:
+#     - cosine
+#     - nis
+#     - sudo
+#   loop_control:
+#     loop_var: ldif_item
+- name: Create OS users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | password_hash('sha512') | default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
+    groups: "{{ 'wheel' if item.name == mailserver_admin_user }}"
+    append: yes
+    state: present
+  loop: "{{ users }}"
+  register: user_info
+  no_log: yes
+  notify: Warn on passwords
+  tags:
+    - all
+    - ftp
+    - httpd
+    - poweradmin
+    - wireguard
+    - dns
+    # - horde
+    - ldap
+    # - postfixadmin
+    - users

@@ -82,6 +82,18 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Restart nscd
+  ansible.builtin.systemd_service:
+    name: nscd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart oddjobd
+  ansible.builtin.systemd_service:
+    name: oddjobd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Restart opendkim
   ansible.builtin.systemd_service:
     name: opendkim
@@ -138,6 +150,12 @@
 - name: Restart spamass-milter
   ansible.builtin.systemd_service:
     name: spamass-milter
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart sssd
+  ansible.builtin.systemd_service:
+    name: sssd
     daemon_reload: yes
     enabled: yes
     state: restarted

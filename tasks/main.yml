@@ -40,15 +40,17 @@
 - name: Set up SSL
   ansible.builtin.import_tasks: ssl.yml
   tags: ssl
-# - name: Configure LDAP
-#   ansible.builtin.import_tasks: ldap.yml
-#   tags: ldap
 # - name: Set up Horde
 #   ansible.builtin.import_tasks: horde.yml
 #   tags: horde
 - name: Set up Kolab
   ansible.builtin.import_tasks: kolab.yml
-  tags: kolab
+  tags:
+    - kolab
+    - users
+- name: Add users
+  ansible.builtin.import_tasks: users.yml
+  tags: users
 - name: Set up ElasticSearch
   ansible.builtin.import_tasks: elasticsearch.yml
   tags: elasticsearch

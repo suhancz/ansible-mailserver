@@ -79,27 +79,10 @@
     group: root
     state: present
     backup: yes
-- name: Create OS users
-  ansible.builtin.user:
-    name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512') | default(lookup('password', '/tmp/ansible-mailserver-install.' + item.name + '_password chars=ascii_letters,digits,punctuation')) }}"
-    groups: "{{ 'wheel' if item.name == mailserver_admin_user }}"
-    append: yes
-    state: present
-  loop: "{{ users }}"
-  register: user_info
-  no_log: yes
-  notify: Warn on passwords
+- name: Configure LDAP
+  ansible.builtin.import_tasks: ldap.yml
   tags:
-    - all
-    - ftp
-    - httpd
-    - poweradmin
-    - wireguard
-    - dns
-    # - horde
     - ldap
-    # - postfixadmin
     - users
 - name: Enable ip_conntrack
   community.general.modprobe:

@@ -1,105 +1,117 @@
 ---
-# - name: Open firewall
-#   ansible.builtin.import_tasks: firewall.yml
-#   vars:
-#     port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
-#   loop:
-#     - ldap
-#     - ldaps
-# - name: Add ldap group
-#   group:
-#     name: ldap
-#     system: yes
-#     gid: 55
-# - name: Add ldap user
-#   ansible.builtin.user:
-#     name: ldap
-#     group: ldap
-#     create_home: yes
-#     system: yes
-#     uid: 55
-#     home: /var/lib/openldap
-#     shell: /usr/sbin/nologin
-- name: Render dscreate config template
-  ansible.builtin.template:
-    src: "ldap/389.dscreate.conf.j2"
-    dest: "/tmp/ansible-mailserver-install.dscreate.conf"
-    mode: u=rw
+# TODO: follow https://wiki.archlinux.org/title/LDAP_authentication and apply allowpwchange.ldif
+- name: Configure sssd
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: "{{ sssd_item.section }}"
+    option: "{{ sssd_item.option }}"
+    value: "{{ sssd_item.value }}"
+    backup: true
+    mode: u=rw,og=
     owner: root
     group: root
-    backup: yes
-  notify: "Restart dirsrv@{{ mailserver_hostname }}"
-- name: Apply LDAP server configuration
-  block:
-    - name: Configure LDAP server
-      ansible.builtin.command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
-      register: dscreate_status
-      changed_when: dscreate_status.rc == 0
-  rescue:
-    - name: Start LDAP server
-      ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
-      register: start_ldap_server
-      changed_when: start_ldap_server.rc == 0
-      when: reset == "yes"
-    - name: Create backup before taking destructive actions
-      ansible.builtin.command: "dsconf {{ mailserver_hostname }} backup create"
-      when: reset == "yes"
-      register: backup_ldap_server
-      changed_when: backup_ldap_server.rc == 0
-    - name: List LDAP server backups
-      ansible.builtin.command: "dsctl {{ mailserver_hostname }} backups"
-      register: ldap_backups
-      when: reset == "yes"
-      changed_when: ldap_backups.rc == 0
-    - name: Create backup directory
-      ansible.builtin.file:
-        path: "/backup/{{ item }}"
-        state: directory
-        recurse: yes
-        owner: root
-        group: root
-        mode: u=rwX
-      when: reset == "yes"
-      loop:
-        - ''
-        - ldap
-    - name: Save last LDAP backup
-      community.general.archive:
-        path: "{{ (ldap_backups.stdout_lines | last).split(' ')[1] }}"
-        dest: "/backup/ldap/LDAP_backup.{{ (ldap_backups.stdout_lines | last).split(' ')[1].split('/') | last }}.tar.bz2"
-        owner: root
-        group: root
-        mode: u=rw
-        format: bz2
-        force_archive: yes
-      when: reset == "yes"
-    - name: Uninstall LDAP server
-      ansible.builtin.command: "dsctl {{ mailserver_hostname }} remove --do-it"
-      when: reset == "yes"
-      register: uninstall_ldap_server
-      changed_when: uninstall_ldap_server.rc == 0
-    - name: Configure LDAP server
-      ansible.builtin.command: dscreate from-file /tmp/ansible-mailserver-install.dscreate.conf
-      when: reset == "yes"
-      register: dscreate_status
-      changed_when: dscreate_status.rc == 0
-- name: Start LDAP server
-  ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
-  register: start_ldap_server
-  changed_when: start_ldap_server.rc == 0
-- name: Import TLS certificate for LDAP
-  ansible.builtin.command: "dsctl {{ mailserver_hostname }} tls import-server-key-cert /etc/letsencrypt/live/{{ mailserver_domain }}/cert.pem /etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
-  register: import_ldap_cert
-  changed_when: import_ldap_cert.rc == 0
-- name: Enable LDAP plugins
-  ansible.builtin.command: "dsconf {{ mailserver_hostname }} plugin {{ item }} enable"
+  notify: Restart sssd
   loop:
-    - memberof
-    - automember
-  register: enable_ldap_plugin
-  changed_when: enable_ldap_plugin.rc == 0
-- name: Configure the memberof plugin to search all entries
-  ansible.builtin.command: "dsconf {{ mailserver_hostname }} plugin memberof set --scope dc={{ mailserver_domain.split('.') | join(',dc=') }}"
-  register: enable_ldap_memberof_plugin
-  changed_when: enable_ldap_memberof_plugin.rc == 0
-  when: "dscreate_status is defined and dscreate_status.rc is defined and dscreate_status.rc == 0"
+    - { section: 'domain/LDAP', option: 'id_provider', value: 'ldap' }
+    - { section: 'domain/LDAP', option: 'autofs_provider', value: 'ldap' }
+    - { section: 'domain/LDAP', option: 'auth_provider', value: 'ldap' }
+    - { section: 'domain/LDAP', option: 'chpass_provider', value: 'ldap' }
+    - { section: 'domain/LDAP', option: 'ldap_uri', value: 'ldaps://localhost' }
+    - { section: 'domain/LDAP', option: 'ldap_chpass_uri', value: 'ldaps://localhost' }
+    - { section: 'domain/LDAP', option: 'ldap_search_base', value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}" }
+    - { section: 'domain/LDAP', option: 'sudoers_base', value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}" }
+    - { section: 'domain/LDAP', option: 'sudo_provider', value: 'ldap' }
+    - { section: 'domain/LDAP', option: 'ldap_id_use_start_tls', value: 'True' }
+    - { section: 'domain/LDAP', option: 'ldap_tls_cacert', value: '/etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}/ca.crt' }
+    - { section: 'domain/LDAP', option: 'cache_credentials', value: 'True' }
+    - { section: 'domain/LDAP', option: 'enumerate', value: 'True' }
+    - { section: 'domain/LDAP', option: 'ldap_tls_reqcert', value: 'allow' }
+    - { section: 'domain/LDAP', option: 'entry_cache_timeout', value: '600' }
+    - { section: 'domain/LDAP', option: 'ldap_network_timeout', value: '2' }
+    - { section: 'domain/LDAP', option: 'ldap_schema', value: 'rfc2307bis' }
+    - { section: 'domain/LDAP', option: 'ldap_group_member', value: 'uniqueMember' }
+    - { section: 'sssd', option: 'services', value: 'nss, pam, autofs, sudo' }
+    - { section: 'sssd', option: 'domains', value: 'LDAP' }
+    - { section: 'nss', option: 'homedir_substring', value: '/home' }
+    - { section: 'sudo', option: '', value: '' }
+  loop_control:
+    loop_var: sssd_item
+- name: Configure nscd
+  ansible.builtin.lineinfile:
+    path: /etc/nscd.conf
+    line: "{{ nscd_item }}"
+    regex: "^{{ nscd_item | split('\t') | first }}\t"
+    state: present
+    backup: yes
+  loop:
+    - "enable-cache		passwd		no"
+    - "enable-cache		group		no"
+    - "enable-cache		hosts		yes"
+    - "enable-cache		netgroup	no"
+  loop_control:
+    loop_var: nscd_item
+  notify:
+    - Restart nscd
+    - Restart sssd
+- name: Configure nsswitch.conf
+  ansible.builtin.lineinfile:
+    path: /etc/nsswitch.conf
+    line: '\1 sss'
+    regex: "^({{ nsswitch_item }}: .*$)"
+    backrefs: yes
+    state: present
+    backup: yes
+  loop:
+    - passwd
+    - group
+    - shadow
+    - sudoers
+  loop_control:
+    loop_var: nsswitch_item
+  notify: Restart sssd
+- name: Configure /etc/pam.d/system-auth
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/system-auth
+    line: "{{ system_auth_item }}"
+    insertbefore: "^{{ system_auth_item | split(' ') | first }} "
+    state: present
+    backup: yes
+  loop:
+    - "auth sufficient pam_sss.so forward_pass"
+    - "account [default=bad success=ok user_unknown=ignore authinfo_unavail=ignore] pam_sss.so"
+    - "password sufficient pam_sss.so"
+    - "session     required      pam_mkhomedir.so skel=/etc/skel/ umask=0077"
+  loop_control:
+    loop_var: system_auth_item
+  notify: Restart sssd
+- name: Add pam_sss to /etc/pam.d/system-auth
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/system-auth
+    insertafter: "session required pam_unix.so"
+    line: "session optional pam_sss.so"
+    # insertbefore: "session optional pam_permit.so"
+    state: present
+    backup: yes
+  notify: Restart sssd
+- name: Configure /etc/pam.d/su
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/su
+    insertafter: "^{{ su_item | split(' ') | first }}\\s*sufficient"
+    line: "{{ su_item }}"
+    state: present
+    backup: yes
+  loop:
+    - "auth sufficient   pam_sss.so      forward_pass"
+    - "account [default=bad success=ok user_unknown=ignore authinfo_unavail=ignore] pam_sss.so"
+    - "session optional pam_sss.so"
+  loop_control:
+    loop_var: su_item
+  notify: Restart sssd
+- name: Configure /etc/pam.d/sudo
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/sudo
+    insertafter: "^#%PAM-.*"
+    line: "auth           sufficient      pam_sss.so"
+    state: present
+    backup: yes
+  notify: Restart sssd

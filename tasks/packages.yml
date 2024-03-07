@@ -79,6 +79,26 @@
   tags: kolab
   ansible.builtin.dnf:
     name: "https://mirror.apheleia-it.ch/repos/Kolab:/16/kolab-16-for-el{{ ansible_distribution_major_version }}.rpm"
+# - name: Set up Symas OpenLDAP for Linux RPM repository
+#   tags:
+#     - ldap
+#     - users
+#   ansible.builtin.blockinfile:
+#     path: /etc/yum.repos.d/sofl.repo
+#     marker: "# {mark} ANSIBLE MANAGED BLOCK Symas OpenLDAP for Linux RPM repository"
+#     block: |
+#       [sofl]
+#       name=Symas OpenLDAP for Linux RPM repository
+#       baseurl=https://repo.symas.com/repo/rpm/SOFL/rhel{{ ansible_distribution_major_version }}
+#       gpgkey=https://repo.symas.com/repo/gpg/RPM-GPG-KEY-symas-com-signing-key
+#       gpgcheck=1
+#       enabled=1
+#     mode: u=rw,og=r
+#     owner: root
+#     group: root
+#     state: present
+#     backup: yes
+#     create: yes
 - name: Set up Extra Packages for Enterprise Linux 7 repository
   ansible.builtin.blockinfile:
     path: /etc/yum.repos.d/epel-el7.repo
@@ -357,6 +377,12 @@
       - aide
       - kolab
       - php74-php-pecl-memcache
+      # - sssd
+      # - oddjob-mkhomedir
+      # - libsss_sudo
+      # - symas-openldap-clients
+      # - symas-openldap-servers
+      - nss-pam-ldapd
       # - php56-php-bcmath
       # - php56-php-channel-horde
       # - php56-php-horde-horde-lz4

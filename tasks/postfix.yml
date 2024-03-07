@@ -239,6 +239,7 @@
     group: root
     state: present
     backup: yes
+    create: yes
   loop: "{{ postgrey_whitelist_clients }}"
   notify: Restart postgrey
 - name: Set POSTGREY_DELAY to 1
