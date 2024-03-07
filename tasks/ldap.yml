@@ -37,6 +37,7 @@
   loop_control:
     loop_var: sssd_item
 - name: Configure nscd
+  # noqa no-tabs nscd.conf does contain tabs, so we use them here
   ansible.builtin.lineinfile:
     path: /etc/nscd.conf
     line: "{{ nscd_item }}"
