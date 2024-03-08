@@ -515,7 +515,7 @@
   loop_control:
     loop_var: kolab_service
 - name: Refresh the certificates
-  ansible.builtin.command: "openssl rehash /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}"
+  ansible.builtin.command: 'openssl rehash /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}'
 - name: Enable SSSD with mkhomedir
   tags: ldap
   block:
@@ -537,21 +537,24 @@
         - oddjobd
       loop_control:
         loop_var: auth_service_item
-# - name: Add Kolab users
-#   no_log: true
-#   tags:
-#     - users
-#   block:
-#     - name: "Add user to Kolab: {{ user.name }}"
-#       ansible.builtin.include_tasks: add_kolab_user.yml
-#       loop: "{{ users }}"
-#       loop_control:
-#         loop_var: user
-#   rescue:
-#     - name: Authenticate against the Kolab API
-#       ansible.builtin.include_tasks: kolab_auth.yml
-#     - name: "Add user to Kolab: {{ user.name }}"
-#       ansible.builtin.include_tasks: add_kolab_user.yml
-#       loop: "{{ users }}"
-#       loop_control:
-#         loop_var: user
+- name: Add Kolab users
+  vars:
+    users:
+      - name: teszt
+  no_log: true
+  tags:
+    - users
+  block:
+    - name: "Add user to Kolab: {{ user.name }}"
+      ansible.builtin.include_tasks: add_kolab_user.yml
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+  rescue:
+    - name: Authenticate against the Kolab API
+      ansible.builtin.include_tasks: kolab_auth.yml
+    - name: "Add user to Kolab: {{ user.name }}"
+      ansible.builtin.include_tasks: add_kolab_user.yml
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user

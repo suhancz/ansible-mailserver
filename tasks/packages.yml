@@ -226,6 +226,7 @@
   loop:
     - "@389ds/389-directory-server"
     - "eclipseo/golang-ng custom-1-x86_64"
+    - "suhanc/MigrationTools"
   register: enable_copr_repo
   changed_when: enable_copr_repo.rc == 0
 - name: Enable the php:remi-7.4 DNF module
@@ -389,6 +390,7 @@
       # - symas-openldap-clients
       # - symas-openldap-servers
       - nss-pam-ldapd
+      - migrationtools
       # - php56-php-bcmath
       # - php56-php-channel-horde
       # - php56-php-horde-horde-lz4

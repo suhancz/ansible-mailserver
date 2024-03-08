@@ -49,8 +49,8 @@
   loop:
     - "BASE    dc={{ mailserver_domain | split('.') | join(',dc=') }}"
     - "URI     ldaps://{{ mailserver_domain }}"
-    - "TLS_CACERT      /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}/ca.crt"
-    - "TLS_CACERTDIR /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}"
+    - 'TLS_CACERT      /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}/ca.crt'
+    - 'TLS_CACERTDIR /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}'
   loop_control:
     loop_var: openldap_item
 - name: Configure nscd
