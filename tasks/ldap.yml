@@ -1,5 +1,4 @@
 ---
-# TODO: follow https://wiki.archlinux.org/title/LDAP_authentication and apply allowpwchange.ldif
 - name: Configure sssd
   community.general.ini_file:
     path: /etc/sssd/sssd.conf
@@ -133,3 +132,10 @@
     state: present
     backup: yes
   notify: Restart sssd
+- name: Migrate OS data to LDAP
+  ansible.builtin.command: /usr/share/migrationtools/migrate_all_online.sh
+  environment:
+    LDAP_BASEDN: "dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+    LDAPHOST: "{{ mailserver_domain }}"
+    LDAP_BINDDN: "cn=Directory Manager"
+    LDAP_BINDCRED: "{{ ldap_admin_password }}"

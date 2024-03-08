@@ -1,5 +1,15 @@
 ---
 # TODO: Users probably also need to be crated via plain LDAP ldapsearch -x -LLL -h ip -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -s sub '(alias={{ user.name ~ '@' ~ mailserver_domain }})'
+- name: Find the user by uid
+  community.general.ldap_search:
+    dn: "uid={{ user.name }}"
+    server_uri: ldap://127.0.0.1/
+    bind_dn: "cn=Directory Manager"
+    bind_pw: "{{ ldap_admin_password }}"
+  register: kolab_user_entry
+- name: Display user entry
+  ansible.builtin.debug:
+    var: kolab_user_entry
 - name: Find the user by e-mail alias
   community.general.ldap_search:
     dn: "alias={{ user.name ~ '@' ~ mailserver_domain }}"
