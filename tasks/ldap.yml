@@ -16,8 +16,8 @@
     - { section: 'domain/LDAP', option: 'autofs_provider', value: 'ldap' }
     - { section: 'domain/LDAP', option: 'auth_provider', value: 'ldap' }
     - { section: 'domain/LDAP', option: 'chpass_provider', value: 'ldap' }
-    - { section: 'domain/LDAP', option: 'ldap_uri', value: 'ldaps://localhost' }
-    - { section: 'domain/LDAP', option: 'ldap_chpass_uri', value: 'ldaps://localhost' }
+    - { section: 'domain/LDAP', option: 'ldap_uri', value: 'ldaps://{{ mailserver_domain }}' }
+    - { section: 'domain/LDAP', option: 'ldap_chpass_uri', value: 'ldaps://{{ mailserver_domain }}' }
     - { section: 'domain/LDAP', option: 'ldap_search_base', value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}" }
     - { section: 'domain/LDAP', option: 'sudoers_base', value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}" }
     - { section: 'domain/LDAP', option: 'sudo_provider', value: 'ldap' }
@@ -30,12 +30,29 @@
     - { section: 'domain/LDAP', option: 'ldap_network_timeout', value: '2' }
     - { section: 'domain/LDAP', option: 'ldap_schema', value: 'rfc2307bis' }
     - { section: 'domain/LDAP', option: 'ldap_group_member', value: 'uniqueMember' }
+    - { section: 'domain/LDAP', option: 'ldap_default_authtok_type', value: 'password' }
+    - { section: 'domain/LDAP', option: 'ldap_default_bind_dn', value: "cn=Directory Manager" }
+    - { section: 'domain/LDAP', option: 'ldap_default_authtok', value: '{{ ldap_admin_password }}' }
     - { section: 'sssd', option: 'services', value: 'nss, pam, autofs, sudo' }
     - { section: 'sssd', option: 'domains', value: 'LDAP' }
     - { section: 'nss', option: 'homedir_substring', value: '/home' }
     - { section: 'sudo', option: '', value: '' }
   loop_control:
     loop_var: sssd_item
+- name: Configure the native LDAP client
+  ansible.builtin.lineinfile:
+    path: /etc/openldap/ldap.conf
+    line: "{{ openldap_item }}"
+    regex: "^{{ openldap_item | split(' ') | first }} "
+    state: present
+    backup: yes
+  loop:
+    - "BASE    dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+    - "URI     ldaps://{{ mailserver_domain }}"
+    - "TLS_CACERT      /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}/ca.crt"
+    - "TLS_CACERTDIR /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}"
+  loop_control:
+    loop_var: openldap_item
 - name: Configure nscd
   # noqa no-tabs nscd.conf does contain tabs, so we use them here
   ansible.builtin.lineinfile:

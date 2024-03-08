@@ -71,12 +71,16 @@
     backup: yes
     create: yes
 - name: Accept Kolab GPG key
-  tags: kolab
+  tags:
+    - kolab
+    - users
   ansible.builtin.rpm_key:
     state: present
     key: https://mirror.apheleia-it.ch/repos/Kolab:/16/key.asc
 - name: Set up Kolab repository
-  tags: kolab
+  tags:
+    - kolab
+    - users
   ansible.builtin.dnf:
     name: "https://mirror.apheleia-it.ch/repos/Kolab:/16/kolab-16-for-el{{ ansible_distribution_major_version }}.rpm"
 # - name: Set up Symas OpenLDAP for Linux RPM repository
@@ -377,8 +381,10 @@
       - aide
       - kolab
       - php74-php-pecl-memcache
-      # - sssd
-      # - oddjob-mkhomedir
+      - sssd
+      - sssd-ldap
+      - oddjob-mkhomedir
+      - openssl-perl
       # - libsss_sudo
       # - symas-openldap-clients
       # - symas-openldap-servers

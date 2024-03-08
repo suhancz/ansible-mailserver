@@ -1,5 +1,6 @@
 ---
 - name: Setup kolab
+  tags: users
   # noqa yaml[line-length]
   ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
     --mysqlserver=existing --mysqlhost=127.0.0.1 --mysqlrootpw={{ mysql_root_password }} \
@@ -438,8 +439,7 @@
     state: restarted
 
 - name: Enable domains
-  tags:
-    - configuration
+  tags: ldap
   block:
     # The editing domains in the Kolab API is not documented at the tome of this writing, so I go plain LDAP here
     - name: Find the main domain in LDAP entry
@@ -514,6 +514,29 @@
     - kolab-saslauthd
   loop_control:
     loop_var: kolab_service
+- name: Refresh the certificates
+  ansible.builtin.command: "openssl rehash /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}"
+- name: Enable SSSD with mkhomedir
+  tags: ldap
+  block:
+    - name: Run authselect
+      ansible.builtin.command: authselect select sssd with-mkhomedir --force
+      register: authselect_result
+      changed_when: authselect_result.rc == 0
+      notify:
+        - Restart sssd
+        - Restart oddjobd
+    - name: Restart auth services
+      ansible.builtin.systemd_service:
+        name: "{{ auth_service_item }}"
+        daemon_reload: yes
+        enabled: yes
+        state: restarted
+      loop:
+        - sssd
+        - oddjobd
+      loop_control:
+        loop_var: auth_service_item
 # - name: Add Kolab users
 #   no_log: true
 #   tags:
