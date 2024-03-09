@@ -203,7 +203,7 @@
   ansible.builtin.cron:
     name: certificate-auto-renewal
     special_time: monthly
-    # job: certbot renew --quiet && systemctl reload postfix dovecot httpd
+    # job: certbot renew --quiet && systemctl reload postfix kolabd cyrus-imap httpd
     # job: "/usr/local/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 \
     #   --dns.resolvers {{ ansible_default_ipv4.address }} \
     #   --email ssl@{{ mailserver_domain }} \
@@ -212,7 +212,7 @@
     #   -d '*.dyndns.{{ mailserver_domain }}' -d '*.vpn.{{ mailserver_domain }}' \
     #   --server {{ acme_directory }}  --path /etc/letsencrypt --pem renew \
     #   --days 90 --must-staple \
-    #   --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
+    #   --renew-hook=\"/usr/bin/systemctl reload httpd postfix kolabd cyrus-imap\""
     job: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 \
       --dns.resolvers {{ ansible_default_ipv4.address }} \
       --email ssl@{{ mailserver_domain }} --dns pdns \
@@ -221,5 +221,5 @@
       -d '*.dyndns.{{ mailserver_domain }}' \
       -d '*.vpn.{{ mailserver_domain }}' --server {{ acme_directory }} \
       --path /etc/letsencrypt --pem renew --days 90 --must-staple \
-      --renew-hook=\"/usr/bin/systemctl reload httpd postfix dovecot\""
+      --renew-hook=\"/usr/bin/systemctl reload httpd postfix kolabd cyrus-imap\""
     backup: yes

@@ -15,8 +15,6 @@
     - /backup/ssl
     - /backup/kolab
     - /backup/cyrus-imap
-    # - /backup/horde
-    # - /backup/dovecot
     - /backup/postfix
     - /backup/pdns
     - /var/www/webdav/.backup
@@ -38,11 +36,9 @@
   loop:
     - { name: "opendkim", paths: ["/etc/opendkim", "/etc/opendkim.conf"], service: True }
     - { name: "opendmarc", paths: ["/etc/opendmarc", "/etc/opendmarc.conf"], service: True }
-    # - { name: "horde", paths: ["/etc/horde"] }
-    # - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
     - { name: "kolab", paths: ["/etc/kolab"] }
     - { name: "cyrus-imap", paths: ["/etc/imap"] }
-    - { name: "dovecot", paths: ["/etc/dovecot"], service: True }
+    - { name: "cyrus-imap", paths: ["/etc/cyrus-imap"], service: True }
     # - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
@@ -75,10 +71,8 @@
     - opendmarc
     - vsftpd
     - ssl
-    # - horde
     - kolab
     - cyrus-imap
-    # - dovecot
     - postfix
     - pdns
     - wg_vpn
@@ -97,8 +91,6 @@
     - ssl
     - kolab
     - cyrus-imap
-    # - horde
-    # - dovecot
     - postfix
     - pdns
     - wg_vpn
@@ -117,14 +109,12 @@
     - ssl
     - kolab
     - cyrus-imap
-    # - horde
-    # - dovecot
     - postfix
     - pdns
     - wg_vpn
 - name: Restore backups
   tags: restore
-  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or horde_backup_path is defined or dovecot_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
+  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or cyrus-imap_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
   block:
     - name: Prepare MariaDB backup
       when: mariadb_backup_path is defined
@@ -205,7 +195,6 @@
         - vsftpd
         - kolab
         - cyrus-imap
-        # - dovecot
         - postfix
         - pdns
         - wg_vpn
@@ -216,5 +205,4 @@
         dest: /
         remote_src: yes
       loop:
-        # - horde
         - ssl

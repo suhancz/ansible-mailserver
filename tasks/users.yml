@@ -40,7 +40,6 @@
     - poweradmin
     - wireguard
     - dns
-    # - horde
     - ldap
     # - postfixadmin
     - users

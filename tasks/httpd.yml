@@ -2,7 +2,6 @@
 - name: Open firewall
   tags:
     - dyndns
-    - horde
     # - postfixadmin
     - poweradmin
     - wireguard
@@ -26,17 +25,17 @@
         - httpd_execmem
         - httpd_read_user_content
         - httpd_mod_auth_pam
-    - name: Generate SELinux policy
-      ansible.builtin.shell: |
-        set -o pipefail &&
-        sepolicy generate --init /usr/sbin/httpd
-        echo 'dovecot_read_config(httpd_t)' >> httpd.te
-        ./httpd.sh
-        ausearch -m AVC -ts recent | audit2allow -R
-      args:
-        executable: /usr/bin/bash
-      register: generate_apache_selinux_policy
-      changed_when: generate_apache_selinux_policy.rc == 0
+    # - name: Generate SELinux policy
+    #   ansible.builtin.shell: |
+    #     set -o pipefail &&
+    #     sepolicy generate --init /usr/sbin/httpd
+    #     echo 'dovecot_read_config(httpd_t)' >> httpd.te
+    #     ./httpd.sh
+    #     ausearch -m AVC -ts recent | audit2allow -R
+    #   args:
+    #     executable: /usr/bin/bash
+    #   register: generate_apache_selinux_policy
+    #   changed_when: generate_apache_selinux_policy.rc == 0
 - name: Render generic web config templates
   ansible.builtin.template:
     src: "{{ item.src }}"

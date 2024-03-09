@@ -78,7 +78,7 @@
     - { key: "smtpd_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
     - { key: "smtp_tls_mandatory_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
     - { key: "smtp_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
-    - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
+    # - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
     - { key: "smtputf8_enable", value: "no" }
     - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
     - { key: "content_filter", value: "amavisfeed:[127.0.0.1]:10024" }

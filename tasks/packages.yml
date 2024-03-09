@@ -34,22 +34,9 @@
     backup: yes
     create: yes
 - name: Set up Remi repository
-  tags: horde
   ansible.builtin.dnf:
     name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
-# - name: Enable RPM Fusion
-#   tags: horde
-#   ansible.builtin.dnf:
-#     name:
-#       - "https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
-#       - "https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-{{ ansible_distribution_major_version }}.noarch.rpm"
-#     disable_gpg_check: yes
-# - name: Set up Cheese repository
-#   tags: horde
-#   ansible.builtin.dnf:
-#     name: "http://www.nosuchhost.net/~cheese/fedora/packages/epel-{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/cheese-release-8-1.el8.noarch.rpm"
-#     disable_gpg_check: yes
 - name: Set up ElasticSearch repository
   tags: elasticsearch
   ansible.builtin.blockinfile:
@@ -252,7 +239,6 @@
     create: yes
 - name: Enable the php:remi-7.4 DNF module
   tags:
-    # - horde
     - always
   ansible.builtin.command: dnf module enable php:remi-7.4 -y
   register: enable_php74_module
@@ -267,7 +253,6 @@
       - certbot
       - httpd
       - python3-certbot-apache
-      # - dovecot
       - mariadb-server
       - mariadb
       - python3-mysqlclient
@@ -279,7 +264,6 @@
       - policycoreutils-python3
       - policycoreutils-devel
       - postfix-mysql
-      # - dovecot-mysql
       - pypolicyd-spf
       - opendkim
       - opendkim-tools
@@ -292,7 +276,6 @@
       - nm-connection-editor
       - spamassassin
       - spamass-milter
-      # - dovecot-pigeonhole
       - ImageMagick
       - aspell
       - memcached
@@ -412,22 +395,6 @@
       # - symas-openldap-servers
       - openldap-servers
       - nss-pam-ldapd
-      # - php56-php-bcmath
-      # - php56-php-channel-horde
-      # - php56-php-horde-horde-lz4
-      # - php56-php-xml
-      # - php56-php-pecl-dom-varimport
-      # - php56-php-mysqlnd
-      # - php56-php-ldap
-      # - php56-php-mbstring
-      # - php56-php-gd
-      # - php56-php-tidy
-      # - php56-php-pecl-crypto
-      # - php56-php-intl
-      # - php56-php-pecl-geoip
-      # - php56-php-pecl-imagick
-      # - php56-php-pecl-memcache
-      # - php-gettext-gettext
     state: latest # noqa package-latest I do prefer fresh stuff ;)
 # - name: Reset the PHP DNF module
 #   ansible.builtin.command: dnf module reset php -y
@@ -471,130 +438,6 @@
     - always
   register: reset_php_module
   changed_when: reset_php_module.rc == 0
-# - name: Enable the php:remi-7.4 DNF module
-#   tags: horde
-#   ansible.builtin.command: dnf module enable php:remi-7.4 -y
-#   register: enable_php74_module
-#   changed_when: enable_php74_module.rc == 0
-# - name: Install PHP 7.4 packages
-#   tags: horde
-#   ansible.builtin.dnf:
-#     name:
-#       - phpldapadmin
-#       - phpunit7
-#       - php74-php-fpm
-#       - php74-php-pear
-#       - php74-php-tidy
-#       - php74-php
-#       - php74-php-ldap
-#       - php74-php-mysql
-#       - php74-php-odbc
-#       - php74-php-mcrypt
-#       - php74-php-mhash
-#       - php74-php-pecl-mysql
-#       - php74-php-pecl-mysql-xdevapi
-#       - php74-php-pecl-crypto
-#       - php74-php-pecl-geoip
-#       - php74-php-pecl-pam
-#       - php74-php-pecl-imagick
-#       - php74-php-pecl-memcache
-#       - php74-php-pecl-http
-#       - php74-php-devel
-#       - php74-php-imap
-#       - php74-php-mbstring
-#       - php74-php-mysqlnd
-#       - php74-php-gd
-#       - php74-php-opcache
-#       - php74-php-json
-#       - php74-php-curl
-#       - php74-php-zip
-#       - php74-php-xml
-#       - php74-php-bz2
-#       - php74-php-intl
-#       - php74-php-gmp
-#       - php74-php-cli
-#       - php-channel-horde
-#       - php-horde-Horde-Alarm
-#       - php-horde-Horde-Argv
-#       - php-horde-Horde-Auth
-#       - php-horde-Horde-Autoloader
-#       - php-horde-Horde-Browser
-#       - php-horde-Horde-Cache
-#       - php-horde-Horde-Cli
-#       - php-horde-Horde-Compress
-#       - php-horde-Horde-Core
-#       - php-horde-Horde-Crypt
-#       - php-horde-Horde-Dav
-#       - php-horde-Horde-Db
-#       - php-horde-Horde-Editor
-#       - php-horde-Horde-ElasticSearch
-#       - php-horde-Horde-Http
-#       - php-horde-Horde-Image
-#       - php-horde-Horde-Imap-Client
-#       - php-horde-Horde-Ldap
-#       - php-horde-Horde-ListHeaders
-#       - php-horde-Horde-Log
-#       - php-horde-Horde-Mail
-#       - php-horde-Horde-Mail-Autoconfig
-#       - php-horde-Horde-Memcache
-#       - php-horde-Horde-Mime
-#       - php-horde-Horde-Mime-Viewer
-#       - php-horde-Horde-Notification
-#       - php-horde-Horde-Oauth
-#       - php-horde-Horde-Pdf
-#       - php-horde-Horde-Perms
-#       - php-horde-Horde-Prefs
-#       - php-horde-Horde-Role
-#       - php-horde-Horde-Routes
-#       - php-horde-Horde-Rpc
-#       - php-horde-Horde-Service-Weather
-#       - php-horde-Horde-Smtp
-#       - php-horde-Horde-Socket-Client
-#       - php-horde-Horde-SyncMl
-#       - php-horde-Horde-Template
-#       - php-horde-Horde-Test
-#       - php-horde-Horde-Text-Filter
-#       - php-horde-Horde-Text-Filter-Csstidy
-#       - php-horde-Horde-Text-Flowed
-#       - php-horde-Horde-Tree
-#       - php-horde-Horde-Url
-#       - php-horde-Horde-Util
-#       - php-horde-Horde-View
-#       - php-horde-Horde-Xml-Element
-#       - php-horde-horde
-#       - php-horde-passwd
-#       - php-horde-Horde-Compress-Fast
-#       - php-horde-Horde-Crypt-Blowfish
-#       - php-horde-Horde-Icalendar
-#       - php-horde-Horde-Itip
-#       - php-horde-Horde-Mapi
-#       - php-horde-Horde-OpenXchange
-#       - php-horde-Horde-Secret
-#       - php-horde-Horde-Service-Gravatar
-#       - php-horde-Horde-Text-Diff
-#       - php-horde-Horde-Timezone
-#       - php-horde-Horde-Vfs
-#       - php-horde-imp
-#       - php-horde-kronolith
-#       - php-horde-turba
-#       - php-horde-Horde-Mongo
-#       - php-horde-ingo
-#       - php-horde-mnemo
-#       - php-horde-wicked
-#       - php-pear-Text-Figlet
-#     enablerepo: remi
-#     # enablerepo: cheese
-#     state: latest # noqa package-latest I do prefer fresh stuff ;)
-#   register: php74_packages
-# - name: Restart php74-php-fpm
-#   # noqa no-handler we want results now, no time to wait for a handler
-#   when: php74_packages.changed
-#   tags: horde
-#   ansible.builtin.systemd_service:
-#     name: php74-php-fpm
-#     daemon_reload: yes
-#     enabled: yes
-#     state: restarted
 - name: Install EL7 packages
   tags: ldap
   ansible.builtin.dnf:
@@ -627,11 +470,6 @@
     - name: Load the WireGuard kernel module
       community.general.modprobe:
         name: wireguard
-# - name: Install PEAR packages
-#   tags: horde
-#   community.general.pear:
-#     name: pear.horde.org/Horde_ActiveSync
-#     state: latest # noqa package-latest I do prefer fresh stuff ;)
 # - name: Install go packages
 #   ansible.builtin.command: "go install {{ item }}"
 #   loop:
