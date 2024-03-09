@@ -70,11 +70,18 @@
   notify:
     - Restart nscd
     - Restart sssd
+- name: Add sudoers to nsswitch.conf if not there yet
+  ansible.builtin.lineinfile:
+    path: /etc/nsswitch.conf
+    line: 'sudoers: files sss'
+    regex: "^sudoers: .*"
+    state: present
+    backup: yes
 - name: Configure nsswitch.conf
   ansible.builtin.lineinfile:
     path: /etc/nsswitch.conf
     line: '\1 sss'
-    regex: "^({{ nsswitch_item }}: .*$)"
+    regex: "^({{ nsswitch_item }}: .*(?<! sss)$)"
     backrefs: yes
     state: present
     backup: yes
@@ -132,10 +139,47 @@
     state: present
     backup: yes
   notify: Restart sssd
+
 - name: Migrate OS data to LDAP
-  ansible.builtin.command: /usr/share/migrationtools/migrate_all_online.sh
-  environment:
-    LDAP_BASEDN: "dc={{ mailserver_domain | split('.') | join(',dc=') }}"
-    LDAPHOST: "{{ mailserver_domain }}"
-    LDAP_BINDDN: "cn=Directory Manager"
-    LDAP_BINDCRED: "{{ ldap_admin_password }}"
+  block:
+#   ansible.builtin.command: /usr/share/migrationtools/migrate_all_online.sh
+#   environment:
+#     DEFAULT_MAIL_DOMAIN: "{{ mailserver_domain }}"
+#     DEFAULT_MAIL_HOST: "{{ mailserver_domain }}"
+#     LDAP_BASEDN: "dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+#     LDAPHOST: "{{ mailserver_domain }}"
+#     LDAP_BINDDN: "cn=Directory Manager"
+#     LDAP_BINDCRED: "{{ ldap_admin_password }}"
+#     LDAP_PROFILE: "yes"
+    - name: Clean up former migration attempts
+      file:
+        path: "/var/tmp/{{ migration_file }}"
+        state: absent
+      loop:
+        - passwd.mig
+        - group.mig
+        - shadow.mig
+        - gshadow.mig
+        - group.ldif
+        - passwd.ldif
+      loop_control:
+        loop_var: migration_file
+    - name: Set variable for ldapadd command parameters
+      set_fact:
+        ldapadd_command: 'ldapadd -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f '
+    - name: Deploy user data extraction script
+      ansible.builtin.copy:
+        src: files/ldap/extract_user_data_to_migrate.sh
+        dest: /var/tmp/
+        mode: u=rwx,og=rx
+        backup: yes
+        force: yes
+        owner: root
+        group: root
+    - name: Extract user data from the OS
+      ansible.builtin.command: /var/tmp/extract_user_data_to_migrate.sh
+    - name: "Update LDAP entries: {{ user_data_item }}"
+      ansible.builtin.include_tasks: convert_user_to_ldif.yml
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user_data_item

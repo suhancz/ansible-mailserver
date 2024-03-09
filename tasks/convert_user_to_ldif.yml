@@ -1,0 +1,81 @@
+---
+- name: Select passwd line
+  ansible.builtin.command: 'grep "^{{ user_data_item.name }}:" /var/tmp/passwd.mig'
+  register: passwd_mig_content
+  changed_when: passwd_mig_content.rc == 0
+  failed_when: (passwd_mig_content.rc != 0) and (passwd_mig_content.stderr | length > 0)
+- name: "Migrate already existing user {{ user_data_item.name }}"
+  when: passwd_mig_content.changed
+  block:
+    - name: Set passwd line
+      ansible.builtin.copy:
+        content: "{{ passwd_mig_content.stdout }}"
+        dest: "/var/tmp/{{ user_data_item.name }}.mig"
+        mode: u=rw,og=r
+        backup: yes
+        owner: root
+        group: root
+    - name: "Convert to LDIF: {{ user_data_item.name }}"
+      ansible.builtin.command: "/usr/share/migrationtools/migrate_passwd.pl /var/tmp/{{ user_data_item.name }}.mig /var/tmp/{{ user_data_item.name }}.ldif"
+      environment:
+        DEFAULT_MAIL_DOMAIN: "{{ mailserver_domain }}"
+        DEFAULT_MAIL_HOST: "{{ mailserver_domain }}"
+        LDAP_BASEDN: "dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+        LDAPHOST: "{{ mailserver_domain }}"
+        LDAP_BINDDN: "cn=Directory Manager"
+        LDAP_BINDCRED: "{{ ldap_admin_password }}"
+        LDAP_PROFILE: "yes"
+    - name: Define unique values in LDIF
+      ansible.builtin.lineinfile:
+        path: "/var/tmp/{{ user_data_item.name }}.ldif"
+        line: "{{ ldif_unique_value }}"
+        regex: "^{{ ldif_unique_value | split(':') | first }}: .*"
+        state: present
+        backup: yes
+      loop:
+        - "dn: uid={{ user_data_item.name }},ou=aliases,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+        - 'sn: {{ user_data_item.surname | default(default_surname) }}'
+        - 'mailAlternateAddress: {{ user_data_item.old_imap_mail.user }}'
+        - 'loginShell: /bin/bash'
+        - 'preferredLanguage: en_US'
+        - 'cn: {{ user_data_item.firstname | default(user_data_item.name) }} {{ user_data_item.surname | default(default_surname) }}'
+        - 'displayName: {{ user_data_item.name }}'
+        - 'mail: {{ user_data_item.name }}@{{ mailserver_domain }}'
+        - 'uid: {{ user_data_item.name }}'
+      loop_control:
+        loop_var: ldif_unique_value
+    - name: "Add extra fields to {{ user_data_item.name }}.ldif"
+      ansible.builtin.lineinfile:
+        path: "/var/tmp/{{ user_data_item.name }}.ldif"
+        line: "{{ ldif_item }}"
+        state: present
+        backup: yes
+      loop:
+        - 'objectClass: top'
+        - 'objectClass: kolabinetorgperson'
+        - 'objectClass: inetorgperson'
+        - 'objectClass: kolabinetorgperson'
+        - 'objectClass: mailrecipient'
+        - 'objectClass: organizationalperson'
+        - 'objectClass: person'
+      loop_control:
+        loop_var: ldif_item
+    - name: "Add aliases to {{ user_data_item.name }}.ldif"
+      ansible.builtin.lineinfile:
+        path: "/var/tmp/{{ user_data_item.name }}.ldif"
+        line: "alias: {{ alias_item }}"
+        state: present
+        backup: yes
+      loop: "{{ user_data_item.aliases }}"
+      loop_control:
+        loop_var: alias_item
+    - name: "Clear empty lines from {{ user_data_item.name }}.ldif"
+      ansible.builtin.lineinfile:
+        path: "/var/tmp/{{ user_data_item.name }}.ldif"
+        regex: '^$'
+        state: absent
+        backup: yes
+    - name: "Update LDAP entries: {{ user_data_item.name }}"
+      ansible.builtin.command: '{{ ldapadd_command }} /var/tmp/{{ user_data_item.name }}.ldif'
+      register: add_user_to_ldap
+      changed_when: add_user_to_ldap.rc != 0 and 'Already exists' in add_user_to_ldap.stderr

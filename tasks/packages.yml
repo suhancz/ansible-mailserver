@@ -226,9 +226,30 @@
   loop:
     - "@389ds/389-directory-server"
     - "eclipseo/golang-ng custom-1-x86_64"
-    - "suhanc/MigrationTools"
+    # - "suhanc/MigrationTools"
   register: enable_copr_repo
   changed_when: enable_copr_repo.rc == 0
+- name: Set CentOS 7 repo for MigrationTools
+  tags:
+    - ldap
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/CentOS-Base.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK CentOS 7 repository"
+    block: |
+      [CentOS-Base]
+      name=CentOS-Base
+      mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=os&infra=$infra
+      #baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+      gpgcheck=1
+      gpgkey=http://mirror.centos.org/centos/7/os/x86_64/RPM-GPG-KEY-CentOS-7
+      exclude=cloud-utils-growpart
+      enabled=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
 - name: Enable the php:remi-7.4 DNF module
   tags:
     # - horde
@@ -389,8 +410,8 @@
       # - libsss_sudo
       # - symas-openldap-clients
       # - symas-openldap-servers
+      - openldap-servers
       - nss-pam-ldapd
-      - migrationtools
       # - php56-php-bcmath
       # - php56-php-channel-horde
       # - php56-php-horde-horde-lz4
@@ -575,12 +596,16 @@
 #     enabled: yes
 #     state: restarted
 - name: Install EL7 packages
+  tags: ldap
   ansible.builtin.dnf:
     name:
       - wiredtiger
       - wiredtiger-devel
       - getmail
-    enablerepo: epel-el7
+      - migrationtools
+    enablerepo:
+      - CentOS-Base
+      - epel-el7
     state: latest # noqa package-latest I do prefer fresh stuff ;)
 - name: Enable WireGuard kernel module
   tags: wireguard
