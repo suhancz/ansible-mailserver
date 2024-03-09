@@ -152,7 +152,7 @@
 #     LDAP_BINDCRED: "{{ ldap_admin_password }}"
 #     LDAP_PROFILE: "yes"
     - name: Clean up former migration attempts
-      file:
+      ansible.builtin.file:
         path: "/var/tmp/{{ migration_file }}"
         state: absent
       loop:
@@ -165,7 +165,7 @@
       loop_control:
         loop_var: migration_file
     - name: Set variable for ldapadd command parameters
-      set_fact:
+      ansible.builtin.set_fact:
         ldapadd_command: 'ldapadd -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f '
     - name: Deploy user data extraction script
       ansible.builtin.copy:

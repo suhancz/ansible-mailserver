@@ -44,7 +44,7 @@
         - 'uid: {{ user_data_item.name }}'
       loop_control:
         loop_var: ldif_unique_value
-    - name: "Add extra fields to {{ user_data_item.name }}.ldif"
+    - name: Add extra fields to LDIF
       ansible.builtin.lineinfile:
         path: "/var/tmp/{{ user_data_item.name }}.ldif"
         line: "{{ ldif_item }}"
@@ -60,7 +60,7 @@
         - 'objectClass: person'
       loop_control:
         loop_var: ldif_item
-    - name: "Add aliases to {{ user_data_item.name }}.ldif"
+    - name: Add aliases to LDIF
       ansible.builtin.lineinfile:
         path: "/var/tmp/{{ user_data_item.name }}.ldif"
         line: "alias: {{ alias_item }}"
@@ -69,7 +69,7 @@
       loop: "{{ user_data_item.aliases }}"
       loop_control:
         loop_var: alias_item
-    - name: "Clear empty lines from {{ user_data_item.name }}.ldif"
+    - name: Clear empty lines from LDIF
       ansible.builtin.lineinfile:
         path: "/var/tmp/{{ user_data_item.name }}.ldif"
         regex: '^$'
