@@ -25,6 +25,7 @@
         LDAP_BINDDN: "cn=Directory Manager"
         LDAP_BINDCRED: "{{ ldap_admin_password }}"
         LDAP_PROFILE: "yes"
+      no_log: true
     - name: Define unique values in LDIF
       ansible.builtin.lineinfile:
         path: "/var/tmp/{{ user_data_item.name }}.ldif"
@@ -54,7 +55,6 @@
         - 'objectClass: top'
         - 'objectClass: kolabinetorgperson'
         - 'objectClass: inetorgperson'
-        - 'objectClass: kolabinetorgperson'
         - 'objectClass: mailrecipient'
         - 'objectClass: organizationalperson'
         - 'objectClass: person'
