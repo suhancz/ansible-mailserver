@@ -38,6 +38,7 @@
     - { section: 'sudo', option: '', value: '' }
   loop_control:
     loop_var: sssd_item
+  no_log: true
 - name: Configure the native LDAP client
   ansible.builtin.lineinfile:
     path: /etc/openldap/ldap.conf
@@ -151,6 +152,7 @@
 #     LDAP_BINDDN: "cn=Directory Manager"
 #     LDAP_BINDCRED: "{{ ldap_admin_password }}"
 #     LDAP_PROFILE: "yes"
+#   no_log: true
     - name: Clean up former migration attempts
       ansible.builtin.file:
         path: "/var/tmp/{{ migration_file }}"
@@ -167,6 +169,7 @@
     - name: Set variable for ldapadd command parameters
       ansible.builtin.set_fact:
         ldapadd_command: 'ldapadd -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f '
+      no_log: true
     - name: Deploy user data extraction script
       ansible.builtin.copy:
         src: files/ldap/extract_user_data_to_migrate.sh
