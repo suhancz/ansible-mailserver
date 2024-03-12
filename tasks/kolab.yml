@@ -514,6 +514,11 @@
     loop_var: kolab_service
 - name: Refresh the certificates
   ansible.builtin.command: 'openssl rehash /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}'
+- name: Configure LDAP
+  ansible.builtin.import_tasks: ldap.yml
+  tags:
+    - ldap
+    - users
 - name: Enable SSSD with mkhomedir
   tags: ldap
   block:

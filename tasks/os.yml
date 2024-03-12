@@ -79,11 +79,6 @@
     group: root
     state: present
     backup: yes
-- name: Configure LDAP
-  ansible.builtin.import_tasks: ldap.yml
-  tags:
-    - ldap
-    - users
 - name: Enable ip_conntrack
   community.general.modprobe:
     name: ip_conntrack
