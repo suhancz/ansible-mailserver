@@ -499,6 +499,9 @@
         mode: u=rw,g=r,o=
         backup: true
 - name: Restart kolab
+  tags:
+    - kolab
+    - ldap
   ansible.builtin.systemd_service:
     name: "{{ kolab_service }}"
     daemon_reload: yes
