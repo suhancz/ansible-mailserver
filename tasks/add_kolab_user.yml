@@ -20,13 +20,6 @@
 - name: Display user entry
   ansible.builtin.debug:
     var: kolab_user_entry
-- name: Delete old user LDAP entry
-  community.general.ldap_entry:
-    dn: "alias={{ user.name ~ '@' ~ mailserver_domain }}"
-    server_uri: ldap://127.0.0.1/
-    bind_dn: "cn=Directory Manager"
-    bind_pw: "{{ ldap_admin_password }}"
-    state: absent
 - name: Set user attributes
   ansible.builtin.set_fact:
     ldap_user_attributes: |
@@ -45,6 +38,14 @@
       objectClass: person
       objectClass: posixaccount
       objectClass: top
+      dn: uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+      mailAlternateAddress: {{ user.old_imap_mail.user }}
+      loginShell: /bin/bash
+      preferredLanguage: en_US
+      cn: {{ user.firstname | default(user.name) }} {{ user.surname | default(default_surname) }}
+      displayName: {{ user.name }}
+      mail: {{ user.name }}@{{ mailserver_domain }}
+      uid: {{ user.name }}
 - name: Create new LDAP entry
   community.general.ldap_entry:
     dn: "alias={{ user.name ~ '@' ~ mailserver_domain }}"

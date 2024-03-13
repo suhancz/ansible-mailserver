@@ -43,7 +43,6 @@
   tags:
     - kolab
     - users
-    - ldap
 - name: Add users
   ansible.builtin.import_tasks: users.yml
   tags: users
