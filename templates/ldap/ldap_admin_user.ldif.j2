@@ -1,0 +1,5 @@
+dn: {{ group_dn }}
+changetype: modify
+add: uniqueMember
+uniqueMember: uid={{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='name') | first}},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+
