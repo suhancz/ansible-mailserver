@@ -1,0 +1,4 @@
+dn: associateddomain={{ mailserver_domain }},cn=kolab,cn=config
+changetype: modify
+add: aci
+aci: (targetattr = "*") (version 3.0;acl "Read Access for {{ mailserver_domain }}";allow (read,compare,search)(userdn = "ldap:///dc={{ mailserver_domain | split('.') | join(',dc=') }}??sub?(objectclass=*)");)
