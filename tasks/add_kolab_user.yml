@@ -10,45 +10,44 @@
 - name: Display user entry
   ansible.builtin.debug:
     var: kolab_user_entry
-- name: Find the user by e-mail alias
-  community.general.ldap_search:
-    dn: "alias={{ user.name ~ '@' ~ mailserver_domain }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
-    server_uri: ldap://127.0.0.1/
-    bind_dn: "cn=Directory Manager"
-    bind_pw: "{{ ldap_admin_password }}"
-  register: kolab_user_entry
-- name: Display user entry
-  ansible.builtin.debug:
-    var: kolab_user_entry
 - name: Set user attributes
   ansible.builtin.set_fact:
     ldap_user_attributes: |
-      {% for alias in [user.name ~ '@' ~ mailserver_domain] + user.aliases %}
-      alias: {{ alias }}
-      {% endfor %}
-      givenName: {{ user.firstname | default(user.name) }}
-      loginShell: /bin/bash
-      sn: {{ user.surname | default(default_surname) }}
-      homeDirectory: /home/{{ user.name }}
-      mail: {{ user.name ~ '@' ~ mailserver_domain }}
-      objectClass: inetorgperson
-      objectClass: kolabinetorgperson
-      objectClass: mailrecipient
-      objectClass: organizationalperson
-      objectClass: person
-      objectClass: posixaccount
-      objectClass: top
       dn: uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}
-      mailAlternateAddress: {{ user.old_imap_mail.user }}
+      sn: {{ user.surname | default(default_surname) }}
       loginShell: /bin/bash
       preferredLanguage: en_US
       cn: {{ user.firstname | default(user.name) }} {{ user.surname | default(default_surname) }}
       displayName: {{ user.name }}
-      mail: {{ user.name }}@{{ mailserver_domain }}
+      mail: {{ user.name ~ '@' ~ mailserver_domain }}
       uid: {{ user.name }}
+      objectClass: top
+      objectClass: kolabinetorgperson
+      objectClass: inetorgperson
+      objectClass: mailrecipient
+      objectClass: organizationalperson
+      objectClass: person
+      objectClass: posixaccount
+      {% for alias in [user.name ~ '@' ~ mailserver_domain] + user.aliases %}
+      alias: {{ alias }}
+      {% endfor %}
+      givenName: {{ user.firstname | default(user.name) }}
+      homeDirectory: /home/{{ user.name }}
+      {% if user.old_imap_mail.user is defined %}mailAlternateAddress: {{ user.old_imap_mail.user }}{% endif %}
+      loginShell: /bin/bash
+      mail: {{ user.name }}@{{ mailserver_domain }}
 - name: Create new LDAP entry
+  when: (kolab_user_entry.results | length) == 0
   community.general.ldap_entry:
-    dn: "alias={{ user.name ~ '@' ~ mailserver_domain }}"
+    dn: "uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+    server_uri: ldap://127.0.0.1/
+    bind_dn: "cn=Directory Manager"
+    bind_pw: "{{ ldap_admin_password }}"
+    attributes: "{{ ldap_user_attributes }}"
+- name: Update LDAP entry
+  when: (kolab_user_entry.results | length) > 0
+  community.general.ldap_attrs:
+    dn: "uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
     server_uri: ldap://127.0.0.1/
     bind_dn: "cn=Directory Manager"
     bind_pw: "{{ ldap_admin_password }}"

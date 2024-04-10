@@ -34,17 +34,23 @@
         state: present
         backup: yes
       loop:
-        - "dn: uid={{ user_data_item.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
-        - 'sn: {{ user_data_item.surname | default(default_surname) }}'
-        - 'mailAlternateAddress: {{ user_data_item.old_imap_mail.user }}'
-        - 'loginShell: /bin/bash'
-        - 'preferredLanguage: en_US'
-        - 'cn: {{ user_data_item.firstname | default(user_data_item.name) }} {{ user_data_item.surname | default(default_surname) }}'
-        - 'displayName: {{ user_data_item.name }}'
-        - 'mail: {{ user_data_item.name }}@{{ mailserver_domain }}'
-        - 'uid: {{ user_data_item.name }}'
+          - "dn: uid={{ user_data_item.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+          - 'sn: {{ user_data_item.surname | default(default_surname) }}'
+          - 'loginShell: /bin/bash'
+          - 'preferredLanguage: en_US'
+          - 'cn: {{ user_data_item.firstname | default(user_data_item.name) }} {{ user_data_item.surname | default(default_surname) }}'
+          - 'displayName: {{ user_data_item.name }}'
+          - 'mail: {{ user_data_item.name }}@{{ mailserver_domain }}'
+          - 'uid: {{ user_data_item.name }}'
       loop_control:
         loop_var: ldif_unique_value
+    - name: Add alternate e-mail address to LDIF
+      ansible.builtin.lineinfile:
+        path: "/var/tmp/{{ user_data_item.name }}.ldif"
+        line: "mailAlternateAddress: {{ user_data_item.old_imap_mail.user }}"
+        regex: "^mailAlternateAddress: .*"
+        state: present
+        backup: yes
     - name: Add extra fields to LDIF
       ansible.builtin.lineinfile:
         path: "/var/tmp/{{ user_data_item.name }}.ldif"
