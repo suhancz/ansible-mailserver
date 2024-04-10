@@ -1,0 +1,13 @@
+---
+- name: Prepare LDIF to add admin user as LDAP directory manager
+  ansible.builtin.template:
+    src: ldap/ldap_admin_user.ldif.j2
+    dest: /var/tmp/{{ mailserver_admin_user }}_{{ group_dn | split(',') | first | split('=') | last | replace(' ', '_') }}.ldif
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+- name: Add admin user to admin groups
+  ansible.builtin.command: 'ldapmodify -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f /var/tmp/{{ mailserver_admin_user }}_{{ group_dn | split(",") | first | split("=") | last | replace(" ", "_") }}.ldif'
+  register: add_admin_user
+  changed_when: add_admin_user.rc != 0 and 'exists' in add_admin_user.stderr
