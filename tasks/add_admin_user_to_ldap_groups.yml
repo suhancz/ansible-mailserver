@@ -9,5 +9,7 @@
     backup: yes
 - name: Add admin user to admin groups
   ansible.builtin.command: 'ldapmodify -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f /var/tmp/{{ mailserver_admin_user }}_{{ group_dn | split(",") | first | split("=") | last | replace(" ", "_") }}.ldif'
+  no_log: true
   register: add_admin_user
-  changed_when: add_admin_user.rc != 0 and 'exists' in add_admin_user.stderr
+  changed_when: add_admin_user.rc == 0
+  failed_when: add_admin_user.rc != 0 and 'exists' not in add_admin_user.stderr
