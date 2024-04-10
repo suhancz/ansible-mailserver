@@ -2,7 +2,7 @@
 # TODO: Users probably also need to be crated via plain LDAP ldapsearch -x -LLL -h ip -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -s sub '(alias={{ user.name ~ '@' ~ mailserver_domain }})'
 - name: Find the user by uid
   community.general.ldap_search:
-    dn: "uid={{ user.name }}"
+    dn: "uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
     server_uri: ldap://127.0.0.1/
     bind_dn: "cn=Directory Manager"
     bind_pw: "{{ ldap_admin_password }}"
@@ -12,7 +12,7 @@
     var: kolab_user_entry
 - name: Find the user by e-mail alias
   community.general.ldap_search:
-    dn: "alias={{ user.name ~ '@' ~ mailserver_domain }}"
+    dn: "alias={{ user.name ~ '@' ~ mailserver_domain }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
     server_uri: ldap://127.0.0.1/
     bind_dn: "cn=Directory Manager"
     bind_pw: "{{ ldap_admin_password }}"

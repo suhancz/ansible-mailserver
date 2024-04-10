@@ -196,7 +196,7 @@
     - "cn=PD Managers,ou=groups,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
   loop_control:
     loop_var: group_dn
-- name: Prepare LDIF to fix domain access
+- name: Prepare LDIF to LDAP admin access
   ansible.builtin.template:
     src: ldap/fix_domain_aci.ldif.j2
     dest: /var/tmp/fix_domain_aci.ldif
@@ -204,7 +204,7 @@
     owner: root
     group: root
     backup: yes
-- name: Fix domain access
+- name: LDAP admin access
   ansible.builtin.command: 'ldapmodify -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f /var/tmp/fix_domain_aci.ldif'
   no_log: true
   register: fix_domain_access

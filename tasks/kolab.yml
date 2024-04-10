@@ -541,7 +541,7 @@
       loop_control:
         loop_var: auth_service_item
 - name: Add Kolab users
-  no_log: true
+  # no_log: true
   tags:
     - users
   block:
