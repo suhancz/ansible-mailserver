@@ -3,9 +3,7 @@
 List of things not implemented yet, but planned
 
 * create not-yet-exising-in-OS users in LDAP
-* pass the admin user the same LDAP capabilities as `Directory Manager`
-* set sudo rules in LDAP
-* if possible, confugire `adduser` and so to work on LDAP
+* if possible, configure `adduser` and so to work on LDAP
 * authenticate Apache admin sites via LDAP
 * confirm if PostfixAdmin is needed at all
 * let DynDNS (PowerAdmin) authenticate via both LDAP and Apache native authentication
