@@ -523,7 +523,7 @@
   tags: ldap
   block:
     - name: Run authselect
-      ansible.builtin.command: authselect select sssd with-mkhomedir --force
+      ansible.builtin.command: authselect select sssd with-mkhomedir with-sudo with-pamaccess --force
       register: authselect_result
       changed_when: authselect_result.rc == 0
       notify:

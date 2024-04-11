@@ -141,33 +141,33 @@
     backup: yes
   notify: Restart sssd
 
-- name: Enable dsconf plugins
-  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin {{ item }} enable'
-  no_log: true
-  register: enable_dsconf_plugin
-  changed_when: enable_dsconf_plugin.rc == 0 and 'Enabled plugin' in enable_dsconf_plugin.stdout
-  notify: "Restart dirsrv@{{ mailserver_hostname }}"
-  loop:
-    - posix-winsync
-    - ldap-pass-through-auth
-    - automember
-    - linked-attr
-    - managed-entries
-    - pam-pass-through-auth
-- name: Configure LDAP passthrough
-  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin ldap-pass-through-auth add ldaps://{{ mailserver_domain }},dc={{ mailserver_domain | split(".") | join(",dc=") }}'
-  no_log: true
-  register: add_ldap_passthrough
-  changed_when: add_ldap_passthrough.rc == 0 and 'already exists' in add_ldap_passthrough.stderr
-  failed_when: add_ldap_passthrough.rc != 0 and 'already exists' not in add_ldap_passthrough.stderr
-  notify: "Restart dirsrv@{{ mailserver_hostname }}"
-- name: Configure content sync
-  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin contentsync set --allow-openldap on'
-  no_log: true
-  register: enable_contentsync
-  changed_when: enable_contentsync.rc == 0 and 'There is nothing to set in the cn=Content Synchronization,cn=plugins,cn=config plugin entry' in enable_contentsync.stderr
-  failed_when: enable_contentsync.rc != 0 and 'There is nothing to set in the cn=Content Synchronization,cn=plugins,cn=config plugin entry' not in enable_contentsync.stderr
-  notify: "Restart dirsrv@{{ mailserver_hostname }}"
+# - name: Enable dsconf plugins
+#   ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin {{ item }} enable'
+#   no_log: true
+#   register: enable_dsconf_plugin
+#   changed_when: enable_dsconf_plugin.rc == 0 and 'Enabled plugin' in enable_dsconf_plugin.stdout
+#   notify: "Restart dirsrv@{{ mailserver_hostname }}"
+#   loop:
+#     - posix-winsync
+#     - ldap-pass-through-auth
+#     - automember
+#     - linked-attr
+#     - managed-entries
+#     # - pam-pass-through-auth
+# - name: Configure LDAP passthrough
+#   ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin ldap-pass-through-auth add ldaps://{{ mailserver_domain }},dc={{ mailserver_domain | split(".") | join(",dc=") }}'
+#   no_log: true
+#   register: add_ldap_passthrough
+#   changed_when: add_ldap_passthrough.rc == 0 or 'already exists' in add_ldap_passthrough.stderr
+#   failed_when: add_ldap_passthrough.rc != 0 and 'already exists' not in add_ldap_passthrough.stderr
+#   notify: "Restart dirsrv@{{ mailserver_hostname }}"
+# - name: Configure content sync
+#   ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin contentsync set --allow-openldap on'
+#   no_log: true
+#   register: enable_contentsync
+#   changed_when: enable_contentsync.rc == 0 or 'There is nothing to set in the cn=Content Synchronization,cn=plugins,cn=config plugin entry' in enable_contentsync.stderr
+#   failed_when: enable_contentsync.rc != 0 and 'There is nothing to set in the cn=Content Synchronization,cn=plugins,cn=config plugin entry' not in enable_contentsync.stderr
+#   notify: "Restart dirsrv@{{ mailserver_hostname }}"
 
 - name: Migrate OS data to LDAP
   block:
@@ -257,26 +257,3 @@
   register: fix_domain_access
   changed_when: fix_domain_access.rc == 0
   failed_when: fix_domain_access.rc != 0 and 'exists' not in fix_domain_access.stderr
-- name: Create OpenLDAP SUDO schema
-  ansible.builtin.copy:
-    src: /usr/share/doc/sudo/schema.OpenLDAP
-    dest: /etc/openldap/schema/sudo.schema
-    remote_src: yes
-    owner: root
-    group: root
-    mode: u=rw,og=r
-- name: Create SUDO LDIF file
-  ansible.builtin.copy:
-    src: ldap/sudo.ldif
-    dest: /etc/openldap/schema/sudo.ldif
-    owner: root
-    group: root
-    mode: u=rw,og=r
-- name: Enable OpenLDAP schemas
-  ansible.builtin.command: "ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/{{ ldif_item }}.ldif"
-  loop:
-    - cosine
-    - nis
-    - sudo
-  loop_control:
-    loop_var: ldif_item
