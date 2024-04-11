@@ -12,7 +12,7 @@
     var: kolab_user_entry
 - name: Set user attributes
   ansible.builtin.set_fact:
-    ldap_user_attributes: |
+    ldap_user_attributes:
       dn: uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}
       sn: {{ user.surname | default(default_surname) }}
       loginShell: /bin/bash
@@ -28,14 +28,14 @@
       objectClass: organizationalperson
       objectClass: person
       objectClass: posixaccount
+      givenName: {{ user.firstname | default(user.name) }}
+      homeDirectory: /home/{{ user.name }}
+      loginShell: /bin/bash
+      mail: {{ user.name }}@{{ mailserver_domain }}
       {% for alias in [user.name ~ '@' ~ mailserver_domain] + user.aliases %}
       alias: {{ alias }}
       {% endfor %}
-      givenName: {{ user.firstname | default(user.name) }}
-      homeDirectory: /home/{{ user.name }}
       {% if user.old_imap_mail.user is defined %}mailAlternateAddress: {{ user.old_imap_mail.user }}{% endif %}
-      loginShell: /bin/bash
-      mail: {{ user.name }}@{{ mailserver_domain }}
 - name: Create new LDAP entry
   when: (kolab_user_entry.results | length) == 0
   community.general.ldap_entry:

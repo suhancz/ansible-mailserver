@@ -141,6 +141,34 @@
     backup: yes
   notify: Restart sssd
 
+- name: Enable dsconf plugins
+  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin {{ item }} enable'
+  no_log: true
+  register: enable_dsconf_plugin
+  changed_when: enable_dsconf_plugin.rc == 0 and 'Enabled plugin' in enable_dsconf_plugin.stdout
+  notify: "Restart dirsrv@{{ mailserver_hostname }}"
+  loop:
+    - posix-winsync
+    - ldap-pass-through-auth
+    - automember
+    - linked-attr
+    - managed-entries
+    - pam-pass-through-auth
+- name: Configure LDAP passthrough
+  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin ldap-pass-through-auth add ldaps://{{ mailserver_domain }}'
+  no_log: true
+  register: add_ldap_passthrough
+  changed_when: add_ldap_passthrough.rc == 0 and 'already exists' in add_ldap_passthrough.stderr
+  failed_when: add_ldap_passthrough.rc != 0 and 'already exists' not in add_ldap_passthrough.stderr
+  notify: "Restart dirsrv@{{ mailserver_hostname }}"
+- name: Configure content sync
+  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin contentsync set --allow-openldap on'
+  no_log: true
+  register: enable_contentsync
+  changed_when: enable_contentsync.rc == 0 and 'There is nothing to set in the cn=Content Synchronization,cn=plugins,cn=config plugin entry' in enable_contentsync.stderr
+  failed_when: enable_contentsync.rc != 0 and 'There is nothing to set in the cn=Content Synchronization,cn=plugins,cn=config plugin entry' not in enable_contentsync.stderr
+  notify: "Restart dirsrv@{{ mailserver_hostname }}"
+
 - name: Migrate OS data to LDAP
   block:
 #   ansible.builtin.command: /usr/share/migrationtools/migrate_all_online.sh
@@ -186,3 +214,69 @@
       loop: "{{ users }}"
       loop_control:
         loop_var: user_data_item
+
+- name: Add Kolab users
+  no_log: true
+  tags:
+    - users
+  block:
+    - name: "Add user to Kolab: {{ user.name }}"
+      ansible.builtin.include_tasks: add_kolab_user.yml
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+  rescue:
+    - name: Authenticate against the Kolab API
+      ansible.builtin.include_tasks: kolab_auth.yml
+    - name: "Add user to Kolab: {{ user.name }}"
+      ansible.builtin.include_tasks: add_kolab_user.yml
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+- name: Set admin user group membership
+  ansible.builtin.include_tasks: add_admin_user_to_ldap_groups.yml
+  loop:
+    - "cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+    - "cn=Accounting Managers,ou=groups,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+    - "cn=HR Managers,ou=groups,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+    - "cn=QA Managers,ou=groups,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+    - "cn=PD Managers,ou=groups,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+  loop_control:
+    loop_var: group_dn
+- name: Prepare LDIF to LDAP admin access
+  ansible.builtin.template:
+    src: ldap/fix_domain_aci.ldif.j2
+    dest: /var/tmp/fix_domain_aci.ldif
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+- name: LDAP admin access
+  ansible.builtin.command: 'ldapmodify -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f /var/tmp/fix_domain_aci.ldif'
+  no_log: true
+  register: fix_domain_access
+  changed_when: fix_domain_access.rc == 0
+  failed_when: fix_domain_access.rc != 0 and 'exists' not in fix_domain_access.stderr
+- name: Create OpenLDAP SUDO schema
+  ansible.builtin.copy:
+    src: /usr/share/doc/sudo/schema.OpenLDAP
+    dest: /etc/openldap/schema/sudo.schema
+    remote_src: yes
+    owner: root
+    group: root
+    mode: u=rw,og=r
+- name: Create SUDO LDIF file
+  ansible.builtin.copy:
+    src: ldap/sudo.ldif
+    dest: /etc/openldap/schema/sudo.ldif
+    owner: root
+    group: root
+    mode: u=rw,og=r
+- name: Enable OpenLDAP schemas
+  ansible.builtin.command: "ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/{{ ldif_item }}.ldif"
+  loop:
+    - cosine
+    - nis
+    - sudo
+  loop_control:
+    loop_var: ldif_item

@@ -43,9 +43,9 @@
   tags:
     - kolab
     - users
-- name: Add users
-  ansible.builtin.import_tasks: users.yml
-  tags: users
+# - name: Add users
+#   ansible.builtin.import_tasks: users.yml
+#   tags: users
 - name: Set up ElasticSearch
   ansible.builtin.import_tasks: elasticsearch.yml
   tags: elasticsearch

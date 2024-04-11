@@ -1,0 +1,8 @@
+dn: cn=wheel,ou=Groups,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+changetype: add
+objectClass: top
+objectClass: posixGroup
+objectClass: groupOfUniqueNames
+gidNumber: 10
+cn: wheel
+uniqueMember: uid={{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='name') | first}},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}

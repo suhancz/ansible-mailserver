@@ -13,3 +13,17 @@
   register: add_admin_user
   changed_when: add_admin_user.rc == 0
   failed_when: add_admin_user.rc != 0 and 'exists' not in add_admin_user.stderr
+- name: "Prepare LDIF for the wheel group"
+  ansible.builtin.template:
+    src: ldap/wheel.ldif.j2
+    dest: /var/tmp/wheel.ldif
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+- name: "Add the wheel POSIX group to LDAP"
+  ansible.builtin.command: 'ldapmodify -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f /var/tmp/wheel.ldif'
+  no_log: true
+  register: add_wheel
+  changed_when: add_wheel.rc == 0
+  failed_when: add_wheel.rc != 0 and 'exists' not in add_wheel.stderr
