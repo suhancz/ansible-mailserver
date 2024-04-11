@@ -155,7 +155,7 @@
     - managed-entries
     - pam-pass-through-auth
 - name: Configure LDAP passthrough
-  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin ldap-pass-through-auth add ldaps://{{ mailserver_domain }},dc={{ mailserver_domain | split('.') | join(',dc=') }}'
+  ansible.builtin.command: 'dsconf -D "cn=Directory Manager" -w {{ ldap_admin_password }} ldap://{{ mailserver_domain }} plugin ldap-pass-through-auth add ldaps://{{ mailserver_domain }},dc={{ mailserver_domain | split(".") | join(",dc=") }}'
   no_log: true
   register: add_ldap_passthrough
   changed_when: add_ldap_passthrough.rc == 0 and 'already exists' in add_ldap_passthrough.stderr
