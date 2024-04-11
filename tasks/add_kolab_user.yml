@@ -13,29 +13,37 @@
 - name: Set user attributes
   ansible.builtin.set_fact:
     ldap_user_attributes:
-      dn: uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}
-      sn: {{ user.surname | default(default_surname) }}
+      dn: "uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+      sn: "{{ user.surname | default(default_surname) }}"
       loginShell: /bin/bash
       preferredLanguage: en_US
-      cn: {{ user.firstname | default(user.name) }} {{ user.surname | default(default_surname) }}
-      displayName: {{ user.name }}
-      mail: {{ user.name ~ '@' ~ mailserver_domain }}
-      uid: {{ user.name }}
-      objectClass: top
-      objectClass: kolabinetorgperson
-      objectClass: inetorgperson
-      objectClass: mailrecipient
-      objectClass: organizationalperson
-      objectClass: person
-      objectClass: posixaccount
-      givenName: {{ user.firstname | default(user.name) }}
-      homeDirectory: /home/{{ user.name }}
-      loginShell: /bin/bash
-      mail: {{ user.name }}@{{ mailserver_domain }}
-      {% for alias in [user.name ~ '@' ~ mailserver_domain] + user.aliases %}
-      alias: {{ alias }}
-      {% endfor %}
-      {% if user.old_imap_mail.user is defined %}mailAlternateAddress: {{ user.old_imap_mail.user }}{% endif %}
+      cn: "{{ user.firstname | default(user.name) }} {{ user.surname | default(default_surname) }}"
+      displayName: "{{ user.name }}"
+      mail: "{{ user.name }}@{{ mailserver_domain }}"
+      uid: "{{ user.name }}"
+      objectClass:
+        - top
+        - kolabinetorgperson
+        - inetorgperson
+        - mailrecipient
+        - organizationalperson
+        - person
+        - posixaccount
+      givenName: "{{ user.firstname | default(user.name) }}"
+      homeDirectory: "/home/{{ user.name }}"
+- name: Set user aliases
+  ansible.builtin.set_fact:
+    email_aliases: "{{ alias | default([]) + [alias_item] }}"
+  loop: "{{ [user.name ~ '@' ~ mailserver_domain] + user.aliases }}"
+  loop_control:
+    loop_var: alias_item
+- name: Set alternate e-mail address
+  when: user.old_imap_mail.user is defined
+  ansible.builtin.set_fact:
+    ldap_user_attributes: "{{ ldap_user_attributes | combine({'mailAlternateAddress': user.old_imap_mail.user})}}"
+- name: Add user aliases
+  ansible.builtin.set_fact:
+    ldap_user_attributes: "{{ ldap_user_attributes | combine({'alias': email_aliases})}}"
 - name: Create new LDAP entry
   when: (kolab_user_entry.results | length) == 0
   community.general.ldap_entry:
