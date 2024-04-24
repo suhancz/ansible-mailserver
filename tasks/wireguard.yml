@@ -105,7 +105,11 @@
   ansible.builtin.set_fact:
     next_ip_segment: 2
 - name: Generate WireGuard server keys
-  ansible.builtin.import_tasks: generate_wireguard_keys.yml
+  tags:
+    - wireguard
+    - kolab
+    - dyndns
+  ansible.builtin.include_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "server"
     wg_privatekey: "{{ wg_server.privatekey | default('') }}"
@@ -125,6 +129,10 @@
   tags:
     - users
 - name: Generate WireGuard client keys
+  tags:
+    - wireguard
+    - kolab
+    - dyndns
   ansible.builtin.include_tasks: generate_wireguard_keys.yml
   vars:
     wg_name: "{{ item.name }}"
