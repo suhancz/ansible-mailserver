@@ -6,7 +6,6 @@ List of things not implemented yet, but planned
 * fix mail sending via Postfix
 * if possible, configure `adduser` and so to work on LDAP
 * confirm if PostfixAdmin is needed at all
-* let DynDNS (PowerAdmin) authenticate via both LDAP and Apache native authentication
 * set up sieves for Cyrus
 * set up SSL for Cyrus
 * set up DKIM for Cyrus
