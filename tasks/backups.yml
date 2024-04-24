@@ -37,8 +37,7 @@
     - { name: "opendkim", paths: ["/etc/opendkim", "/etc/opendkim.conf"], service: True }
     - { name: "opendmarc", paths: ["/etc/opendmarc", "/etc/opendmarc.conf"], service: True }
     - { name: "kolab", paths: ["/etc/kolab"] }
-    - { name: "cyrus-imap", paths: ["/etc/imap"] }
-    - { name: "cyrus-imap", paths: ["/etc/cyrus-imap"], service: True }
+    - { name: "cyrus-imap", paths: ["/etc/imap", "/etc/cyrus-imap"], service: True }
     # - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
@@ -114,7 +113,7 @@
     - wg_vpn
 - name: Restore backups
   tags: restore
-  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or cyrus-imap_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
+  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or imap_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
   block:
     - name: Prepare MariaDB backup
       when: mariadb_backup_path is defined
@@ -186,6 +185,11 @@
     - name: Restore service tarball backups
       ansible.builtin.include_tasks: restore_service_tarball_backup.yml
       vars:
+        service: cyrus-imap
+        service_backup_path: "{{ imap_backup_path }}"
+    - name: Restore service tarball backups
+      ansible.builtin.include_tasks: restore_service_tarball_backup.yml
+      vars:
         service: "{{ item }}"
         service_backup_path: "{{ vars[item ~ '_backup_path'] }}"
       when: vars[item ~ '_backup_path'] is defined
@@ -194,7 +198,6 @@
         - opendmarc
         - vsftpd
         - kolab
-        - cyrus-imap
         - postfix
         - pdns
         - wg_vpn

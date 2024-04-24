@@ -2,7 +2,6 @@
 
 List of things not implemented yet, but planned
 
-* create not-yet-exising-in-OS users in LDAP
 * if possible, configure `adduser` and so to work on LDAP
 * authenticate Apache admin sites via LDAP
 * confirm if PostfixAdmin is needed at all
