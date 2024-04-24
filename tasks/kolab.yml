@@ -290,7 +290,7 @@
         mode: u=rw,go=r
         backup: yes
       loop:
-        - "'domain_base_dn'            => 'cn=kolab,cn=config'"
+        - "'domain_base_dn'            => 'cn=kolab,cn=config',"
         - "'domain_filter'             => \
           '(\\&(objectclass=domainrelatedobject)(associateddomain=%s))',"
         - "'domain_name_attr'          => 'associateddomain',"
