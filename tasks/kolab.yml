@@ -344,7 +344,7 @@
         replace: "'ou={{ item }},%dc'"
         owner: root
         group: root
-        mode: u=rw,g=r,o=
+        mode: u=rw,go=r
         backup: yes
       loop:
         - People
