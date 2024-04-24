@@ -13,7 +13,7 @@
 - name: Set user attributes
   ansible.builtin.set_fact:
     ldap_user_attributes:
-      dn: "uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+      # dn: "uid={{ user.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
       sn: "{{ user.surname | default(default_surname) }}"
       loginShell: /bin/bash
       preferredLanguage: en_US
