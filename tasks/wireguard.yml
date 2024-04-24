@@ -418,3 +418,29 @@
     name: wg_vpn.service
     daemon_reload: yes
     enabled: no
+
+- name: Safeguard Kolab web admin interface
+  tags:
+    - wireguard
+    - kolab
+    - dyndns
+  ansible.builtin.blockinfile:
+    path: /etc/httpd/conf.d/kolab-webadmin.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Restrict IP access"
+    block: |
+      <RequireAny>
+        Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
+      {% for dynamic_host_name in wg_configs.keys() | list %}
+      {% if dynamic_host_name != "server "%}
+        Require forward-dns {{ dynamic_host_name }}.dyndns.{{ mailserver_domain }}
+        Require forward-dns {{ dynamic_host_name }}.{{ mailserver_admin_user }}.dyndns.{{ mailserver_domain }}
+      {% endif %}
+      {% endfor %}
+      </RequireAny>
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    validate: apachectl configtest
+  notify: Restart httpd

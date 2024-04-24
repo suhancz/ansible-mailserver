@@ -1,4 +1,4 @@
-dn: associateddomain={{ mailserver_domain }},cn=kolab,cn=config
+dn: cn=kolab,cn=config
 changetype: modify
 add: aci
-aci: (targetattr = "*") (version 3.0;acl "Admin Access for {{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='name') | first}} at {{ mailserver_domain }}";allow (all)(userdn = "ldap:///uid={{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='name') | first}},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}");)
+aci: (targetattr = "*") (version 3.0;acl "Admin Access for {{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='name') | first}} at {{ mailserver_domain }}";allow (all)(userdn = "ldap:///uid={{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='name') | first}},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}??sub?(objectclass=*)");)

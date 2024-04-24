@@ -10,6 +10,15 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   CustomLog /var/log/httpd/postfixadmin_access.log combined
 
   <Directory />
+    AuthType Basic
+    AuthName "Enter LDAP credentials"
+    AuthBasicProvider ldap
+    AuthLDAPGroupAttribute member
+    AuthLDAPSubGroupClass group
+    AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+    AuthLDAPBindDN cn=Directory Manager
+    AuthLDAPBindPassword {{ ldap_admin_password }}
+    Require ldap-group cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}
     Options FollowSymLinks
     AllowOverride All
     <RequireAny>
@@ -24,7 +33,15 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   </Directory>
 
   <Directory /var/www/postfixadmin/public/>
-    Options FollowSymLinks MultiViews
+    AuthType Basic
+    AuthName "Enter LDAP credentials"
+    AuthBasicProvider ldap
+    AuthLDAPGroupAttribute member
+    AuthLDAPSubGroupClass group
+    AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+    AuthLDAPBindDN cn=Directory Manager
+    AuthLDAPBindPassword {{ ldap_admin_password }}
+    Require ldap-group cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}
     AllowOverride All
     <RequireAny>
       Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}

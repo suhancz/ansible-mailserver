@@ -3,10 +3,8 @@
 List of things not implemented yet, but planned
 
 * if possible, configure `adduser` and so to work on LDAP
-* authenticate Apache admin sites via LDAP
 * confirm if PostfixAdmin is needed at all
 * let DynDNS (PowerAdmin) authenticate via both LDAP and Apache native authentication
-* restrict incoming IP addresses of `/kolab-wemadmin` and the Kolab API by modifying **or even better, _overriding_** `/etc/httpd/conf.d/kolab-webadmin.conf`
 * set up sieves for Cyrus
 * set up SSL for Cyrus
 * set up DKIM for Cyrus

@@ -12,6 +12,15 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   <Directory />
     Options FollowSymLinks
     AllowOverride All
+    AuthType Basic
+    AuthName "Enter LDAP credentials"
+    AuthBasicProvider ldap
+    AuthLDAPGroupAttribute member
+    AuthLDAPSubGroupClass group
+    AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+    AuthLDAPBindDN cn=Directory Manager
+    AuthLDAPBindPassword {{ ldap_admin_password }}
+    Require ldap-group cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}
     <RequireAny>
       Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
 {% for dynamic_host_name in wg_configs.keys() | list %}
@@ -26,6 +35,15 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
   <Directory /var/www/poweradmin/>
     Options FollowSymLinks MultiViews
     AllowOverride All
+    AuthType Basic
+    AuthName "Enter LDAP credentials"
+    AuthBasicProvider ldap
+    AuthLDAPGroupAttribute member
+    AuthLDAPSubGroupClass group
+    AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+    AuthLDAPBindDN cn=Directory Manager
+    AuthLDAPBindPassword {{ ldap_admin_password }}
+    Require ldap-group cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}
     <RequireAny>
       Require ip {{ wireguard.ipv4_pool }} {{ wireguard.ipv6_pool }}
 {% for dynamic_host_name in wg_configs.keys() | list %}
