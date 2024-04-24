@@ -63,30 +63,82 @@
   notify: Restart postfix
   register: configure_postfix
   changed_when: configure_postfix.rc == 0
-- name: Configure main.cf
-  ansible.builtin.lineinfile:
-    regexp: '^{{ item.key }} = '
-    line: '{{ item.key }} = {{ item.value }}'
+- name: Configure Postfix main.cf
+  tags:
+    - users
+  community.general.ini_file:
     path: /etc/postfix/main.cf
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    backup: true
     mode: u=rw,og=r
     owner: root
     group: root
-    state: present
-    backup: yes
   loop:
-    - { key: "smtpd_tls_mandatory_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
-    - { key: "smtpd_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
-    - { key: "smtp_tls_mandatory_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
-    - { key: "smtp_tls_protocols", value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1" }
-    # - { key: "mailbox_transport", value: "lmtp:unix:private/dovecot-lmtp" }
-    - { key: "smtputf8_enable", value: "no" }
-    - { key: "authorized_submit_users", value: "{{ authorized_submit_users | join(',') }}" }
-    - { key: "content_filter", value: "amavisfeed:[127.0.0.1]:10024" }
-    - { key: "recipient_delimiter", value: "+" }
-    - { key: "propagate_unmatched_extensions", value: "" }
+    - key: "smtpd_tls_mandatory_protocols"
+      value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+    - key: "smtpd_tls_protocols"
+      value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+    - key: "smtp_tls_mandatory_protocols"
+      value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+    - key: "smtp_tls_protocols"
+      value: "!SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+    # - key: "mailbox_transport"
+    #   value: "lmtp:unix:private/dovecot-lmtp"
+    - key: "smtputf8_enable"
+      value: "no"
+    - key: "authorized_submit_users"
+      value: "{{ authorized_submit_users | join(',') }}"
+    - key: "content_filter"
+      value: "amavisfeed:[127.0.0.1]:10024"
+    - key: "recipient_delimiter"
+      value: "+"
+    - key: "propagate_unmatched_extensions"
+      value: ""
+    - key: policyd-spf_time_limit
+      value: 3600
+    - key: smtpd_recipient_restrictions
+      #   reject_rhsbl_helo dbl.spamhaus.org
+      #   reject_rhsbl_reverse_client dbl.spamhaus.org
+      #   reject_rhsbl_sender dbl.spamhaus.org
+      #   reject_rbl_client zen.spamhaus.org
+      value: >
+        permit_mynetworks,
+        permit_sasl_authenticated,
+        reject_unauth_destination,
+        check_policy_service unix:private/policyd-spf
+        check_policy_service unix:postgrey/socket
+        check_client_access hash:/etc/postfix/rbl_override
+        permit_dnswl_client list.dnswl.org=127.0.[0..255].[1..3]
+        permit_dnswl_client swl.spamhaus.org
+    - key: milter_default_action
+      value: accept
+    - key: milter_protocol
+      value: 6
+    - key: smtpd_milters
+      value: inet:127.0.0.1:8891,inet:127.0.0.1:8893,unix:/run/spamass-milter/spamass-milter.sock
+    - key: non_smtpd_milters
+      value: '$smtpd_milters'
+    - key: smtpd_sender_restrictions
+      value: >
+        permit_mynetworks
+        permit_sasl_authenticated
+        reject_unknown_sender_domain
+        reject_unknown_reverse_client_hostname
+        reject_unknown_client_hostname
+    - key: smtpd_discard_ehlo_keywords
+      value: "''"
+    - key: smtpd_helo_required
+      value: yes
+    - key: smtpd_helo_restrictions
+      value: >
+        permit_mynetworks
+        permit_sasl_authenticated
+        check_helo_access hash:/etc/postfix/helo_access
+        reject_invalid_helo_hostname
+        reject_non_fqdn_helo_hostname
+        reject_unknown_helo_hostname
   notify: Restart postfix
-  tags:
-    - users
 # - name: Render Postfix SQL templates
 #   ansible.builtin.template:
 #     src: "postfix/sql/{{ item }}.j2"
@@ -122,38 +174,6 @@
 #       virtual_uid_maps = static:2000
 #       virtual_gid_maps = static:2000
 #   notify: Restart postfix
-- name: Configure SMTP recipient restrictions
-  ansible.builtin.blockinfile:
-    path: /etc/postfix/main.cf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK SMTP recipient restrictions"
-    block: |
-      policyd-spf_time_limit = 3600
-      smtpd_recipient_restrictions =
-         permit_mynetworks,
-         permit_sasl_authenticated,
-         reject_unauth_destination,
-         check_policy_service unix:private/policyd-spf
-         check_policy_service unix:postgrey/socket
-         check_client_access hash:/etc/postfix/rbl_override
-      #   reject_rhsbl_helo dbl.spamhaus.org
-      #   reject_rhsbl_reverse_client dbl.spamhaus.org
-      #   reject_rhsbl_sender dbl.spamhaus.org
-         permit_dnswl_client list.dnswl.org=127.0.[0..255].[1..3]
-         permit_dnswl_client swl.spamhaus.org
-      #   reject_rbl_client zen.spamhaus.org
-  notify: Restart postfix
-- name: Configure Milter
-  ansible.builtin.blockinfile:
-    path: /etc/postfix/main.cf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK Milter"
-    block: |
-      # Milter configuration
-      milter_default_action = accept
-      milter_protocol = 6
-      smtpd_milters = inet:127.0.0.1:8891,inet:127.0.0.1:8893,unix:/run/spamass-milter/spamass-milter.sock
-      non_smtpd_milters = $smtpd_milters
-    backup: yes
-  notify: Restart postfix
 - name: Start SPF policy daemon with Postfix
   ansible.builtin.blockinfile:
     path: /etc/postfix/master.cf
@@ -162,33 +182,6 @@
       policyd-spf  unix  -       n       n       -       0       spawn
         user=policyd-spf argv=/usr/libexec/postfix/policyd-spf
     backup: yes
-  notify: Restart postfix
-- name: Configure sender restrictions
-  ansible.builtin.blockinfile:
-    path: /etc/postfix/main.cf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK sender restrictions"
-    block: |
-      smtpd_sender_restrictions =
-         permit_mynetworks
-         permit_sasl_authenticated
-         reject_unknown_sender_domain
-         reject_unknown_reverse_client_hostname
-         reject_unknown_client_hostname
-  notify: Restart postfix
-- name: Configure HELO/EHLO restrictions
-  ansible.builtin.blockinfile:
-    marker: "# {mark} ANSIBLE MANAGED BLOCK HELO/EHLO restrictions"
-    path: /etc/postfix/main.cf
-    block: |
-      smtpd_discard_ehlo_keywords = ''
-      smtpd_helo_required = yes
-      smtpd_helo_restrictions =
-         permit_mynetworks
-         permit_sasl_authenticated
-         check_helo_access hash:/etc/postfix/helo_access
-         reject_invalid_helo_hostname
-         reject_non_fqdn_helo_hostname
-         reject_unknown_helo_hostname
   notify: Restart postfix
 - name: Set up HELO access whitelist
   when: helo_access is defined
