@@ -1,6 +1,8 @@
 ansible-mailserver
 ==================
 
+[![Super-Linter](https://github.com/suhancz/ansible-mailserver/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
 Mailserver suite on RPM-based distros
 
 Role Variables
