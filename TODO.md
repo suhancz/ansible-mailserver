@@ -11,3 +11,4 @@ List of things not implemented yet, but planned
 * set up DKIM for Cyrus
 * set up DMARC for Cyrus
 * confirm Kolab- and Cyrus-related backups working
+* clean up code (and enable VALIDATE_JSCPD in <.github/workflows/linter.yml>)
