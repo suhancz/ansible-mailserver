@@ -1,5 +1,4 @@
 ---
-#checkov:skip=CKV2_ANSIBLE_3: Block is used for the when condition only
 - name: Open firewall
   tags:
     - dyndns
@@ -14,6 +13,7 @@
     - http
     - https
 - name: Set up SELinux rules
+  #checkov:skip=CKV2_ANSIBLE_3: Block is used for the when condition only
   when: getenforce.stdout != 'Disabled'
   block:
     - name: Set SELinux booleans

@@ -1,5 +1,4 @@
 ---
-#checkov:skip=CKV2_ANSIBLE_3: Block is used for the tag only
 - name: Setup kolab
   tags: users
   # noqa yaml[line-length]
@@ -433,6 +432,7 @@
     state: restarted
 
 - name: Enable domains
+  #checkov:skip=CKV2_ANSIBLE_3: Block is used for the tag only
   tags: ldap
   block:
     # The editing domains in the Kolab API is not documented at the tome of this writing, so I go plain LDAP here

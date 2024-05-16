@@ -1,5 +1,4 @@
 ---
-#checkov:skip=CKV2_ANSIBLE_3: Block is only used for the when condition and the tags
 - name: Render WebDav web config templates
   tags:
     - dyndns
@@ -81,6 +80,7 @@
     state: mounted
     fstype: fuse.bindfs
 - name: Set up SELinux rules for WebDAV
+  #checkov:skip=CKV2_ANSIBLE_3: Block is only used for the when condition and the tags
   tags: wireguard
   when: getenforce.stdout != 'Disabled'
   block:

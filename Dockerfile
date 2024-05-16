@@ -1,5 +1,6 @@
 #checkov:skip=CKV_DOCKER_2: no need for health check
 #checkov:skip=CKV_DOCKER_3: no need for special user
+#checkov:skip=CKV_DOCKER_7: I prefer the latest, like it, or not ;)
 FROM quay.io/almalinuxorg/8-init:latest
 ENV container docker
 
