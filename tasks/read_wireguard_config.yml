@@ -4,7 +4,7 @@
     path: "{{ wg_config_file }}"
   register: wg_config_file_info
 - name: Read existing WireGuard config into variable
-  #checkov:skip=CKV2_ANSIBLE_3: Block is only used for the when condition
+  # checkov:skip=CKV2_ANSIBLE_3: Block is only used for the when condition
   when: wg_config_file_info.stat.exists
   block:
     - name: Read WireGuard config file

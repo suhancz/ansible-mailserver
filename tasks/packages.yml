@@ -34,7 +34,7 @@
     backup: yes
     create: yes
 - name: Set up Remi repository
-  #checkov:skip=CKV2_ANSIBLE_4: The Remi repo doesn't provide GPG keys
+  # checkov:skip=CKV2_ANSIBLE_4: The Remi repo doesn't provide GPG keys
   ansible.builtin.dnf:
     name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
     disable_gpg_check: yes
@@ -483,7 +483,7 @@
 #     remote_src: yes
 #     backup: yes
 - name: Download as-is executables
-  #checkov:skip=CKV2_ANSIBLE_2: HTTPS comes from a loop variable
+  # checkov:skip=CKV2_ANSIBLE_2: HTTPS comes from a loop variable
   tags: imapsync
   ansible.builtin.get_url:
     url: "{{ item.url }}"

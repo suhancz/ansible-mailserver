@@ -1,10 +1,13 @@
-#checkov:skip=CKV_DOCKER_2: no need for health check
-#checkov:skip=CKV_DOCKER_3: no need for special user
-#checkov:skip=CKV_DOCKER_7: I prefer the latest, like it, or not ;)
+# checkov:skip=CKV_DOCKER_2: no need for health check
+# checkov:skip=CKV_DOCKER_3: no need for special user
+# checkov:skip=CKV_DOCKER_7: I prefer the latest, like it, or not ;)
+# hadolint ignore=DL3007
 FROM quay.io/almalinuxorg/8-init:latest
 ENV container docker
 
-RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in ; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done);
+WORKDIR /
+
+RUN "(cd /lib/systemd/system/sysinit.target.wants/; for i in ; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done);"
 
 RUN rm -rf /lib/systemd/system/multi-user.target.wants/ \
 && rm -rf /etc/systemd/system/.wants/ \
@@ -14,6 +17,7 @@ RUN rm -rf /lib/systemd/system/multi-user.target.wants/ \
 && rm -rf /lib/systemd/system/basic.target.wants/ \
 && rm -f /lib/systemd/system/anaconda.target.wants/*
 
+# hadolint ignore=DL3041
 RUN dnf -y install dnf-plugin-config-manager epel-release \
 && dnf config-manager --set-enabled powertools \
 && rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8 \
@@ -22,6 +26,7 @@ RUN dnf -y install dnf-plugin-config-manager epel-release \
 && rpm --import https://mirror.apheleia-it.ch/repos/Kolab:/16/key.asc \
 && rpm -Uvh https://mirror.apheleia-it.ch/repos/Kolab:/16/kolab-16-for-el8.rpm \
 && dnf update --allowerasing -y \
-&& dnf -y install kolab
+&& dnf -y install kolab \
+&& dnf clean all
 VOLUME [ “/sys/fs/cgroup” ]
 CMD ["/usr/sbin/init"]
