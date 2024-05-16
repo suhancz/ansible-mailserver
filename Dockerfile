@@ -1,4 +1,6 @@
-FROM quay.io/almalinuxorg/8-init
+#checkov:skip=CKV_DOCKER_2: no need for health check
+#checkov:skip=CKV_DOCKER_3: no need for special user
+FROM quay.io/almalinuxorg/8-init:latest
 ENV container docker
 
 RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in ; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done);

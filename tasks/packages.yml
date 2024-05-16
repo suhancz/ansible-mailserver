@@ -1,4 +1,6 @@
 ---
+#checkov:skip=CKV2_ANSIBLE_2: HTTPS comes from a loop variable
+#checkov:skip=CKV2_ANSIBLE_4: The Remi repo doesn't provide GPG keys
 - name: Install EL repositories
   tags:
     - always

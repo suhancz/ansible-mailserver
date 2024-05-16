@@ -169,8 +169,6 @@
 #   failed_when: enable_contentsync.rc != 0 and 'There is nothing to set in the cn=Content Synchronization,cn=plugins,cn=config plugin entry' not in enable_contentsync.stderr
 #   notify: "Restart dirsrv@{{ mailserver_hostname }}"
 
-- name: Migrate OS data to LDAP
-  block:
 #   ansible.builtin.command: /usr/share/migrationtools/migrate_all_online.sh
 #   environment:
 #     DEFAULT_MAIL_DOMAIN: "{{ mailserver_domain }}"
@@ -181,39 +179,39 @@
 #     LDAP_BINDCRED: "{{ ldap_admin_password }}"
 #     LDAP_PROFILE: "yes"
 #   no_log: true
-    - name: Clean up former migration attempts
-      ansible.builtin.file:
-        path: "/var/tmp/{{ migration_file }}"
-        state: absent
-      loop:
-        - passwd.mig
-        - group.mig
-        - shadow.mig
-        - gshadow.mig
-        - group.ldif
-        - passwd.ldif
-      loop_control:
-        loop_var: migration_file
-    - name: Set variable for ldapadd command parameters
-      ansible.builtin.set_fact:
-        ldapadd_command: 'ldapadd -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f '
-      no_log: true
-    - name: Deploy user data extraction script
-      ansible.builtin.copy:
-        src: files/ldap/extract_user_data_to_migrate.sh
-        dest: /var/tmp/
-        mode: u=rwx,og=rx
-        backup: yes
-        force: yes
-        owner: root
-        group: root
-    - name: Extract user data from the OS
-      ansible.builtin.command: /var/tmp/extract_user_data_to_migrate.sh
-    - name: "Update LDAP entries: {{ user_data_item }}"
-      ansible.builtin.include_tasks: convert_user_to_ldif.yml
-      loop: "{{ users }}"
-      loop_control:
-        loop_var: user_data_item
+- name: Clean up former migration attempts
+  ansible.builtin.file:
+    path: "/var/tmp/{{ migration_file }}"
+    state: absent
+  loop:
+    - passwd.mig
+    - group.mig
+    - shadow.mig
+    - gshadow.mig
+    - group.ldif
+    - passwd.ldif
+  loop_control:
+    loop_var: migration_file
+- name: Set variable for ldapadd command parameters
+  ansible.builtin.set_fact:
+    ldapadd_command: 'ldapadd -c -x -h {{ mailserver_domain }} -D "cn=Directory Manager" -w "{{ ldap_admin_password }}" -f '
+  no_log: true
+- name: Deploy user data extraction script
+  ansible.builtin.copy:
+    src: files/ldap/extract_user_data_to_migrate.sh
+    dest: /var/tmp/
+    mode: u=rwx,og=rx
+    backup: yes
+    force: yes
+    owner: root
+    group: root
+- name: Extract user data from the OS
+  ansible.builtin.command: /var/tmp/extract_user_data_to_migrate.sh
+- name: "Update LDAP entries: {{ user_data_item }}"
+  ansible.builtin.include_tasks: convert_user_to_ldif.yml
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user_data_item
 
 - name: Add Kolab users
   no_log: true

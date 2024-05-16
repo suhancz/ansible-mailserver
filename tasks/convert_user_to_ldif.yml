@@ -1,4 +1,5 @@
 ---
+#checkov:skip=CKV2_ANSIBLE_3: Block is used for the when condition only
 - name: Select passwd line
   ansible.builtin.command: 'grep "^{{ user_data_item.name }}:" /var/tmp/passwd.mig'
   register: passwd_mig_content
