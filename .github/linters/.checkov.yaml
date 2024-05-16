@@ -1,0 +1,4 @@
+skip-check:
+  - CKV2_ANSIBLE_2 # HTTPS comes from a loop variable
+  - CKV2_ANSIBLE_3 # Block is used at many places only for the when condition and the tags
+  - CKV2_ANSIBLE_4 # The Remi repo doesn't provide GPG keys

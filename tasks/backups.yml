@@ -112,7 +112,6 @@
     - pdns
     - wg_vpn
 - name: Restore backups
-  # checkov:skip=CKV2_ANSIBLE_3: Block is only used for the when condition and the tags
   tags: restore
   when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or imap_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
   block:

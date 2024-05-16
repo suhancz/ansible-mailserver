@@ -184,7 +184,6 @@
     backup: yes
   notify: Restart postfix
 - name: Set up HELO access whitelist
-  # checkov:skip=CKV2_ANSIBLE_3: Block is used for the when condition only
   when: helo_access is defined
   block:
     - name: Create HELO access whitelist

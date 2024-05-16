@@ -5,7 +5,6 @@
   changed_when: passwd_mig_content.rc == 0
   failed_when: (passwd_mig_content.rc != 0) and (passwd_mig_content.stderr | length > 0)
 - name: "Migrate already existing user {{ user_data_item.name }}"
-  # checkov:skip=CKV2_ANSIBLE_3: Block is used for the when condition only
   when: passwd_mig_content.changed
   block:
     - name: Set passwd line

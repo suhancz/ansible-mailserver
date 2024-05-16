@@ -1,6 +1,5 @@
 ---
 - name: Get latest PowerAdmin version
-  # checkov:skip=CKV2_ANSIBLE_3: Block is used for the when condition only
   tags:
     - dyndns
     - poweradmin

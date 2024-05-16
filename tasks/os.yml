@@ -25,7 +25,6 @@
 
 - name: Enable IPv6
   when: ansible_default_ipv6.address is not defined
-  # checkov:skip=CKV2_ANSIBLE_3: Block is only used for the when condition
   block:
     - name: Enable IPv6 via sysctl
       ansible.posix.sysctl:
