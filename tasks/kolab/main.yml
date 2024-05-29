@@ -51,7 +51,7 @@
     backup: true
   loop:
     - /etc/php.ini
-    - /etc/opt/remi/php74/php.ini
+    - /etc/opt/remi/php72/php.ini
   notify: 
     - Restart httpd
 

@@ -12,12 +12,6 @@
     mariabackup_password: "{{ mariabackup_password | default(lookup('password', '/tmp/ansible-mailserver-install.mariabackup_password chars=ascii_letters,digits')) }}"
   no_log: yes
   tags: always
-- name: Fill authorized submit user list
-  ansible.builtin.set_fact:
-    authorized_submit_users: "{{ authorized_submit_users + [item.name] }}"
-  loop: "{{ users }}"
-  no_log: yes
-  tags: always
 - name: Configure OS
   ansible.builtin.import_tasks: os/main.yml
   tags: os
@@ -37,12 +31,15 @@
 #     - postfixadmin
 - name: Set up SSL
   ansible.builtin.import_tasks: security/ssl.yml
-  tags: ssl
+  tags:
+    - ssl
+    - security
 - name: Set up Kolab
   ansible.builtin.import_tasks: kolab/main.yml
   tags:
     - kolab
     - users
+    - mail
 # - name: Add users
 #   ansible.builtin.import_tasks: os/users.yml
 #   tags: users
@@ -64,16 +61,22 @@
     - webdav
 - name: Set up SPAMAssassin
   ansible.builtin.import_tasks: mail/spamassassin.yml
-  tags: spamassassin
+  tags:
+    - spamassassin
+    - mail
 - name: Configure Antivirus
   ansible.builtin.import_tasks: security/antivirus.yml
-  tags: antivirus
+  tags:
+    - antivirus
+    - security
 - name: Configure Redis
   ansible.builtin.import_tasks: misc/redis.yml
   tags: redis
 - name: Configure Postfix
   ansible.builtin.import_tasks: mail/postfix.yml
-  tags: postfix
+  tags:
+    - postfix
+    - mail
 - name: Sync old IMAP account
   # noqa jinja[invalid] for some reason this was the only way I found to pass the variable to the included task list
   ansible.builtin.include_tasks: mail/imapsync.yml
@@ -86,12 +89,17 @@
   tags:
     - imapsync
     - users
+    - mail
 - name: Set up DKIM
   ansible.builtin.import_tasks: mail/dkim.yml
-  tags: dkim
+  tags:
+    - dkim
+    - mail
 - name: Set up DMARC
   ansible.builtin.import_tasks: mail/dmarc.yml
-  tags: dmarc
+  tags:
+    - dmarc
+    - mail
 - name: Set up MongoDB
   ansible.builtin.import_tasks: misc/mongodb.yml
   tags: mongodb
@@ -110,4 +118,6 @@
   tags: backup
 - name: Configure fail2ban
   ansible.builtin.import_tasks: security/fail2ban.yml
-  tags: fail2ban
+  tags:
+    - fail2ban
+    - security
