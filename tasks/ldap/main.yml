@@ -62,10 +62,10 @@
     state: present
     backup: yes
   loop:
-    - "enable-cache		passwd		no"
-    - "enable-cache		group		no"
-    - "enable-cache		hosts		yes"
-    - "enable-cache		netgroup	no"
+    - "enable-cache\t\tpasswd\t\tno"
+    - "enable-cache\t\tgroup\t\tno"
+    - "enable-cache\t\thosts\t\tyes"
+    - "enable-cache\t\tnetgroup\tno"
   loop_control:
     loop_var: nscd_item
   notify:
