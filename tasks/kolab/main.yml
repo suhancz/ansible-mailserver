@@ -52,7 +52,7 @@
   loop:
     - /etc/php.ini
     - /etc/opt/remi/php72/php.ini
-  notify: 
+  notify:
     - Restart httpd
 
 - name: Configure kolab.conf

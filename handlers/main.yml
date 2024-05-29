@@ -125,8 +125,8 @@
     enabled: yes
     state: restarted
   loop:
+    - php72-php-fpm
     - php74-php-fpm
-    # - php81-php-fpm
   loop_control:
     loop_var: php_fpm_service
 - name: Restart postfix

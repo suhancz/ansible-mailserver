@@ -237,23 +237,23 @@
     state: present
     backup: yes
     create: yes
-- name: Enable the php:remi-7.4 DNF module
+- name: Enable the php:remi-7.2 DNF module
   tags:
     - always
   block:
-    - name: Enable the php:remi-7.4 DNF module
-      ansible.builtin.command: dnf module enable php:remi-7.4 -y
-      register: enable_php74_module
-      changed_when: enable_php74_module.rc == 0
+    - name: Enable the php:remi-7.2 DNF module
+      ansible.builtin.command: dnf module enable php:remi-7.2 -y
+      register: enable_php72_module
+      changed_when: enable_php72_module.rc == 0
   rescue:
     - name: Reset the php DNF module
       ansible.builtin.command: dnf module reset php -y
-      register: enable_php74_module
-      changed_when: enable_php74_module.rc == 0
-    - name: Enable the php:remi-7.4 DNF module
-      ansible.builtin.command: dnf module enable php:remi-7.4 -y
-      register: enable_php74_module
-      changed_when: enable_php74_module.rc == 0
+      register: reset_php_module
+      changed_when: reset_php_module.rc == 0
+    - name: Enable the php:remi-7.2 DNF module
+      ansible.builtin.command: dnf module enable php:remi-7.2 -y
+      register: enable_php72_module
+      changed_when: enable_php72_module.rc == 0
 - name: Install packages
   tags:
     - always
@@ -397,11 +397,11 @@
       - aide
       - kolab
       - php-kolabformat
-      - php74-php-fpm
+      - php72-php-fpm
       - libkolabxml
       - libkolab
       - php-kolab
-      - php74-php-pecl-memcache
+      - php72-php-pecl-memcache
       - sssd
       - sssd-ldap
       - oddjob-mkhomedir
@@ -411,6 +411,13 @@
       # - symas-openldap-servers
       - openldap-servers
       - nss-pam-ldapd
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
+- name: Install packages for PowerAdmin
+  tags:
+    - poweradmin
+  ansible.builtin.package:
+    name:
+      - php74-php-fpm
     state: latest # noqa package-latest I do prefer fresh stuff ;)
 # - name: Reset the PHP DNF module
 #   ansible.builtin.command: dnf module reset php -y
