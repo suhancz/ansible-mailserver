@@ -12,7 +12,7 @@
     system: yes
     uid: 2000
 - name: Open firewall
-  ansible.builtin.include_tasks: firewall.yml
+  ansible.builtin.include_tasks: security/firewall.yml
   vars:
     port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
   loop:
@@ -34,7 +34,7 @@
   register: apply_new_aliases
   changed_when: apply_new_aliases.rc == 0
 - name: Set up automatic restart of services
-  ansible.builtin.import_tasks: autorestart.yml
+  ansible.builtin.import_tasks: systemd/autorestart.yml
   vars:
     service: postfix
 # - name: Deploy Postfix master config
@@ -66,10 +66,10 @@
 - name: Configure Postfix main.cf
   tags:
     - users
-  community.general.ini_file:
+  ansible.builtin.lineinfile:
+    regexp: "^{{ item.key }} = "
     path: /etc/postfix/main.cf
-    option: "{{ item.key }}"
-    value: "{{ item.value }}"
+    line: "{{ item.key }} = {{ item.value }}"
     backup: true
     mode: u=rw,og=r
     owner: root

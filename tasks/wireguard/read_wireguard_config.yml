@@ -14,7 +14,7 @@
       ansible.builtin.set_fact:
         wireguard_config_lines: "{{ wg_config_content.content|b64decode|split('\n') }}"
     - name: Gather WireGuard config sections
-      ansible.builtin.include_tasks: gather_wireguard_config_sections.yml
+      ansible.builtin.include_tasks: wireguard/gather_wireguard_config_sections.yml
       vars:
         wireguard_config_line: "{{ item }}"
       loop: "{{ wireguard_config_lines }}"

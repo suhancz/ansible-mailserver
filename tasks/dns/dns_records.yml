@@ -34,13 +34,13 @@
   register: set_primary_zone
   changed_when: set_primary_zone.rc == 0
 - name: Fill DNS zone
-  ansible.builtin.include_tasks: fill_default_dns_records.yml
+  ansible.builtin.include_tasks: dns/fill_default_dns_records.yml
   vars:
     dns_zone: "{{ item }}"
   loop: "{{ [mailserver_domain] + custom_domains }}"
   when: public_dns == "yes" and ((reset == "yes") or (item not in all_dns_zones.stdout_lines))
 - name: Create default CNAME records
-  ansible.builtin.include_tasks: create_default_cname_records.yml
+  ansible.builtin.include_tasks: dns/create_default_cname_records.yml
   vars:
     dns_zone: "{{ item }}"
   loop: "{{ [mailserver_domain] + custom_domains + ['vpn.' ~ mailserver_domain] }}"

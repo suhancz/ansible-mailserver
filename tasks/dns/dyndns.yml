@@ -128,7 +128,7 @@
   tags:
     - dyndns
     - poweradmin
-  ansible.builtin.import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks: dns/add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -140,7 +140,7 @@
   tags:
     - dyndns
     - poweradmin
-  ansible.builtin.import_tasks: add_dns_record.yml
+  ansible.builtin.import_tasks: dns/add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -153,7 +153,7 @@
     - dyndns
     - poweradmin
     - users
-  ansible.builtin.include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: dns/add_dns_record.yml
   when: dyndns_item != "server"
   vars:
     record:
@@ -171,7 +171,7 @@
     - dyndns
     - poweradmin
     - users
-  ansible.builtin.include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: dns/add_dns_record.yml
   vars:
     record:
       zone: "dyndns.{{ mailserver_domain }}"
@@ -183,7 +183,7 @@
   loop_control:
     loop_var: dyndns_item
 - name: Configure DynDNS subdomains
-  ansible.builtin.include_tasks: configure_dyndns_subdomain.yml
+  ansible.builtin.include_tasks: dns/configure_dyndns_subdomain.yml
   when: dyndns_item != "server"
   loop: "{{ [''] + (wg_configs.keys() | list) }}"
   loop_control:

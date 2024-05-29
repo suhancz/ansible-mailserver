@@ -271,7 +271,7 @@
   tags:
     - users
 - name: Set up user mail aliases
-  ansible.builtin.include_tasks: user_mail_alias.yml
+  ansible.builtin.include_tasks: mail/user_mail_alias.yml
   loop: "{{ users }}"
   loop_control:
     loop_var: user
@@ -513,7 +513,7 @@
 - name: Refresh the certificates
   ansible.builtin.command: 'openssl rehash /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}'
 - name: Configure LDAP
-  ansible.builtin.import_tasks: ldap.yml
+  ansible.builtin.import_tasks: ldap/main.yml
   tags:
     - ldap
     - users

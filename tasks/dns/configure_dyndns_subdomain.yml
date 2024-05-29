@@ -3,7 +3,7 @@
   tags:
     - dyndns
     - poweradmin
-  ansible.builtin.include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: dns/add_dns_record.yml
   vars:
     record:
       zone: "{% if dyndns_item | length > 0 %}dyndns.{% endif %}{{ mailserver_domain }}"
@@ -15,7 +15,7 @@
   tags:
     - dyndns
     - poweradmin
-  ansible.builtin.include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: dns/add_dns_record.yml
   vars:
     record:
       zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"
@@ -27,7 +27,7 @@
   tags:
     - dyndns
     - poweradmin
-  ansible.builtin.include_tasks: add_dns_record.yml
+  ansible.builtin.include_tasks: dns/add_dns_record.yml
   vars:
     record:
       zone: "{% if dyndns_item | length > 0 %}{{ wg_configs[dyndns_item]['owner'] }}.{% endif %}dyndns.{{ mailserver_domain }}"

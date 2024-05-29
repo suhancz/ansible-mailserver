@@ -208,7 +208,7 @@
 - name: Extract user data from the OS
   ansible.builtin.command: /var/tmp/extract_user_data_to_migrate.sh
 - name: "Update LDAP entries: {{ user_data_item }}"
-  ansible.builtin.include_tasks: convert_user_to_ldif.yml
+  ansible.builtin.include_tasks: ldap/convert_user_to_ldif.yml
   loop: "{{ users }}"
   loop_control:
     loop_var: user_data_item
@@ -219,20 +219,20 @@
     - users
   block:
     - name: "Add user to Kolab: {{ user.name }}"
-      ansible.builtin.include_tasks: add_kolab_user.yml
+      ansible.builtin.include_tasks: kolab/add_kolab_user.yml
       loop: "{{ users }}"
       loop_control:
         loop_var: user
   rescue:
     - name: Authenticate against the Kolab API
-      ansible.builtin.include_tasks: kolab_auth.yml
+      ansible.builtin.include_tasks: kolab/kolab_auth.yml
     - name: "Add user to Kolab: {{ user.name }}"
-      ansible.builtin.include_tasks: add_kolab_user.yml
+      ansible.builtin.include_tasks: kolab/add_kolab_user.yml
       loop: "{{ users }}"
       loop_control:
         loop_var: user
 - name: Set admin user group membership
-  ansible.builtin.include_tasks: add_admin_user_to_ldap_groups.yml
+  ansible.builtin.include_tasks: ldap/add_admin_user_to_ldap_groups.yml
   loop:
     - "cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
     - "cn=Accounting Managers,ou=groups,dc={{ mailserver_domain | split('.') | join(',dc=') }}"

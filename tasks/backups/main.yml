@@ -183,12 +183,12 @@
       register: start_ldap_server
       changed_when: start_ldap_server.rc == 0
     - name: Restore service tarball backups
-      ansible.builtin.include_tasks: restore_service_tarball_backup.yml
+      ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
         service: cyrus-imap
         service_backup_path: "{{ imap_backup_path }}"
     - name: Restore service tarball backups
-      ansible.builtin.include_tasks: restore_service_tarball_backup.yml
+      ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
         service: "{{ item }}"
         service_backup_path: "{{ vars[item ~ '_backup_path'] }}"
