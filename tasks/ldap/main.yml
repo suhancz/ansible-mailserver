@@ -21,7 +21,7 @@
     - { section: 'domain/LDAP', option: 'sudoers_base', value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}" }
     - { section: 'domain/LDAP', option: 'sudo_provider', value: 'ldap' }
     - { section: 'domain/LDAP', option: 'ldap_id_use_start_tls', value: 'True' }
-    - { section: 'domain/LDAP', option: 'ldap_tls_cacert', value: '/etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}/ca.crt' }
+    - { section: 'domain/LDAP', option: 'ldap_tls_cacert', value: '/etc/dirsrv/slapd-{{ mailserver_hostname }}/ca.crt' }
     - { section: 'domain/LDAP', option: 'cache_credentials', value: 'True' }
     - { section: 'domain/LDAP', option: 'enumerate', value: 'True' }
     - { section: 'domain/LDAP', option: 'ldap_tls_reqcert', value: 'allow' }
@@ -49,8 +49,8 @@
   loop:
     - "BASE    dc={{ mailserver_domain | split('.') | join(',dc=') }}"
     - "URI     ldaps://{{ mailserver_domain }}"
-    - 'TLS_CACERT      /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}/ca.crt'
-    - 'TLS_CACERTDIR /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}'
+    - 'TLS_CACERT      /etc/dirsrv/slapd-{{ mailserver_hostname }}/ca.crt'
+    - 'TLS_CACERTDIR /etc/dirsrv/slapd-{{ mailserver_hostname }}'
   loop_control:
     loop_var: openldap_item
 - name: Configure nscd

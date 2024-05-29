@@ -511,7 +511,7 @@
   loop_control:
     loop_var: kolab_service
 - name: Refresh the certificates
-  ansible.builtin.command: 'openssl rehash /etc/dirsrv/slapd-{{ mailserver_domain | split(".") | first }}'
+  ansible.builtin.command: 'openssl rehash /etc/dirsrv/slapd-{{ mailserver_hostname }}'
 - name: Configure LDAP
   ansible.builtin.import_tasks: ldap/main.yml
   tags:
