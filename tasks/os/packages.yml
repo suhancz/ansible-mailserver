@@ -385,6 +385,7 @@
       - imapsync
       - aide
       - kolab
+      - php-kolabformat
       - php74-php-pecl-memcache
       - sssd
       - sssd-ldap
