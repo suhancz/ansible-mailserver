@@ -240,9 +240,20 @@
 - name: Enable the php:remi-7.4 DNF module
   tags:
     - always
-  ansible.builtin.command: dnf module enable php:remi-7.4 -y
-  register: enable_php74_module
-  changed_when: enable_php74_module.rc == 0
+  block:
+    - name: Enable the php:remi-7.4 DNF module
+      ansible.builtin.command: dnf module enable php:remi-7.4 -y
+      register: enable_php74_module
+      changed_when: enable_php74_module.rc == 0
+  rescue:
+    - name: Reset the php DNF module
+      ansible.builtin.command: dnf module reset php -y
+      register: enable_php74_module
+      changed_when: enable_php74_module.rc == 0
+    - name: Enable the php:remi-7.4 DNF module
+      ansible.builtin.command: dnf module enable php:remi-7.4 -y
+      register: enable_php74_module
+      changed_when: enable_php74_module.rc == 0
 - name: Install packages
   tags:
     - always

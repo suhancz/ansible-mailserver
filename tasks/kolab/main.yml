@@ -4,7 +4,7 @@
   # noqa yaml[line-length]
   ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
     --mysqlserver=existing --mysqlhost=127.0.0.1 --mysqlrootpw={{ mysql_root_password }} \
-    --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_domain }} \
+    --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_hostname }}.{{ mailserver_domain }} \
     --domain={{ mailserver_domain }}"
   register: kolab_setup
   failed_when: kolab_setup.rc != 0 and "existing" not in kolab_setup.stderr
