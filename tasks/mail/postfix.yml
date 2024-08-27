@@ -124,7 +124,7 @@
     - key: smtpd_milters
       value: inet:127.0.0.1:8891,inet:127.0.0.1:8893,unix:/run/spamass-milter/spamass-milter.sock
     - key: non_smtpd_milters
-      value: '$smtpd_milters'
+      value: "$smtpd_milters"
     - key: smtpd_sender_restrictions
       value: >
         permit_mynetworks
@@ -195,7 +195,7 @@
     - name: Create HELO access whitelist
       ansible.builtin.lineinfile:
         regexp: "\b{{ item.key }}\b"
-        line: '{{ item.key }}    {{ item.value }}'
+        line: "{{ item.key }}    {{ item.value }}"
         path: /etc/postfix/helo_access
         mode: u=rw,og=r
         owner: root
@@ -215,7 +215,7 @@
     - name: Create RBL whitelist
       ansible.builtin.lineinfile:
         regexp: "\b{{ item.key }}\b"
-        line: '{{ item.key }}    {{ item.value }}'
+        line: "{{ item.key }}    {{ item.value }}"
         path: /etc/postfix/rbl_override
         mode: u=rw,og=r
         owner: root
@@ -231,7 +231,7 @@
       changed_when: generate_rbl_override.rc == 0
 - name: Set Postgrey whitelist
   ansible.builtin.lineinfile:
-    line: '{{ item }}'
+    line: "{{ item }}"
     path: /etc/postfix/postgrey_whitelist_clients
     mode: u=rw,og=r
     owner: root
@@ -243,7 +243,7 @@
   notify: Restart postgrey
 - name: Set POSTGREY_DELAY to 1
   ansible.builtin.lineinfile:
-    regex: '^POSTGREY_DELAY='
+    regex: "^POSTGREY_DELAY="
     line: 'POSTGREY_DELAY="--delay=1"'
     path: /etc/sysconfig/postgrey
     mode: u=rw,og=r
