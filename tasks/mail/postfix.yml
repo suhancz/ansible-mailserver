@@ -239,7 +239,7 @@
     state: present
     backup: yes
     create: yes
-  loop: "{{ postgrey_whitelist_clients }}"
+  loop: "{{ (postgrey_whitelist_clients + undeliverable_exceptions | default([])) | unique }}"
   notify: Restart postgrey
 - name: Set POSTGREY_DELAY to 1
   ansible.builtin.lineinfile:
