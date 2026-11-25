@@ -3,7 +3,9 @@ name: Publish release
 on:
   push:
     branches: [main]
-    paths: [VERSION]
+    paths:
+      - VERSION
+      - .github/workflows/release.yml
   workflow_dispatch:
     inputs:
       version:
@@ -65,13 +67,19 @@ jobs:
             } catch (error) {
               if (error.status !== 404) throw error;
             }
+            let existingTag;
             try {
-              const {data} = await github.rest.repos.getCommit({...repo, ref: `refs/tags/${tag}`});
+              const {data} = await github.rest.git.getRef({...repo, ref: `tags/${tag}`});
+              existingTag = data;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              core.info(`Tag ${tag} does not exist yet; release creation will create it.`);
+            }
+            if (existingTag) {
+              const {data} = await github.rest.repos.getCommit({...repo, ref: `tags/${tag}`});
               if (data.sha !== context.sha) {
                 throw new Error(`Tag ${tag} already points to ${data.sha}, not ${context.sha}`);
               }
-            } catch (error) {
-              if (error.status !== 404) throw error;
             }
             const {data} = await github.rest.repos.createRelease({
               ...repo,
