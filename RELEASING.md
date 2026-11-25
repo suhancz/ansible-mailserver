@@ -1,20 +1,62 @@
-# Releases
+# How to make a release
 
-The release version is stored in the root VERSION file.
+A release is a named snapshot of this project. Think of it as putting a label on a finished box: people can download that exact version later.
 
-## Publish after merging
+The VERSION file contains the label. GitHub does the publishing for you.
 
-1. Update VERSION in the release PR, for example from 2.6.1 to 2.6.2.
-2. Review the PR and wait for the desired checks before merging into main.
-3. Merging a VERSION change triggers Publish release. The workflow tags the triggering commit and publishes a GitHub release with generated notes.
+## The normal way: change one number, then merge
 
-Ordinary merges that do not change VERSION do not publish releases. The release workflow does not itself wait for lint or enforce branch protection. Configure required checks on main if publication must follow passing CI.
+1. Open VERSION. It contains one line, such as 2.6.2.
+2. For a small fix, increase the last number: 2.6.2 becomes 2.6.3.
+3. Put that change in the same pull request as the changes you want to release. A pull request is a proposed change that can be reviewed before it becomes part of the main project.
+4. Review the changes and wait for the checks you require to pass.
+5. Merge the pull request into main.
+6. Open the repository's Actions tab and look for Publish release.
+7. When it succeeds, open Releases. Your new version should be there with automatically written release notes.
 
-## Manual publication
+You do not need to edit the workflow for each release.
 
-Run Publish release from GitHub Actions and select the intended branch or tag. Leave version blank to read VERSION at that ref, or supply an explicit version. The release target is the selected run commit. Explicit versions do not update VERSION.
+Merging changes without changing VERSION does not publish a release. There is only one release workflow: .github/workflows/release.yml.
 
-## Reuse from another workflow
+## What happens behind the scenes?
+
+When VERSION changes on main, GitHub reads the number from the merged code. It creates a tag, which is a label pointing to that exact commit, and a release page with a list of changes. It does not install anything on your server.
+
+If the release already exists, GitHub leaves it alone. It does not overwrite its notes or move its tag. If a tag exists without a release but points to different code, the workflow stops instead of silently changing it.
+
+## Publish by hand
+
+Use this if you need to retry publication or release a particular version yourself.
+
+1. Open Actions in GitHub.
+2. Select Publish release.
+3. Click Run workflow.
+4. Choose the branch or tag containing the code you want to release. Normally choose main.
+5. Leave version empty to use that code's VERSION file. Or enter the version label you want to publish.
+6. Run it, wait for success, then check Releases.
+
+Entering a version by hand does not change VERSION. The release contains the code selected for that run.
+
+## Test releases
+
+For an unfinished version, use a label such as 2.7.0-rc.1. The workflow marks it as a prerelease so people can see that it is not a normal finished release.
+
+Labels can have two or three number parts, such as 2.7 or 2.7.0. A leading v is also accepted, such as v2.7.0. Stick to one style to avoid confusing people.
+
+## If it does not work
+
+- Open the failed Publish release run in Actions and read the error.
+- Check that VERSION contains only the intended version label.
+- Check that GitHub Actions is enabled and the workflow is allowed to write repository contents. That permission is needed to create tags and releases.
+- Check whether that release or tag already exists.
+
+The workflow does not wait for lint checks by itself. Require checks before merging if you want to prevent releases of code that has not passed them.
+
+## Optional: call it from another workflow
+
+You can ignore this section if you only use the steps above.
+
+Another GitHub workflow can call the same publishing job instead of copying it:
 
 ```yaml
 jobs:
@@ -23,19 +65,9 @@ jobs:
       contents: write
     uses: ./.github/workflows/release.yml
     with:
-      version: '2.6.2'
+      version: '2.6.3'
 ```
 
-Omit version to read VERSION at the caller commit. The workflow also exposes release_url as an output. It can be referenced from another repository using the normal owner/repository workflow path and an appropriate ref; publication uses the caller repository and its GITHUB_TOKEN permissions.
+Leave out version to read VERSION from the caller's commit. The job returns release_url, the link to the release page.
 
-## Version and safety behavior
-
-- Accepts two- or three-component numeric versions, optionally prefixed with v and optionally followed by a prerelease suffix. Examples: 2.6, 2.6.2, v2.7.0, 2.7.0-rc.1.
-- Versions with a prerelease suffix are published as prereleases.
-- Existing releases are left unchanged.
-- An existing tag without a release must point to the triggering commit; otherwise publication fails rather than moving the tag.
-- Publication is serialized per repository to prevent concurrent release creation races.
-- No checkout or project-code execution is required.
-- GitHub Actions must be enabled and allowed to grant contents: write to the workflow token.
-
-The legacy release-2.6.1.yml filename remains only as a manual wrapper. It no longer hard-codes a version or runs on pushes.
+Other repositories can call it with an owner/repository workflow reference and a chosen ref. It publishes in the calling repository using that repository's permissions.
