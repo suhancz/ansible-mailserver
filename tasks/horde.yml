@@ -69,6 +69,8 @@
   ansible.builtin.command: horde-db-migrate
   register: horde_db_migrate
   changed_when: horde_db_migrate.rc == 0
+- name: Fix Horde calendar and alarm Unicode storage
+  ansible.builtin.import_tasks: horde_utf8mb4.yml
 - name: Enable ActiveSync
   community.mysql.mysql_query:
     login_db: horde
