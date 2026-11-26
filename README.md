@@ -12,9 +12,10 @@ Role Variables
     mailserver_domain # primary domain name
     mailserver_admin_user # user to administer the mail server
     users:
-      - name # system username
-        firstname
-        surname # in family mode defaults to `default_surname`
+      - name # system username - optional, see "User names" below for how it is derived when omitted
+        nickname # optional; used as the default username (lowercased) and as the display name in LDAP/Kolab
+        firstname # required when neither `name` nor `nickname` is set
+        surname # in family mode defaults to `default_surname`; required without family mode if neither `name` nor `nickname` is set
         password
         aliases:
           - alias@domain.com
@@ -61,6 +62,21 @@ Role Variables
     httpd_pam_deny_users: # list of users who shouldn't authenticate against HTTPD using PAM
     family_mode: yes # boolean if users would be identified only by given name (assuming the surname is identical)
     default_surname: Doe # used in family mode so adding users via the role don't need surname to be added
+
+User names
+----------
+
+The user name is the OS login, the LDAP `uid` and the part of the e-mail address before the `@`.
+It is worked out once at the start of the run, in this order:
+
+1. `name`, if you set it explicitly.
+2. `nickname`, lowercased, if set.
+3. In family mode (`family_mode: yes`, the surname is in the domain): the lowercased `firstname`, e.g. `anna@smith.example`.
+4. Otherwise: the first letter of `firstname` followed by `surname`, lowercased, e.g. `asmith@example.com`.
+
+The result has to be a lowercase ASCII POSIX user name (`[a-z_][a-z0-9_-]*`), otherwise the run stops with a message.
+For names with accents or other special characters, set `nickname` (or `name`) explicitly.
+The nickname is also stored as the `displayName` of the user in LDAP and Kolab.
 
 Example Playbook
 ----------------

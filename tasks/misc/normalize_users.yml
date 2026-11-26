@@ -1,0 +1,54 @@
+---
+# Works out the effective system user name (`name`) of every entry in `users`
+# once, so every other task can keep using `item.name`.
+#
+# Precedence: explicit `name` > `nickname` > family mode: first name
+#             > otherwise: first initial + surname (all lowercase)
+- name: Check that every user has enough data to derive a user name
+  ansible.builtin.assert:
+    that:
+      - >-
+        user_item.name is defined
+        or (user_item.nickname | default('', true) | length > 0)
+        or (user_item.firstname | default('', true) | length > 0)
+      - >-
+        user_item.name is defined
+        or (user_item.nickname | default('', true) | length > 0)
+        or (family_mode | bool)
+        or (user_item.surname | default('', true) | length > 0)
+    fail_msg: >-
+      Cannot derive a user name: set `name` or `nickname`, or give `firstname`
+      (and `surname` when family_mode is off).
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user_item
+    label: "{{ user_item.name | default(user_item.nickname | default(user_item.firstname | default('?'))) }}"
+  tags: always
+- name: Derive effective user names
+  ansible.builtin.set_fact:
+    normalized_users: "{{ normalized_users | default([]) + [user_item | combine({'name': effective_user_name | trim})] }}"
+  vars:
+    # noqa yaml[line-length]
+    effective_user_name: "{{ user_item.name if user_item.name is defined else (user_item.nickname | lower if (user_item.nickname | default('', true) | length > 0) else (user_item.firstname | lower if (family_mode | bool) else ((user_item.firstname[0:1] ~ user_item.surname) | lower))) }}"
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user_item
+    label: "{{ user_item.name | default(user_item.nickname | default(user_item.firstname | default('?'))) }}"
+  no_log: yes
+  tags: always
+- name: Check that the user names are valid POSIX names
+  ansible.builtin.assert:
+    that: user_item.name is match('^[a-z_][a-z0-9_-]*$')
+    fail_msg: >-
+      User name '{{ user_item.name }}' is not a valid lowercase ASCII user name.
+      Set `nickname` or `name` explicitly for this user.
+  loop: "{{ normalized_users | default([]) }}"
+  loop_control:
+    loop_var: user_item
+    label: "{{ user_item.name }}"
+  tags: always
+- name: Use the users with effective names from now on
+  ansible.builtin.set_fact:
+    users: "{{ normalized_users | default([]) }}"
+  no_log: yes
+  tags: always
