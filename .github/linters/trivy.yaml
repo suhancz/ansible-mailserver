@@ -1,0 +1,15 @@
+---
+exit-code: 1
+exit-on-eol: 2
+scan:
+  disable-telemetry: true
+  # No secret scanner: Gitleaks does that
+  scanners:
+    - vuln
+    - misconfig
+  # ansible-lint installs collections into .ansible/ while Super-linter runs
+  skip-dirs:
+    - .ansible
+    - "**/.ansible"
+  skip-files:
+    - "**/*.license"
