@@ -15,6 +15,7 @@ List of things not implemented yet, but planned
 
 ## Working rules of the owner
 
+- agents read the shared instructions of the `ai-agent-config` repository first; `AGENTS.md` of this repository points to them and lists these rules in short form
 - every commit lists the tasks that are in progress in this file (section _In progress_), with the next steps
 - all tests run in CI containers (AlmaLinux 8), not on the machine of the assistant; read the logs on the `ci-results` branch (tests) and the `ci-lint-results` branch (Super-Linter)
 - never pin tool versions, always use the latest of everything (details below)
@@ -25,11 +26,14 @@ List of things not implemented yet, but planned
 
 ## In progress
 
+- **Agent instructions** (started in the commit that adds `AGENTS.md`): `AGENTS.md` sends every agent to the `ai-agent-config` repository and lists the rules of this repository. Open questions for the owner, because the shared rules and this branch differ:
+  - the shared rules ask for one final commit in a pull request and for removing the work status file before the pull request is created; this branch has many commits, the draft pull request #65 exists and this file is the status file. Decide: squash at the end (and then remove this file from the release), or keep this file and the history
+  - the shared rules ask for timestamps in every message and for a completion report by email; neither is done in this work so far
 - **All tests in CI containers** (started in the commit that adds `tests/role_syntax.yml` and `tests/test_ascii_name.py`). The workflow `.github/workflows/tests.yml` (name _Tests_, renamed from `test-users.yml`) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch (a log keeps the name of its test). All three entries and the log publishing passed on e730605. Next steps:
   - read the logs of the three entries and keep them green
   - add a converge test: a systemd-enabled AlmaLinux 8 container that runs the OS and LDAP parts of the role (`tasks/os`, `tasks/ldap`), then Postfix and finally the Kolab installation
   - check idempotence by running the converge twice
-- **Super-Linter log** (started in the commit that publishes it): the lint job saves the log, the output of every linter and the summary, masks them and `report-lint` publishes `lint.log` on the `ci-lint-results` branch. Next steps:
+- **Super-Linter log** (started in 6f0bfff): the lint job saves the log, the output of every linter and the summary, masks them and `report-lint` publishes `lint.log` on the `ci-lint-results` branch. Next steps:
   - check that the log files are where Super-Linter puts them (`super-linter.log`, `super-linter-output/`, `super-linter-summary.md`); if `lint.log` is empty, find the right paths
   - read the findings from `lint.log` and fix them, instead of working from summaries
 - **Line endings and file modes** (`.gitattributes` and `.editorconfig` were added in 5e58450, the normalisation job in e730605): text files use LF and UTF-8 everywhere, binary types are never converted. `linter.yml` checks with `git add --renormalize .` (in the temporary checkout only), and the job `repair-script-modes` commits the executable modes and then the normalisation as separate bot commits (`Normalize line endings according to .gitattributes`) and starts the linter again. On e730605 the check passed and the repair job was skipped: the files were LF already. Next steps:
