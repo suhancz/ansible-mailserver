@@ -20,7 +20,7 @@
 - name: Set MariaDB root password
   block:
     - name: Set the MariaDB root password
-      community.mysql.mysql_user:
+      ansible.mysql.mysql_user:
         name: root
         password: "{{ mysql_root_password }}"
         host: localhost
@@ -29,7 +29,7 @@
     - name: Make sure MySQL root password is right
       block:
         - name: Ensure the MariaDB root password
-          community.mysql.mysql_user:
+          ansible.mysql.mysql_user:
             name: root
             password: "{{ mysql_root_password }}"
             host: localhost
@@ -60,7 +60,7 @@
             backup: yes
         - name: Force-reset the MariaDB root password
           when: reset == "yes" or forgotten_mariadb_root_password
-          community.mysql.mysql_db:
+          ansible.mysql.mysql_db:
             name: all
             state: import
             login_user: root
@@ -84,7 +84,7 @@
             enabled: yes
             state: restarted
 - name: Delete anonymous MySQL server user for ansible_fqdn
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: ""
     host: "{{ ansible_fqdn }}"
     state: absent
@@ -92,14 +92,14 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Delete anonymous MySQL server user for localhost
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: ""
     state: absent
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secure the MySQL root user for IPV6 localhost (::1)
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: root
     password: "{{ mysql_root_password }}"
     host: "::1"
@@ -107,7 +107,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secure the MySQL root user for IPV4 localhost (127.0.0.1)
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: root
     password: "{{ mysql_root_password }}"
     host: 127.0.0.1
@@ -115,7 +115,7 @@
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: "Secure the MySQL root user for domain: {{ item }}"
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: root
     password: "{{ mysql_root_password }}"
     host: localhost
@@ -124,7 +124,7 @@
   no_log: yes
   loop: "{{ ['localhost'] + [ansible_fqdn] + custom_domains }}"
 - name: Secure the MySQL root user for UNIX socket connections
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: root
     host: localhost
     plugin_auth_string: unix_socket
@@ -134,14 +134,14 @@
   tags:
     - kolab
 - name: Remove the MySQL test database
-  community.mysql.mysql_db:
+  ansible.mysql.mysql_db:
     name: test
     state: absent
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Set up MariaBackup DB privileges
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: mariabackup
     password: '{{ mariabackup_password }}'
     priv: '*.*:RELOAD,PROCESS,LOCK TABLES,REPLICATION CLIENT'

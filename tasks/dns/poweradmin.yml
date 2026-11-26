@@ -54,7 +54,7 @@
     - dyndns
     - poweradmin
     - users
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
     password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
     priv: 'powerdnsdb.*:SELECT,INSERT,UPDATE,DELETE'
@@ -69,7 +69,7 @@
     - dyndns
     - poweradmin
     - users
-  community.mysql.mysql_query:
+  ansible.mysql.mysql_query:
     login_db: powerdnsdb
     login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
     login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"

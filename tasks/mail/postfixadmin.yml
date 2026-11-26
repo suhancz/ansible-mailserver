@@ -28,7 +28,7 @@
     mariadb_state: "{{ ('import' if reset == 'yes') | default('present') }}"
   register: postfixadmin_db_state
 - name: Set up postfixadmin DB privileges
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: postfixadmin
     password: '{{ postfixadmin_db_password }}'
     priv: 'postfixadmin.*:ALL'

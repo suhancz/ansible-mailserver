@@ -256,9 +256,13 @@ jobs:
       - name: Mask and collect the Super-Linter log
         if: ${{ always() }}
         shell: bash
-        # Only the masked log is uploaded; if masking fails, nothing of the raw log is published
+        # Only the masked log is uploaded; if masking fails, nothing of the raw log is published.
+        # The Actions shell exits on the first error by default, so set +e keeps the step going.
         run: |
-          set -uo pipefail
+          set +e
+          set -u
+          # Super-Linter runs as root and leaves its files owned by root
+          sudo chown -R "$(id -u):$(id -g)" . 2>/dev/null
           mkdir -p lint-result
           : > lint-result/raw.log
           for file in super-linter.log super-linter-summary.md; do
@@ -280,11 +284,12 @@ jobs:
           fi
           {
             echo '=== Excerpt: findings ==='
-            grep -n -i -e error -e fail -e violation -e warn lint-result/masked.log | head -n 300 || true
+            grep -n -i -e error -e fail -e violation -e warn lint-result/masked.log | head -n 300
             echo
             echo '=== Full log (masked) ==='
             cat lint-result/masked.log
           } > lint-result/lint.log
+          exit 0
       - name: Upload the masked lint log
         if: ${{ always() }}
         uses: actions/upload-artifact@main # zizmor: ignore[unpinned-uses]
