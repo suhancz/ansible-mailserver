@@ -1,0 +1,35 @@
+# Line endings: text files are stored with LF and checked out with LF on every
+# system, so that scripts and templates work on the Linux target hosts.
+* text=auto eol=lf
+
+# Types that are always text
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.j2 text eol=lf
+*.md text eol=lf
+*.conf text eol=lf
+*.cf text eol=lf
+*.sql text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+
+# Types that are never converted
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.gz binary
+*.tar binary
+*.zip binary
+*.zst binary
+
+# The templates are Jinja2
+*.j2 linguist-language=Jinja
+
+# The executable bit cannot be set with attributes: the scripts that have to be
+# executable are listed in .github/executable-files.txt and the lint workflow
+# repairs their modes.
