@@ -34,17 +34,17 @@
         state: present
         backup: yes
       loop:
-          - "dn: uid={{ user_data_item.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
-          - 'sn: {{ user_data_item.surname | default(default_surname) }}'
-          - 'loginShell: /bin/bash'
-          - 'preferredLanguage: en_US'
-          - 'cn: {{ user_data_item.firstname | default(user_data_item.name) }} {{ user_data_item.surname | default(default_surname) }}'
-          - 'displayName: {{ user_data_item.name }}'
-          - 'mail: {{ user_data_item.name }}@{{ mailserver_domain }}'
-          - 'uid: {{ user_data_item.name }}'
+        - "dn: uid={{ user_data_item.name }},ou=people,dc={{ mailserver_domain | split('.') | join(',dc=') }}"
+        - "sn: {{ user_data_item.surname | default(default_surname) }}"
+        - "loginShell: /bin/bash"
+        - "preferredLanguage: en_US"
+        - "cn: {{ user_data_item.firstname | default(user_data_item.name) }} {{ user_data_item.surname | default(default_surname) }}"
+        - "displayName: {{ user_data_item.name }}"
+        - "mail: {{ user_data_item.name }}@{{ mailserver_domain }}"
+        - "uid: {{ user_data_item.name }}"
       loop_control:
         loop_var: ldif_unique_value
-    - name: Add alternate e-mail address to LDIF
+    - name: Add alternate email address to LDIF
       ansible.builtin.lineinfile:
         path: "/var/tmp/{{ user_data_item.name }}.ldif"
         line: "mailAlternateAddress: {{ user_data_item.old_imap_mail.user }}"
@@ -58,12 +58,12 @@
         state: present
         backup: yes
       loop:
-        - 'objectClass: top'
-        - 'objectClass: kolabinetorgperson'
-        - 'objectClass: inetorgperson'
-        - 'objectClass: mailrecipient'
-        - 'objectClass: organizationalperson'
-        - 'objectClass: person'
+        - "objectClass: top"
+        - "objectClass: kolabinetorgperson"
+        - "objectClass: inetorgperson"
+        - "objectClass: mailrecipient"
+        - "objectClass: organizationalperson"
+        - "objectClass: person"
       loop_control:
         loop_var: ldif_item
     - name: Add aliases to LDIF
@@ -78,11 +78,11 @@
     - name: Clear empty lines from LDIF
       ansible.builtin.lineinfile:
         path: "/var/tmp/{{ user_data_item.name }}.ldif"
-        regex: '^$'
+        regex: "^$"
         state: absent
         backup: yes
     - name: "Update LDAP entries: {{ user_data_item.name }}"
-      ansible.builtin.command: '{{ ldapadd_command }} /var/tmp/{{ user_data_item.name }}.ldif'
+      ansible.builtin.command: "{{ ldapadd_command }} /var/tmp/{{ user_data_item.name }}.ldif"
       register: add_user_to_ldap
       changed_when: add_user_to_ldap.rc != 0 and 'Already exists' in add_user_to_ldap.stderr
       failed_when: add_user_to_ldap.rc != 0 and not ('Already exists' in add_user_to_ldap.stderr)
