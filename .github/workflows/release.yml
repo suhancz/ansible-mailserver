@@ -1,18 +1,14 @@
 name: Publish release
 
-on:
+on: # yamllint disable-line rule:truthy
   push:
     branches: [main]
     paths:
       - VERSION
       - .github/workflows/release.yml
+  # No inputs here: Checkov CKV_GHA_7 requires workflow_dispatch inputs to be
+  # empty, so a manual run always publishes the VERSION of the selected ref.
   workflow_dispatch:
-    inputs:
-      version:
-        description: Release tag (blank reads VERSION at the selected ref)
-        required: false
-        default: ""
-        type: string
   workflow_call:
     inputs:
       version:

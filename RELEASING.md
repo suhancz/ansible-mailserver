@@ -26,20 +26,19 @@ If the release already exists, GitHub leaves it alone. It does not overwrite its
 
 ## Publish by hand
 
-Use this if you need to retry publication or release a particular version yourself.
+Use this if you need to retry publication, for example after a failed run.
 
 1. Open Actions in GitHub.
 2. Select Publish release.
 3. Click Run workflow.
 4. Choose the branch or tag containing the code you want to release. Normally choose main.
-5. Leave version empty to use that code's VERSION file. Or enter the version label you want to publish.
-6. Run it, wait for success, then check Releases.
+5. Run it, wait for success, then check Releases.
 
-Entering a version by hand does not change VERSION. The release contains the code selected for that run.
+The workflow always publishes the version written in the VERSION file of the code you chose. You cannot type a version into the Run workflow form, because the security checks of this project do not allow inputs there. To publish another version, change VERSION first.
 
 ## Test releases
 
-For an unfinished version, use a label such as 3.1.0-rc.1. The workflow marks it as a prerelease so people can see that it is not a normal finished release.
+For an unfinished version, put a label such as 3.1.0-rc.1 into VERSION. The workflow marks it as a prerelease so people can see that it is not a normal finished release.
 
 Labels can have two or three number parts, such as 3.1 or 3.1.0. A leading v is also accepted, such as v3.1.0. Stick to one style to avoid confusing people.
 
