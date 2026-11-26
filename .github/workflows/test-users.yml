@@ -7,13 +7,10 @@ on:
       - tasks/misc/normalize_users.yml
       - files/misc/ascii_name.py
       - tests/normalize_users.yml
+      - tests/mask_log.sh
       - .github/workflows/test-users.yml
+  # Every pull request runs all tests, whatever it changes
   pull_request:
-    paths:
-      - tasks/misc/normalize_users.yml
-      - files/misc/ascii_name.py
-      - tests/normalize_users.yml
-      - .github/workflows/test-users.yml
   workflow_dispatch:
 
 permissions:
@@ -30,17 +27,86 @@ jobs:
         with:
           persist-credentials: false
       - name: Run the tests in a minimal AlmaLinux 8 container
+        shell: bash
         # ansible-core runs on Python 3.9, the script runs on the system Python 3.6 of EL8,
         # just like on the real server. The repository is mounted as the role ansible_mailserver.
         # The test data contains no secrets, so no_log is switched off to see failures.
         run: |
+          mkdir -p result
           docker run --rm -v "$PWD:/roles/ansible_mailserver:ro" -w /roles/ansible_mailserver almalinux:8-minimal bash -euxc '
             microdnf -y install python39 python39-pip dnf
             pip3.9 install "ansible-core>=2.15,<2.17"
             export ANSIBLE_ROLES_PATH=/roles
-            export ANSIBLE_FORCE_COLOR=1
-            ansible-playbook -i case_family,case_plain,case_missing, -c local \
+            ansible-playbook -v -i case_family,case_plain,case_missing, -c local \
               -e ansible_python_interpreter=/usr/libexec/platform-python \
               -e mailserver_no_log=false \
               tests/normalize_users.yml
-          '
+          ' 2>&1 | tee result/full.log
+      - name: Mask and collect the log for the report
+        if: ${{ always() }}
+        shell: bash
+        # Only the masked log is uploaded; if masking fails, nothing of the raw log is published
+        run: |
+          mkdir -p result
+          touch result/full.log
+          if ! bash tests/mask_log.sh < result/full.log > result/masked.log; then
+            echo 'masking failed, log withheld' > result/masked.log
+          fi
+          {
+            echo '=== Excerpt: failures and recap ==='
+            grep -n -e fatal: -e FAILED -e failed= -e 'PLAY RECAP' -e ERROR result/masked.log | tail -n 120 || true
+            echo
+            echo '=== Full log (masked) ==='
+            cat result/masked.log
+          } > result/test-users.log
+      - name: Upload the masked log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-users-result
+          path: result/test-users.log
+          if-no-files-found: error
+
+  report:
+    name: Publish the log on the ci-results branch
+    needs: normalize-users
+    # Pull requests from forks only get a read-only token
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download the log
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: test-users-result
+          path: result
+      - name: Push the log to the ci-results branch
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEST_RESULT: ${{ needs.normalize-users.result }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -eu
+          git init -q publish
+          cd publish
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git checkout -q -b ci-results
+          {
+            echo "result: ${TEST_RESULT}"
+            echo "tested commit: ${COMMIT_SHA}"
+            echo "branch: ${BRANCH_NAME}"
+            echo "event: ${EVENT_NAME}"
+            echo "run: ${RUN_URL}"
+            echo
+            cat ../result/test-users.log
+          } > test-users.log
+          git add test-users.log
+          git commit -q -m "CI result of ${COMMIT_SHA}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-results
