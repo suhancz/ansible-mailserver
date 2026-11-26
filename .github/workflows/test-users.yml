@@ -1,17 +1,17 @@
 ---
-name: Test user names
+name: Test usernames
 
 on:
   push:
     paths:
       - tasks/misc/normalize_users.yml
-      - library/**
+      - files/misc/ascii_name.py
       - tests/normalize_users.yml
       - .github/workflows/test-users.yml
   pull_request:
     paths:
       - tasks/misc/normalize_users.yml
-      - library/**
+      - files/misc/ascii_name.py
       - tests/normalize_users.yml
       - .github/workflows/test-users.yml
   workflow_dispatch:
@@ -21,22 +21,26 @@ permissions:
 
 jobs:
   normalize-users:
-    name: User name derivation on AlmaLinux 8
+    name: Username derivation on AlmaLinux 8
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Run the tests in a minimal AlmaLinux 8 container
-        # ansible-core runs on Python 3.9, the modules run on the system Python 3.6 of EL8,
-        # just like on the real server
+        # ansible-core runs on Python 3.9, the script runs on the system Python 3.6 of EL8,
+        # just like on the real server. The repository is mounted as the role ansible_mailserver.
+        # The test data contains no secrets, so no_log is switched off to see failures.
         run: |
-          docker run --rm -v "$PWD:/role:ro" -w /role almalinux:8-minimal bash -euxc '
+          docker run --rm -v "$PWD:/roles/ansible_mailserver:ro" -w /roles/ansible_mailserver almalinux:8-minimal bash -euxc '
             microdnf -y install python39 python39-pip dnf
             pip3.9 install "ansible-core>=2.15,<2.17"
-            export ANSIBLE_LIBRARY=library
+            export ANSIBLE_ROLES_PATH=/roles
             export ANSIBLE_FORCE_COLOR=1
-            ansible-playbook -i localhost, -c local \
+            ansible-playbook -i case_family,case_plain,case_missing, -c local \
               -e ansible_python_interpreter=/usr/libexec/platform-python \
+              -e mailserver_no_log=false \
               tests/normalize_users.yml
           '

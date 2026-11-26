@@ -1,9 +1,13 @@
 ---
 # Tests for tasks/misc/normalize_users.yml
-# Run from the repository root, e.g. (see .github/workflows/test-users.yml):
-#   ANSIBLE_LIBRARY=library ansible-playbook -i localhost, -c local tests/normalize_users.yml
-- name: User names in family mode
-  hosts: localhost
+# The role is loaded with include_role, exactly as in a real run, so the files of
+# the role are found. Every case runs on its own (local) host, because facts set
+# with set_fact stay on a host and would leak into the next play. Run it with the
+# repository available as a role called ansible_mailserver
+# (see .github/workflows/test-users.yml):
+#   ANSIBLE_ROLES_PATH=/roles ansible-playbook -i case_family,case_plain,case_missing, -c local -e mailserver_no_log=false tests/normalize_users.yml
+- name: Usernames in family mode
+  hosts: case_family
   connection: local
   gather_facts: false
   vars:
@@ -24,15 +28,17 @@
         firstname: Hobbes
         password: secret
   tasks:
-    - name: Derive the user names
-      ansible.builtin.import_tasks: ../tasks/misc/normalize_users.yml
-    - name: Check the derived user names
+    - name: Derive the usernames
+      ansible.builtin.include_role:
+        name: ansible_mailserver
+        tasks_from: misc/normalize_users.yml
+    - name: Check the derived usernames
       ansible.builtin.assert:
         that:
           - users | map(attribute='name') | list == ['akos', 'alexandros', 'beijing', 'maryann', 'oneil', 'tigris']
 
-- name: User names without family mode
-  hosts: localhost
+- name: Usernames without family mode
+  hosts: case_plain
   connection: local
   gather_facts: false
   vars:
@@ -50,15 +56,17 @@
       - name: tigris
         password: secret
   tasks:
-    - name: Derive the user names
-      ansible.builtin.import_tasks: ../tasks/misc/normalize_users.yml
-    - name: Check the derived user names
+    - name: Derive the usernames
+      ansible.builtin.include_role:
+        name: ansible_mailserver
+        tasks_from: misc/normalize_users.yml
+    - name: Check the derived usernames
       ansible.builtin.assert:
         that:
           - users | map(attribute='name') | list == ['akovacs', 'yushcherbakov', 'zobrien', 'tigris']
 
 - name: A missing surname must be rejected without family mode
-  hosts: localhost
+  hosts: case_missing
   connection: local
   gather_facts: false
   vars:
@@ -67,10 +75,12 @@
       - firstname: Akos
         password: secret
   tasks:
-    - name: Try to derive the user names
+    - name: Try to derive the usernames
       block:
-        - name: Derive the user names
-          ansible.builtin.import_tasks: ../tasks/misc/normalize_users.yml
+        - name: Derive the usernames
+          ansible.builtin.include_role:
+            name: ansible_mailserver
+            tasks_from: misc/normalize_users.yml
         - name: This must not be reached
           ansible.builtin.fail:
             msg: The derivation should have failed because of the missing surname
@@ -78,4 +88,4 @@
         - name: Check that the right check failed
           ansible.builtin.assert:
             that:
-              - ansible_failed_task.name == 'Check that every user has enough data to derive a user name'
+              - ansible_failed_task.name == 'Check that every user has enough data to derive a username'
