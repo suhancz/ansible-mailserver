@@ -119,6 +119,7 @@ After each run the workflow publishes the logs, with passwords, secrets, tokens,
 
 [.github/workflows/linter.yml](.github/workflows/linter.yml) runs Super-Linter with one tool per file type. No tool is pinned to a version: the workflows always use the latest.
 Scripts that have to be executable are listed in [.github/executable-files.txt](.github/executable-files.txt), and the line endings are defined in [.gitattributes](.gitattributes) (LF everywhere). If a mode is missing or a file has other line endings, the workflow commits the fix to the branch (one commit for the modes, one for the line endings) and runs again.
+The masked log of Super-Linter is published as `lint.log` on the `ci-lint-results` branch.
 
 ## Example Playbook
 
