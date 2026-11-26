@@ -11,6 +11,7 @@ Accents are removed, Cyrillic and Greek letters are transliterated with the
 tables below and everything else (e.g. Chinese, Arabic, Hebrew, Hindi) is
 handed to the Unidecode Python package, which must be installed.
 """
+
 from __future__ import absolute_import, division, print_function
 
 import json
@@ -19,36 +20,95 @@ import unicodedata
 
 # Letters that do not decompose into a base letter plus an accent
 _LATIN = {
-    u'\u00df': u'ss', u'\u00e6': u'ae', u'\u0153': u'oe', u'\u00f8': u'o',
-    u'\u0111': u'd', u'\u0142': u'l', u'\u00f0': u'd', u'\u00fe': u'th',
-    u'\u0131': u'i',
+    "\u00df": "ss",
+    "\u00e6": "ae",
+    "\u0153": "oe",
+    "\u00f8": "o",
+    "\u0111": "d",
+    "\u0142": "l",
+    "\u00f0": "d",
+    "\u00fe": "th",
+    "\u0131": "i",
 }
 
 # Cyrillic (Russian, Ukrainian, Belarusian, Bulgarian, Serbian, Macedonian)
 _CYRILLIC = {
-    u'\u0430': u'a', u'\u0431': u'b', u'\u0432': u'v', u'\u0433': u'g',
-    u'\u0434': u'd', u'\u0435': u'e', u'\u0451': u'yo', u'\u0436': u'zh',
-    u'\u0437': u'z', u'\u0438': u'i', u'\u0439': u'y', u'\u043a': u'k',
-    u'\u043b': u'l', u'\u043c': u'm', u'\u043d': u'n', u'\u043e': u'o',
-    u'\u043f': u'p', u'\u0440': u'r', u'\u0441': u's', u'\u0442': u't',
-    u'\u0443': u'u', u'\u0444': u'f', u'\u0445': u'kh', u'\u0446': u'ts',
-    u'\u0447': u'ch', u'\u0448': u'sh', u'\u0449': u'shch', u'\u044a': u'',
-    u'\u044b': u'y', u'\u044c': u'', u'\u044d': u'e', u'\u044e': u'yu',
-    u'\u044f': u'ya', u'\u0454': u'ye', u'\u0456': u'i', u'\u0457': u'yi',
-    u'\u0491': u'g', u'\u045e': u'u', u'\u0458': u'j', u'\u0459': u'lj',
-    u'\u045a': u'nj', u'\u045b': u'c', u'\u0452': u'dj', u'\u045f': u'dz',
-    u'\u0453': u'gj', u'\u045c': u'kj', u'\u0455': u'dz',
+    "\u0430": "a",
+    "\u0431": "b",
+    "\u0432": "v",
+    "\u0433": "g",
+    "\u0434": "d",
+    "\u0435": "e",
+    "\u0451": "yo",
+    "\u0436": "zh",
+    "\u0437": "z",
+    "\u0438": "i",
+    "\u0439": "y",
+    "\u043a": "k",
+    "\u043b": "l",
+    "\u043c": "m",
+    "\u043d": "n",
+    "\u043e": "o",
+    "\u043f": "p",
+    "\u0440": "r",
+    "\u0441": "s",
+    "\u0442": "t",
+    "\u0443": "u",
+    "\u0444": "f",
+    "\u0445": "kh",
+    "\u0446": "ts",
+    "\u0447": "ch",
+    "\u0448": "sh",
+    "\u0449": "shch",
+    "\u044a": "",
+    "\u044b": "y",
+    "\u044c": "",
+    "\u044d": "e",
+    "\u044e": "yu",
+    "\u044f": "ya",
+    "\u0454": "ye",
+    "\u0456": "i",
+    "\u0457": "yi",
+    "\u0491": "g",
+    "\u045e": "u",
+    "\u0458": "j",
+    "\u0459": "lj",
+    "\u045a": "nj",
+    "\u045b": "c",
+    "\u0452": "dj",
+    "\u045f": "dz",
+    "\u0453": "gj",
+    "\u045c": "kj",
+    "\u0455": "dz",
 }
 
 # Greek (accented letters are handled after the accents are stripped)
 _GREEK = {
-    u'\u03b1': u'a', u'\u03b2': u'v', u'\u03b3': u'g', u'\u03b4': u'd',
-    u'\u03b5': u'e', u'\u03b6': u'z', u'\u03b7': u'i', u'\u03b8': u'th',
-    u'\u03b9': u'i', u'\u03ba': u'k', u'\u03bb': u'l', u'\u03bc': u'm',
-    u'\u03bd': u'n', u'\u03be': u'x', u'\u03bf': u'o', u'\u03c0': u'p',
-    u'\u03c1': u'r', u'\u03c3': u's', u'\u03c2': u's', u'\u03c4': u't',
-    u'\u03c5': u'y', u'\u03c6': u'f', u'\u03c7': u'ch', u'\u03c8': u'ps',
-    u'\u03c9': u'o',
+    "\u03b1": "a",
+    "\u03b2": "v",
+    "\u03b3": "g",
+    "\u03b4": "d",
+    "\u03b5": "e",
+    "\u03b6": "z",
+    "\u03b7": "i",
+    "\u03b8": "th",
+    "\u03b9": "i",
+    "\u03ba": "k",
+    "\u03bb": "l",
+    "\u03bc": "m",
+    "\u03bd": "n",
+    "\u03be": "x",
+    "\u03bf": "o",
+    "\u03c0": "p",
+    "\u03c1": "r",
+    "\u03c3": "s",
+    "\u03c2": "s",
+    "\u03c4": "t",
+    "\u03c5": "y",
+    "\u03c6": "f",
+    "\u03c7": "ch",
+    "\u03c8": "ps",
+    "\u03c9": "o",
 }
 
 
@@ -65,18 +125,18 @@ def _build_table(*sources):
 # combination of omicron and upsilon can be handled as one sound
 _BEFORE_STRIP = _build_table(_LATIN, _CYRILLIC)
 _AFTER_STRIP = _build_table(_LATIN, _CYRILLIC, _GREEK)
-_OU = ((u'\u03bf\u03c5', u'ou'), (u'\u039f\u03c5', u'Ou'), (u'\u039f\u03a5', u'OU'))
+_OU = (("\u03bf\u03c5", "ou"), ("\u039f\u03c5", "Ou"), ("\u039f\u03a5", "OU"))
 
 
 def _transliterate(text, table):
-    return u''.join(table.get(char, char) for char in text)
+    return "".join(table.get(char, char) for char in text)
 
 
 def ascii_name(value, unidecode):
     """Return value as plain ASCII, e.g. 'Kov\u00e1cs' -> 'Kovacs'."""
     text = _transliterate(value, _BEFORE_STRIP)
-    decomposed = unicodedata.normalize('NFKD', text)
-    stripped = u''.join(char for char in decomposed if not unicodedata.combining(char))
+    decomposed = unicodedata.normalize("NFKD", text)
+    stripped = "".join(char for char in decomposed if not unicodedata.combining(char))
     for greek, latin in _OU:
         stripped = stripped.replace(greek, latin)
     text = _transliterate(stripped, _AFTER_STRIP)
@@ -86,7 +146,7 @@ def ascii_name(value, unidecode):
             result.append(char)
         else:
             result.append(unidecode(char))
-    return u''.join(result)
+    return "".join(result)
 
 
 def main():
@@ -94,14 +154,16 @@ def main():
     try:
         from unidecode import unidecode
     except ImportError:
-        sys.stderr.write('The Python package Unidecode is required (python3-unidecode or pip install Unidecode)\n')
+        sys.stderr.write(
+            "Unidecode is required (python3-unidecode or pip install Unidecode)\n"
+        )
         return 2
     if len(sys.argv) != 2:
-        sys.stderr.write('Usage: ascii_name.py JSON_STRING\n')
+        sys.stderr.write("Usage: ascii_name.py JSON_STRING\n")
         return 1
     sys.stdout.write(ascii_name(json.loads(sys.argv[1]), unidecode))
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

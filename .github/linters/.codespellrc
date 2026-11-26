@@ -1,0 +1,3 @@
+[codespell]
+# te: SELinux type enforcement file (httpd.te in a comment of tasks/httpd/main.yml)
+ignore-words-list = te

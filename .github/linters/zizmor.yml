@@ -1,7 +1,5 @@
 ---
 rules:
+  # No tool is pinned to a version or a commit: always the latest
   unpinned-uses:
-    config:
-      policies:
-        # Always run the latest tools: a branch or tag is enough, no commit SHA
-        "*": ref-pin
+    disable: true

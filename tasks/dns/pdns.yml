@@ -8,8 +8,8 @@
 - name: Set up PowerDNS DB privileges
   community.mysql.mysql_user:
     name: powerdns
-    password: '{{ powerdns_db_password }}'
-    priv: 'powerdnsdb.*:ALL'
+    password: "{{ powerdns_db_password }}"
+    priv: "powerdnsdb.*:ALL"
     host: localhost
     login_user: root
     login_password: "{{ mysql_root_password }}"
