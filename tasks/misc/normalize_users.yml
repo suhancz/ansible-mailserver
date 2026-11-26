@@ -2,7 +2,7 @@
 # Works out the effective system user name (`name`) of every entry in `users`
 # once, so every other task can keep using `item.name`.
 #
-# Precedence: explicit `name` > `nickname` > family mode: first name
+# Precedence: explicit `name` > family mode: first name
 #             > otherwise: first initial + surname
 # Derived names are converted to lowercase Latin ASCII on the target host
 # (library/mailserver_ascii_name.py, which needs the Unidecode package);
@@ -12,20 +12,18 @@
     that:
       - >-
         user_item.name is defined
-        or (user_item.nickname | default('', true) | length > 0)
         or (user_item.firstname | default('', true) | length > 0)
       - >-
         user_item.name is defined
-        or (user_item.nickname | default('', true) | length > 0)
         or (family_mode | bool)
         or (user_item.surname | default('', true) | length > 0)
     fail_msg: >-
-      Cannot derive a user name: set `name` or `nickname`, or give `firstname`
+      Cannot derive a user name: set `name`, or give `firstname`
       (and `surname` when family_mode is off).
   loop: "{{ users }}"
   loop_control:
     loop_var: user_item
-    label: "{{ user_item.name | default(user_item.nickname | default(user_item.firstname | default('?'))) }}"
+    label: "{{ user_item.name | default(user_item.firstname | default('?')) }}"
   tags: always
 - name: Make sure Unidecode is available on the target
   # Only needed when at least one user name has to be derived
@@ -53,14 +51,13 @@
   when: user_item.name is not defined
   mailserver_ascii_name:
     text: >-
-      {{ user_item.nickname if (user_item.nickname | default('', true) | length > 0)
-      else (user_item.firstname if (family_mode | bool)
-      else (user_item.firstname[0:1] ~ user_item.surname)) }}
+      {{ user_item.firstname if (family_mode | bool)
+      else (user_item.firstname[0:1] ~ user_item.surname) }}
   register: ascii_name_result
   loop: "{{ users }}"
   loop_control:
     loop_var: user_item
-    label: "{{ user_item.name | default(user_item.nickname | default(user_item.firstname | default('?'))) }}"
+    label: "{{ user_item.name | default(user_item.firstname | default('?')) }}"
   no_log: yes
   tags: always
 - name: Derive effective user names
@@ -73,7 +70,7 @@
   loop: "{{ ascii_name_result.results }}"
   loop_control:
     loop_var: result_item
-    label: "{{ result_item.item.name | default(result_item.item.nickname | default(result_item.item.firstname | default('?'))) }}"
+    label: "{{ result_item.item.name | default(result_item.item.firstname | default('?')) }}"
   no_log: yes
   tags: always
 - name: Check that the user names are valid POSIX names
@@ -81,7 +78,7 @@
     that: user_item.name is match('^[a-z_][a-z0-9_-]*$')
     fail_msg: >-
       User name '{{ user_item.name }}' is not a valid lowercase ASCII user name.
-      Set `nickname` or `name` explicitly for this user.
+      Set `name` explicitly for this user.
   loop: "{{ normalized_users | default([]) }}"
   loop_control:
     loop_var: user_item

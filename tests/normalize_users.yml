@@ -1,0 +1,81 @@
+---
+# Tests for tasks/misc/normalize_users.yml
+# Run from the repository root, e.g. (see .github/workflows/test-users.yml):
+#   ANSIBLE_LIBRARY=library ansible-playbook -i localhost, -c local tests/normalize_users.yml
+- name: User names in family mode
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    family_mode: true
+    users:
+      - firstname: Ákos
+        surname: Kovács
+        password: secret
+      - firstname: Αλέξανδρος
+        password: secret
+      - firstname: 北京
+        password: secret
+      - firstname: Mary Ann
+        password: secret
+      - firstname: O'Neil
+        password: secret
+      - name: tigris
+        firstname: Hobbes
+        password: secret
+  tasks:
+    - name: Derive the user names
+      ansible.builtin.import_tasks: ../tasks/misc/normalize_users.yml
+    - name: Check the derived user names
+      ansible.builtin.assert:
+        that:
+          - users | map(attribute='name') | list == ['akos', 'alexandros', 'beijing', 'maryann', 'oneil', 'tigris']
+
+- name: User names without family mode
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    family_mode: false
+    users:
+      - firstname: Ákos
+        surname: Kovács
+        password: secret
+      - firstname: Юрий
+        surname: Щербаков
+        password: secret
+      - firstname: Zoë
+        surname: O'Brien
+        password: secret
+      - name: tigris
+        password: secret
+  tasks:
+    - name: Derive the user names
+      ansible.builtin.import_tasks: ../tasks/misc/normalize_users.yml
+    - name: Check the derived user names
+      ansible.builtin.assert:
+        that:
+          - users | map(attribute='name') | list == ['akovacs', 'yushcherbakov', 'zobrien', 'tigris']
+
+- name: A missing surname must be rejected without family mode
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    family_mode: false
+    users:
+      - firstname: Akos
+        password: secret
+  tasks:
+    - name: Try to derive the user names
+      block:
+        - name: Derive the user names
+          ansible.builtin.import_tasks: ../tasks/misc/normalize_users.yml
+        - name: This must not be reached
+          ansible.builtin.fail:
+            msg: The derivation should have failed because of the missing surname
+      rescue:
+        - name: Check that the right check failed
+          ansible.builtin.assert:
+            that:
+              - ansible_failed_task.name == 'Check that every user has enough data to derive a user name'
