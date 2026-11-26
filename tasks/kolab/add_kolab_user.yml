@@ -18,7 +18,7 @@
       loginShell: /bin/bash
       preferredLanguage: en_US
       cn: "{{ user.firstname | default(user.name) }} {{ user.surname | default(default_surname) }}"
-      displayName: "{{ user.name }}"
+      displayName: "{{ user.display_name | default(user.name) }}"
       mail: "{{ user.name }}@{{ mailserver_domain }}"
       uid: "{{ user.name }}"
       objectClass:

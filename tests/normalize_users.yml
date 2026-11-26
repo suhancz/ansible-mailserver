@@ -24,7 +24,7 @@
         password: secret
       - firstname: O'Neil
         password: secret
-      - name: tigris
+      - name: Тигрис
         firstname: Hobbes
         password: secret
   tasks:
@@ -36,6 +36,11 @@
       ansible.builtin.assert:
         that:
           - users | map(attribute='name') | list == ['akos', 'alexandros', 'beijing', 'maryann', 'oneil', 'tigris']
+    - name: Check that an explicit name is kept as display name
+      ansible.builtin.assert:
+        that:
+          - (users | last).display_name == 'Тигрис'
+          - (users | first).display_name == 'akos'
 
 - name: Usernames without family mode
   hosts: case_plain
@@ -53,7 +58,7 @@
       - firstname: Zoë
         surname: O'Brien
         password: secret
-      - name: tigris
+      - name: Árvíztűrő
         password: secret
   tasks:
     - name: Derive the usernames
@@ -63,7 +68,7 @@
     - name: Check the derived usernames
       ansible.builtin.assert:
         that:
-          - users | map(attribute='name') | list == ['akovacs', 'yushcherbakov', 'zobrien', 'tigris']
+          - users | map(attribute='name') | list == ['akovacs', 'yushcherbakov', 'zobrien', 'arvizturo']
 
 - name: A missing surname must be rejected without family mode
   hosts: case_missing

@@ -2,11 +2,11 @@
 # Works out the effective system username (`name`) of every entry in `users`
 # once, so every other task can keep using `item.name`.
 #
-# Precedence: explicit `name` > family mode: first name
-#             > otherwise: first initial + surname
-# Derived names are converted to lowercase Latin ASCII on the target host
-# (files/misc/ascii_name.py, which needs the Unidecode package);
-# an explicit `name` is used as it is.
+# Source: explicit `name` > family mode: first name
+#         > otherwise: first initial + surname
+# Every username, derived or explicit, is converted to lowercase Latin ASCII on
+# the target host (files/misc/ascii_name.py, which needs the Unidecode package).
+# An explicit `name` is kept as `display_name`.
 #
 # The tasks that carry user data hide their output (`no_log`). Set
 # `mailserver_no_log: false` (only with test data!) to see why they fail.
@@ -29,8 +29,7 @@
     label: "{{ user_item.name | default(user_item.firstname | default('?')) }}"
   tags: always
 - name: Make sure Unidecode is available on the target
-  # Only needed when at least one username has to be derived
-  when: users | rejectattr('name', 'defined') | list | length > 0
+  when: users | length > 0
   tags: always
   block:
     - name: Install the EPEL repository
@@ -50,8 +49,7 @@
       ansible.builtin.pip:
         name: Unidecode
         executable: pip3
-- name: Transliterate the names the usernames are derived from
-  when: user_item.name is not defined
+- name: Convert the usernames to plain Latin ASCII
   check_mode: false
   changed_when: false
   ansible.builtin.script:
@@ -60,8 +58,9 @@
     executable: "{{ ansible_python_interpreter | default('/usr/bin/python3') }}"
   vars:
     raw_name: >-
-      {{ user_item.firstname if (family_mode | bool)
-      else (user_item.firstname[0:1] ~ user_item.surname) }}
+      {{ user_item.name if user_item.name is defined
+      else (user_item.firstname if (family_mode | bool)
+      else (user_item.firstname[0:1] ~ user_item.surname)) }}
   register: ascii_name_result
   loop: "{{ users }}"
   loop_control:
@@ -77,11 +76,10 @@
 - name: Derive effective usernames
   # The loop item of the registered results is stored under `user_item` (the loop_var above)
   ansible.builtin.set_fact:
-    normalized_users: "{{ normalized_users + [result_item.user_item | combine({'name': effective_user_name | trim})] }}"
+    normalized_users: "{{ normalized_users + [result_item.user_item | combine({'name': effective_user_name, 'display_name': result_item.user_item.name | default(effective_user_name)})] }}"
   vars:
     effective_user_name: >-
-      {{ result_item.user_item.name if result_item.user_item.name is defined
-      else (result_item.stdout | lower | regex_replace("[ ']", "")) }}
+      {{ result_item.stdout | lower | regex_replace("[ ']", "") }}
   loop: "{{ ascii_name_result.results }}"
   loop_control:
     loop_var: result_item

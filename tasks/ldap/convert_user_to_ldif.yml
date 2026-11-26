@@ -39,7 +39,7 @@
         - "loginShell: /bin/bash"
         - "preferredLanguage: en_US"
         - "cn: {{ user_data_item.firstname | default(user_data_item.name) }} {{ user_data_item.surname | default(default_surname) }}"
-        - "displayName: {{ user_data_item.name }}"
+        - "displayName: {{ user_data_item.display_name | default(user_data_item.name) }}"
         - "mail: {{ user_data_item.name }}@{{ mailserver_domain }}"
         - "uid: {{ user_data_item.name }}"
       loop_control:
