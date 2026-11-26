@@ -4,7 +4,7 @@
 # the role are found. Every case runs on its own (local) host, because facts set
 # with set_fact stay on a host and would leak into the next play. Run it with the
 # repository available as a role called ansible_mailserver
-# (see .github/workflows/test-users.yml):
+# (see .github/workflows/tests.yml):
 #   ANSIBLE_ROLES_PATH=/roles ansible-playbook -i case_family,case_plain,case_missing,case_addresses,case_legacy, -c local -e mailserver_no_log=false tests/normalize_users.yml
 - name: Usernames in family mode
   hosts: case_family

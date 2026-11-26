@@ -20,11 +20,13 @@ List of things not implemented yet, but planned
 - never pin tool versions, always use the latest of everything (details below)
 - check the CI results at the start of every task and fix what is red; ask only when something is really unclear
 - explain changes in plain language, work independently, and keep the changes of `main` that are not Horde related
+- name files after what they do (the test workflow is `tests.yml`, not `test-users.yml`, because it runs more than the user tests)
 
 ## In progress
 
-- **All tests in CI containers** (started in the commit that adds `tests/role_syntax.yml` and `tests/test_ascii_name.py`). The workflow `.github/workflows/test-users.yml` (name _Tests_) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch. The role syntax check and the unit tests passed on 929b9c1 (the username tests were still running when this was read). Next steps:
+- **All tests in CI containers** (started in the commit that adds `tests/role_syntax.yml` and `tests/test_ascii_name.py`). The workflow `.github/workflows/tests.yml` (name _Tests_, renamed from `test-users.yml`) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch (a log keeps the name of its test). All three entries and the log publishing passed on 5e58450. Next steps:
   - read the logs of the three entries and keep them green
+  - remove the old file `.github/workflows/test-users.yml` (second step of the rename)
   - add a converge test: a systemd-enabled AlmaLinux 8 container that runs the OS and LDAP parts of the role (`tasks/os`, `tasks/ldap`), then Postfix and finally the Kolab installation
   - check idempotence by running the converge twice
 - **Line endings and file modes** (started in the commit that adds `.gitattributes` and `.editorconfig`): text files use LF and UTF-8 everywhere, binary types are never converted; the executable bit stays with `.github/executable-files.txt` and the repair job of `linter.yml` (attributes cannot set it). Next steps:
