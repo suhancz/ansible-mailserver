@@ -1,24 +1,20 @@
 name: Publish release
 
-on:
+on: # yamllint disable-line rule:truthy
   push:
     branches: [main]
     paths:
       - VERSION
       - .github/workflows/release.yml
+  # No inputs here: Checkov CKV_GHA_7 requires workflow_dispatch inputs to be
+  # empty, so a manual run always publishes the VERSION of the selected ref.
   workflow_dispatch:
-    inputs:
-      version:
-        description: Release tag (blank reads VERSION at the selected ref)
-        required: false
-        default: ''
-        type: string
   workflow_call:
     inputs:
       version:
         description: Release tag (blank reads VERSION at the caller commit)
         required: false
-        default: ''
+        default: ""
         type: string
     outputs:
       release_url:
@@ -26,7 +22,7 @@ on:
         value: ${{ jobs.release.outputs.release_url }}
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: publish-release-${{ github.repository }}
@@ -35,12 +31,15 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Creating the tag and the release needs write access, only for this job
+    permissions:
+      contents: write
     outputs:
       release_url: ${{ steps.publish.outputs.release_url }}
     steps:
       - name: Validate version and publish release
         id: publish
-        uses: actions/github-script@v7
+        uses: actions/github-script@main
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         with:
