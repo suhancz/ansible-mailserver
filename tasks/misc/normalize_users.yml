@@ -75,16 +75,17 @@
     normalized_users: []
   tags: always
 - name: Derive effective usernames
+  # The loop item of the registered results is stored under `user_item` (the loop_var above)
   ansible.builtin.set_fact:
-    normalized_users: "{{ normalized_users + [result_item.item | combine({'name': effective_user_name | trim})] }}"
+    normalized_users: "{{ normalized_users + [result_item.user_item | combine({'name': effective_user_name | trim})] }}"
   vars:
     effective_user_name: >-
-      {{ result_item.item.name if result_item.item.name is defined
+      {{ result_item.user_item.name if result_item.user_item.name is defined
       else (result_item.stdout | lower | regex_replace("[ ']", "")) }}
   loop: "{{ ascii_name_result.results }}"
   loop_control:
     loop_var: result_item
-    label: "{{ result_item.item.name | default(result_item.item.firstname | default('?')) }}"
+    label: "{{ result_item.user_item.name | default(result_item.user_item.firstname | default('?')) }}"
   no_log: "{{ mailserver_no_log | default(true) }}"
   tags: always
 - name: Check that the usernames are valid POSIX names
