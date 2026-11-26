@@ -9,6 +9,7 @@ name: Lint Code Base
 #   .github/linters/trivy.yaml).
 # FAIL_ON_CONFLICTING_TOOLS_ENABLED makes Super-linter fail when conflicting
 # tools are enabled again.
+# No tool is pinned to a version: always the latest.
 #
 # Documentation:
 # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
@@ -32,13 +33,13 @@ jobs:
       statuses: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@main
         with:
           # Full git history is needed to get a proper list of changed files
           fetch-depth: 0
           persist-credentials: false
       - name: Lint Code Base
-        uses: super-linter/super-linter@2da136927bd4a73596db63044b504547c62cb854 # v9.0.0
+        uses: super-linter/super-linter@latest
         env:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: main

@@ -1,7 +1,7 @@
 ---
 name: Test usernames
 
-on:
+on: # yamllint disable-line rule:truthy
   push:
     paths:
       - tasks/misc/normalize_users.yml
@@ -24,22 +24,24 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out the repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@main
         with:
           persist-credentials: false
       - name: Run the tests in a minimal AlmaLinux 8 container
         shell: bash
-        # ansible-core runs on Python 3.9, the script runs on the system Python 3.6 of EL8,
-        # just like on the real server. The repository is mounted as the role ansible_mailserver.
-        # The test data contains no secrets, so no_log is switched off to see failures.
+        # No tool is pinned: the latest ansible-core needs Python 3.12 or newer,
+        # so python3.12 from AlmaLinux 8 runs Ansible and is the interpreter of
+        # the test hosts too. The repository is mounted as the role
+        # ansible_mailserver. The test data contains no secrets, so no_log is
+        # switched off to see failures.
         run: |
           mkdir -p result
           docker run --rm -v "$PWD:/roles/ansible_mailserver:ro" -w /roles/ansible_mailserver almalinux:8-minimal bash -euxc '
-            microdnf -y install python39 python39-pip dnf
-            pip3.9 install "ansible-core>=2.15,<2.17"
+            microdnf -y install python3.12 python3.12-pip dnf
+            python3.12 -m pip install --upgrade pip ansible-core Unidecode
             export ANSIBLE_ROLES_PATH=/roles
             ansible-playbook -v -i case_family,case_plain,case_missing,case_addresses,case_legacy, -c local \
-              -e ansible_python_interpreter=/usr/libexec/platform-python \
+              -e ansible_python_interpreter=/usr/bin/python3.12 \
               -e mailserver_no_log=false \
               tests/normalize_users.yml
           ' 2>&1 | tee result/full.log
@@ -62,7 +64,7 @@ jobs:
           } > result/test-users.log
       - name: Upload the masked log
         if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@main
         with:
           name: test-users-result
           path: result/test-users.log
@@ -79,7 +81,7 @@ jobs:
       contents: write
     steps:
       - name: Download the log
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@main
         with:
           name: test-users-result
           path: result
