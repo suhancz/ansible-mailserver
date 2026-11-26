@@ -25,7 +25,7 @@
   ansible.builtin.import_tasks: mariadb/main.yml
   tags: mariadb
 - name: Configure DNS
-  ansible.builtin.import_tasks:  dns/main.yml
+  ansible.builtin.import_tasks: dns/main.yml
   tags:
     - dns
     - poweradmin
