@@ -15,8 +15,8 @@
 - name: Add config httpd.conf
   ansible.builtin.lineinfile:
     dest: "/etc/httpd/conf/httpd.conf"
-    regexp: "^(.*){{ item.regexp }}(.*)$" 
-    line: "{{ item.line }}" 
+    regexp: "^(.*){{ item.regexp }}(.*)$"
+    line: "{{ item.line }}"
     owner: root
     group: root
     mode: u=rw,og=r
@@ -36,7 +36,7 @@
       line: "SSLHonorCipherOrder on"
     - regexp: "SSLCompression"
       line: "SSLCompression off"
-  notify: 
+  notify:
     - Restart httpd
 
 - name: Disable php version
@@ -76,8 +76,8 @@
     - key: 'policy_uid'
       value: "{% if not family_mode | bool %}}'{% endif %}%(givenname)s{% if not family_mode | bool %}}'{% endif %}{{ '[0:1]%(surname)s' if not family_mode | bool }}.lower()"
     - key: 'primary_mail'
-      value: "{% if not family_mode | bool %}}'{% endif %}%(givenname)s{% if not family_mode | bool %}}'{% endif %}{{ '[0:1]%(surname)s' if not family_mode | bool }}@%(domain)s"
-  notify: 
+      value: "%(givenname)s{{ '.%(surname)s' if not family_mode | bool }}@%(domain)s"
+  notify:
     - Restart kolab
   tags:
     - users
@@ -92,10 +92,10 @@
     update: yes
 
 - name: Change kolab patch premissons
-  ansible.builtin.file: 
+  ansible.builtin.file:
     path: /usr/src/KolabScripts
-    owner: root 
-    group: root 
+    owner: root
+    group: root
     mode: u=rwx,og=
 
 - name: Initiate Roundcube plugins
@@ -104,10 +104,10 @@
     chdir: /usr/src/KolabScripts/kolab
 
 - name: Configure IMAPD
-  ansible.builtin.lineinfile: 
+  ansible.builtin.lineinfile:
     dest: /etc/imapd.conf
-    regexp: "^{{ item.key }}: " 
-    line: "{{ item.key }}: {{ item.value }}" 
+    regexp: "^{{ item.key }}: "
+    line: "{{ item.key }}: {{ item.value }}"
     owner: root
     group: root
     mode: u=rw,go=r
@@ -183,9 +183,9 @@
   notify: Restart postfix
 - name: "Set search base in {{ item.path }}"
   when: item.path is not regex(".*_3\.cf$")
-  ansible.builtin.lineinfile: 
+  ansible.builtin.lineinfile:
     dest: "{{ item.path }}"
-    regexp: "^search_base = .*$" 
+    regexp: "^search_base = .*$"
     line: 'search_base = dc=%2,dc=%1'
     owner: root
     group: root
@@ -195,9 +195,9 @@
   notify: Restart postfix
 - name: "Set domain in {{ item.path | replace('.cf', '_3.cf') }}"
   when: item.path is not regex(".*_3\.cf$")
-  ansible.builtin.lineinfile: 
+  ansible.builtin.lineinfile:
     dest: "{{ item.path | replace('.cf', '_3.cf') }}"
-    regexp: "^domain = .*$" 
+    regexp: "^domain = .*$"
     line: 'domain = ldap:/etc/postfix/ldap/mydestination_3.cf'
     owner: root
     group: root
@@ -206,9 +206,9 @@
   loop: "{{ postfix_ldap_cf_files.files }}"
   notify: Restart postfix
 - name: Patch Postfix main.cf
-  ansible.builtin.lineinfile: 
+  ansible.builtin.lineinfile:
     dest: /etc/postfix/main.cf
-    regexp: "^{{ item.key }} = .*$" 
+    regexp: "^{{ item.key }} = .*$"
     line: '{{ item.key }} = {{ item.value }}'
     owner: root
     group: root
@@ -236,7 +236,7 @@
         ldap:/etc/postfix/ldap/local_recipient_maps_3.cf"
   notify: Restart postfix
 - name: Set up domain aliases
-  ansible.builtin.lineinfile: 
+  ansible.builtin.lineinfile:
     dest: /etc/postfix/virtual_alias_maps_manual.cf
     line: '@{{ item }} @{{ mailserver_domain }}'
     owner: root
@@ -366,7 +366,7 @@
   notify:
     - Restart memcached
     - Restart kolab
-      
+
 - name: Patch kolab
   ansible.builtin.command: "bash /usr/src/KolabScripts/kolab/{{ item }}"
   args:
@@ -380,8 +380,8 @@
   ansible.builtin.lineinfile:
     # noqa yaml[line-length]
     dest: "/usr/share/roundcubemail/program/localization/{{ item.lang }}/labels.inc"
-    regexp: "{{ item.regexp }}" 
-    line: "{{ item.line }}" 
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
     mode: u=rw,og=r
     owner: root
     group: root
@@ -402,7 +402,7 @@
     - regexp: "username"
       line: "$labels['username']  = 'Email';"
       lang: "it_IT"
-  notify: 
+  notify:
     - Restart kolab
 
 - name: Render Kolab web config templates
@@ -470,9 +470,8 @@
         group: kolab
         mode: u=rw,g=r,o=
         backup: true
-      loop:
-        - "{{ [mailserver_domain] + custom_domains }}"
-      notify: 
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      notify:
         - Restart kolab
       tags:
         - users
