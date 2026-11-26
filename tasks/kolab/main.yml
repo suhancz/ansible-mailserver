@@ -75,8 +75,8 @@
       value: '/etc/postfix/virtual_alias_maps_manual.cf'
     - key: 'policy_uid'
       value: >-
-        {{ "'%(givenname)s'.lower()" if family_mode | bool
-        else "'%(givenname)s'[0:1].lower() + '%(surname)s'.lower()" }}
+        {{ "%(givenname)s.lower()" if family_mode | bool
+        else "'%(givenname)s'[0:1]%(surname)s.lower()" }}
     - key: 'primary_mail'
       value: "%(givenname)s{{ '.%(surname)s' if not family_mode | bool }}@%(domain)s"
   notify:
