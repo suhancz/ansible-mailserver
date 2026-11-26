@@ -13,6 +13,8 @@ Mailserver suite on RPM-based distros
       - name # system username (also the nickname of the user) - optional, see "Usernames" below for how it is derived when omitted
         firstname # required when `name` is not set
         surname # in family mode defaults to `default_surname`; required without family mode if `name` is not set
+        display_name # optional nickname, shown for addresses that do not look like the real name - see "Email addresses and display names" below
+        primary_address # optional sender address and mailbox, defaults to `name@mailserver_domain`
         password
         aliases:
           - alias@domain.com
@@ -29,7 +31,11 @@ Mailserver suite on RPM-based distros
             publickey: # WireGuard public key for the client
             psk: # WireGuard pre-shared key for the client
           - name: client2 # WireGuard clients with only `name` values will have their keys generated at install time
-    custom_domains: # list of domains to also configure the mailserver for
+    mail_domains: # optional, generates addresses per domain - see "Email addresses and display names" below
+      - name: suhan.cz
+        style: username # username, givenname or givenname.surname (the default)
+        surname: Balla # optional, family domain: only the users with this surname get an address there
+    custom_domains: # list of domains to also configure the mailserver for (derived from `mail_domains` when that is set)
       - domain.com
       - otherdomain.org
     undeliverable_exceptions: # list of domains from where mail always should be delivered
@@ -66,25 +72,49 @@ Mailserver suite on RPM-based distros
 The username is the OS login, the LDAP `uid` and the part of the email address before the `@`.
 It is worked out once at the start of the run, in this order:
 
-1. `name`, if you set it explicitly (used exactly as written; it should be a lowercase ASCII POSIX username).
+1. `name`, if you set it explicitly. It is converted like the derived names below; the original text is kept as `name_input` and is used as the nickname of the user.
 2. In family mode (`family_mode: yes`, the surname is in the domain): the `firstname`, for example `anna@smith.example`.
 3. Otherwise: the first letter of `firstname` followed by `surname`, for example `asmith@example.com`.
 
-Names derived in steps 2-3 are converted to lowercase Latin ASCII on the target host, and spaces and apostrophes are dropped:
+All names are converted to lowercase Latin ASCII on the target host, and spaces and apostrophes are dropped:
 
 - accents are removed (`Ákos` becomes `akos`, `Kovács` becomes `kovacs`, `Őrs` becomes `ors`, `Straße` becomes `strasse`);
 - Cyrillic (Russian, Ukrainian, Belarusian, Bulgarian, Serbian, Macedonian) and Greek are transliterated with built-in tables (`Щербаков` becomes `shcherbakov`, `Παπαδόπουλος` becomes `papadopoulos`);
 - every other script (for example Chinese, Arabic, Hebrew, Hindi) is transliterated by the [Unidecode](https://pypi.org/project/Unidecode/) Python package.
 
-The role installs Unidecode on the target (`python3-unidecode` from EPEL, falling back to `pip`), but only when at least one user has no explicit `name`.
+The role installs Unidecode on the target (`python3-unidecode` from EPEL, falling back to `pip`), but only when at least one name has to be converted.
 The conversion itself is done by the script [files/misc/ascii_name.py](files/misc/ascii_name.py), which runs on the target and not on the Ansible controller.
 The result has to be a valid POSIX username (`[a-z_][a-z0-9_-]*`), otherwise the run stops with a message and you can set `name` explicitly.
 
+## Email addresses and display names
+
+Every user has a primary address (`primary_address`, by default `name@mailserver_domain`) and any number of aliases. Mail to an alias is delivered to the primary mailbox.
+The optional `mail_domains` list generates more aliases, one style per domain:
+
+- `username`: `username@domain`;
+- `givenname`: `givenname@domain`, normally with `surname` set, so that only the users of that family get an address on the family domain;
+- `givenname.surname`: `givenname.surname@domain` (the default style).
+
+The names in the generated addresses are converted to plain Latin ASCII like the usernames. The aliases of the administrator (`aliases`) are added as they are.
+When `mail_domains` is set, `custom_domains` is derived from it.
+
+Every address gets its own display name.
+If the part before the `@` contains a word of the first name or the surname (compared as plain Latin), the address looks official and the display name is the full name in Unicode.
+Otherwise the address looks like a nickname and the display name is `display_name`, else the explicit `name` as written, else the full name.
+
+Example: the user with the first name `Akos`, the surname `Balla`, the `name` `sha` and the `display_name` `suhanc` gets `sha@suhan.cz` and `sha@fsck.it.com` with the display name `suhanc`, and `akos@balla.global` and `akos@balla.cloud` with the display name `Akos Balla`.
+The addresses are generated by [tasks/misc/generate_addresses.yml](tasks/misc/generate_addresses.yml); writing them to LDAP, Postfix and the Roundcube identities is not finished yet, see [TODO.md](TODO.md).
+
 ## Tests
 
-The username derivation is tested by [tests/normalize_users.yml](tests/normalize_users.yml).
+The username and address derivation is tested by [tests/normalize_users.yml](tests/normalize_users.yml).
 The GitHub Actions workflow [.github/workflows/test-users.yml](.github/workflows/test-users.yml) runs it inside a minimal AlmaLinux 8 container on every pull request and on pushes that touch the tested files.
 After each run the workflow publishes the log, with passwords, secrets, tokens, keys and email addresses masked by [tests/mask_log.sh](tests/mask_log.sh), as `test-users.log` on the `ci-results` branch.
+
+## Linting
+
+[.github/workflows/linter.yml](.github/workflows/linter.yml) runs Super-Linter with one tool per file type. No tool is pinned to a version: the workflows always use the latest.
+Scripts that have to be executable are listed in [.github/executable-files.txt](.github/executable-files.txt); if a mode is missing, the workflow commits the fix to the branch and runs again.
 
 ## Example Playbook
 

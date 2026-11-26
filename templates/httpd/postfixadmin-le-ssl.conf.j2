@@ -15,7 +15,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthBasicProvider ldap
     AuthLDAPGroupAttribute member
     AuthLDAPSubGroupClass group
-    AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+    AuthLDAPGroupAttributeIsDN On
+    AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
     AuthLDAPBindDN cn=Directory Manager
     AuthLDAPBindPassword {{ ldap_admin_password }}
     Require ldap-group cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}
@@ -38,7 +39,8 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     AuthBasicProvider ldap
     AuthLDAPGroupAttribute member
     AuthLDAPSubGroupClass group
-    AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+    AuthLDAPGroupAttributeIsDN On
+    AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
     AuthLDAPBindDN cn=Directory Manager
     AuthLDAPBindPassword {{ ldap_admin_password }}
     Require ldap-group cn=Directory Administrators,dc={{ mailserver_domain | split('.') | join(',dc=') }}
