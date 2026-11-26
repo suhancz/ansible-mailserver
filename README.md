@@ -1,6 +1,6 @@
 # ansible-mailserver
 
-[![Super-Linter](https://github.com/suhancz/ansible-mailserver/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+[![Super-Linter](https://github.com/suhancz/ansible-mailserver/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter) [![DevSkim](https://github.com/suhancz/ansible-mailserver/actions/workflows/devskim.yml/badge.svg)](https://github.com/suhancz/ansible-mailserver/actions/workflows/devskim.yml)
 
 Mailserver suite on RPM-based distros
 
