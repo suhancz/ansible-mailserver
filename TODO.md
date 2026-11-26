@@ -14,6 +14,15 @@ List of things not implemented yet, but planned
 - clean up code (and enable VALIDATE_JSCPD in <.github/workflows/linter.yml>)
 - the Apache templates for PostfixAdmin and PowerAdmin have two directives on one line (`AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ...`), which Apache probably rejects
 
+## Release 3.0
+
+This branch is meant to become version 3.0.0 (`VERSION`); merging it into `main` publishes the release through `.github/workflows/release.yml`.
+
+- the release workflow, `RELEASING.md` and `VERSION` were taken over from `main` (2.6.2); the workflow was hardened a little (write permission only on the job, `actions/github-script` pinned to a commit) and has not been run yet
+- `main` has Horde-only changes that are not carried over on purpose: `tasks/horde_utf8mb4.yml` and the change in `tasks/horde.yml` (Horde is replaced by Kolab here); check that nothing from them is needed (for example the utf8mb4 settings for Kolab or Roundcube data)
+- mention the move from Horde to Kolab and the new variables (`mail_domains`, `display_name`, `mailserver_no_log`) in the release notes or in `README.md` before merging, because old setups need changes
+- the 2.x line stays on `main` until the merge; decide if a `2.x` maintenance branch is needed
+
 ## Email address scheme (in progress)
 
 Goal: normal users get `givenname.surname@domain`, family domains give `givenname@surname-domain`, a user can have a preferred username (for example `sha@suhan.cz`), the administrator can add any alias, and every user can have an optional display name.

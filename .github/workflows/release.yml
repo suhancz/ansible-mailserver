@@ -1,0 +1,97 @@
+name: Publish release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
+      - .github/workflows/release.yml
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release tag (blank reads VERSION at the selected ref)
+        required: false
+        default: ""
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: Release tag (blank reads VERSION at the caller commit)
+        required: false
+        default: ""
+        type: string
+    outputs:
+      release_url:
+        description: Published or existing release URL
+        value: ${{ jobs.release.outputs.release_url }}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # Creating the tag and the release needs write access, only for this job
+    permissions:
+      contents: write
+    outputs:
+      release_url: ${{ steps.publish.outputs.release_url }}
+    steps:
+      - name: Validate version and publish release
+        id: publish
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        with:
+          script: |
+            const repo = {owner: context.repo.owner, repo: context.repo.repo};
+            let tag = (process.env.RELEASE_VERSION || '').trim();
+            if (!tag) {
+              const {data} = await github.rest.repos.getContent({
+                ...repo, path: 'VERSION', ref: context.sha
+              });
+              if (Array.isArray(data) || data.type !== 'file' || data.encoding !== 'base64') {
+                throw new Error('VERSION must be a readable file');
+              }
+              tag = Buffer.from(data.content, 'base64').toString('utf8').trim();
+            }
+            const pattern = /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+            const match = tag.match(pattern);
+            if (!match) throw new Error(`Invalid release version: ${tag}`);
+            try {
+              const {data} = await github.rest.repos.getReleaseByTag({...repo, tag});
+              core.info(`Release ${tag} already exists; leaving it unchanged.`);
+              core.setOutput('release_url', data.html_url);
+              return;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            let existingTag;
+            try {
+              const {data} = await github.rest.git.getRef({...repo, ref: `tags/${tag}`});
+              existingTag = data;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              core.info(`Tag ${tag} does not exist yet; release creation will create it.`);
+            }
+            if (existingTag) {
+              const {data} = await github.rest.repos.getCommit({...repo, ref: `tags/${tag}`});
+              if (data.sha !== context.sha) {
+                throw new Error(`Tag ${tag} already points to ${data.sha}, not ${context.sha}`);
+              }
+            }
+            const {data} = await github.rest.repos.createRelease({
+              ...repo,
+              tag_name: tag,
+              target_commitish: context.sha,
+              name: tag,
+              generate_release_notes: true,
+              draft: false,
+              prerelease: Boolean(match[4])
+            });
+            core.setOutput('release_url', data.html_url);
+            core.info(`Published ${data.html_url} at ${context.sha}`);
