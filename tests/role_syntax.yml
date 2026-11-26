@@ -1,0 +1,8 @@
+---
+# Syntax check of the whole role (run by the workflow .github/workflows/test-users.yml
+# in an AlmaLinux 8 container): ansible-playbook --syntax-check tests/role_syntax.yml
+- name: Syntax check of the whole role
+  hosts: all
+  gather_facts: false
+  roles:
+    - ansible_mailserver

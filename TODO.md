@@ -13,6 +13,23 @@ List of things not implemented yet, but planned
 - confirm Kolab- and Cyrus-related backups working
 - clean up code (and enable VALIDATE_JSCPD in <.github/workflows/linter.yml>)
 
+## Working rules of the owner
+
+- every commit lists the tasks that are in progress in this file (section _In progress_), with the next steps
+- all tests run in CI containers (AlmaLinux 8), not on the machine of the assistant; read the logs on the `ci-results` branch
+- never pin tool versions, always use the latest of everything (details below)
+- check the CI results at the start of every task and fix what is red; ask only when something is really unclear
+- explain changes in plain language, work independently, and keep the changes of `main` that are not Horde related
+
+## In progress
+
+- **All tests in CI containers** (started in the commit that adds `tests/role_syntax.yml` and `tests/test_ascii_name.py`). The workflow `.github/workflows/test-users.yml` (name _Tests_) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch. Next steps:
+  - read the first results and fix what the syntax check finds (the unpinned collections may break tasks)
+  - add a converge test: a systemd-enabled AlmaLinux 8 container that runs the OS and LDAP parts of the role (`tasks/os`, `tasks/ldap`), then Postfix and finally the Kolab installation
+  - check idempotence by running the converge twice
+- **Super-Linter findings of the last run** (27 ansible-lint problems and one natural language finding): the `community.mysql` modules in `tasks/mariadb/main.yml` used the aliases `user:` and `db:`, which ansible-lint does not resolve (it reports missing required arguments: `name`); they use `name:` now. `community.dns` was missing in `collections/requirements.yml` (`wait_for_txt` could not be resolved). The word TODO in `README.md` is rejected by the terminology rule (heading and link texts changed). Do not rename the modules to `ansible.mysql.*`: there is no such collection, the modules are `community.mysql.*`. To check after the next run: the warning about `AIX` in the platforms of `meta/main.yml`, `min_ansible_version` 2.9 is far too old, other aliases in other tasks (`user:`, `db:`, `daemon-reload`) and the `NATURAL_LANGUAGE` findings in other files
+- **Proceed with this list in this order**: tests in containers, then LDAP and Postfix aliases (address scheme below), then the Roundcube identities, the decision about PostfixAdmin, the Cyrus items and the Horde to Kolab migration
+
 ## Outstanding requests of the owner
 
 - **Never pin tool versions, always use the latest of everything**: done for the CI workflows (actions at `@main`, Super-Linter `@latest`, `ansible-core` and `Unidecode` without a version range, the `unpinned-uses` rule of zizmor is off in `.github/linters/zizmor.yml`) and for the Ansible collections in `collections/requirements.yml`. Keep this rule for every new workflow, container image tag of a tool, `pip`, `npm` or Ansible collection requirement. The latest `ansible-core` needs Python 3.12 or newer, so the AlmaLinux 8 test container installs `python3.12` and uses it as the interpreter of the test hosts (it ran with `ansible-core` 2.21.6); the real role is therefore not tested with the EL8 platform Python 3.6. Still to look for: other pins in the tasks (for example `version:` of the Git checkouts, package versions) and decide for each if it is a tool pin. The newest collections may break tasks that were written for the old ones, so read the results of the first full run.
@@ -22,11 +39,10 @@ List of things not implemented yet, but planned
   - calendars, tasks and contacts: export them through the CalDAV and CardDAV interface of Horde with the password of each user into `/var/backups/horde-migration/<user>/`, then `PUT` them into the Kolab CalDAV/CardDAV interface (iRony) of the same user
   - notes, wiki pages and the Ingo mail filters (sieve) are copied into the backup directory but not imported automatically; decide later how to import them
   - make every step repeatable and safe (skip what was imported, never delete the backup, stop before removing Horde if an export failed)
-  - unit-test the Maildir and DAV code in CI; the full migration cannot be tested without a real Horde installation, so mark it as untested until it ran on a copy of the real server
+  - unit-test the Maildir and DAV code in CI containers; the full migration cannot be tested without a real Horde installation, so mark it as untested until it ran on a copy of the real server
 - **Trivy**: the vulnerability scanner was switched off in 5fa10ab, because its database download fails on the runners and the repository has no dependency manifest (only the misconfiguration scanner runs). Switch `vuln` back on in `.github/linters/trivy.yaml` once there is a manifest worth scanning. If Trivy still fails on its own check download, stop running Trivy on this repository (Checkov covers Ansible and the workflows).
 - **Keep the branch up to date with `main`**: the draft pull request #65 (`feature/kolab` into `main`) exists. Merge `main` into the branch with _Update branch_ (that needs a conflict-free state: set the release files and `tasks/horde.yml` to the content of `main` first, merge, then restore them and delete the Horde files again, as done for 5172692), and discard diffs that are specific to Horde.
 - **Executable files workflow** (like in `ai-agent-config`): `.github/executable-files.txt` lists the scripts, `linter.yml` repairs missing modes with a bot commit and runs again. The first run worked (bot commit 78424c1). It only adds the executable bit and never removes it from files that are not listed; add every new script to the manifest.
-- check the first Super-Linter result after the zizmor, Markdown, codespell, Black, Prettier and shfmt fixes (they were done by hand, without running the tools); `NATURAL_LANGUAGE` may still find more words like `git` or `file names` in other files
 
 ## Release 3.0
 
@@ -60,12 +76,10 @@ Still to do:
 
 ## Leftovers from the username work
 
-- the username and address tests pass in CI (merge commit 5172692, `ansible-core` 2.21.6 on Python 3.12); check `ci-results/test-users.log` after every push
-- the workflow only tests the username and address derivation, not the whole role; extend it step by step (for example a systemd-enabled AlmaLinux 8 container for the OS and LDAP parts)
-- run the whole role on a test machine: nothing in the recent commits (`policy_uid`, `primary_mail`, usernames, addresses) has been executed against Kolab yet
+- the username and address tests passed in CI (merge commit 5172692, `ansible-core` 2.21.6 on Python 3.12); check `ci-results/test-users.log`, `test-role.log` and `test-unit.log` after every push
+- run the whole role on a test machine or in a CI container: nothing in the recent commits (`policy_uid`, `primary_mail`, usernames, addresses) has been executed against Kolab yet (see _In progress_)
 - the built-in Cyrillic and Greek tables are a simple, readable scheme, not an official standard (for example ISO 9 or ELOT 743); check the results for your family's names
 - users created by hand in the Kolab web admin follow `policy_uid`/`primary_mail`, and Kolab's own parser strips accents differently (it uses iconv transliteration and drops non-Latin letters), so check that both give identical names
 - two users whose derived names become identical (for example two people called Anna in family mode, or `Kovács` and `Kovacs`) are not detected yet
 - audit the remaining tasks (WireGuard, FTP, imapsync, backups, DKIM, DMARC) for assumptions about `user.name`, and read the `main` branch for comparison
 - consider setting the OS account comment (GECOS) from the first name and surname
-- add ansible-lint / Molecule scenarios and unit tests for `files/misc/ascii_name.py`

@@ -21,7 +21,7 @@
   block:
     - name: Set the MariaDB root password
       community.mysql.mysql_user:
-        user: root
+        name: root
         password: "{{ mysql_root_password }}"
         host: localhost
       no_log: yes
@@ -30,7 +30,7 @@
       block:
         - name: Ensure the MariaDB root password
           community.mysql.mysql_user:
-            user: root
+            name: root
             password: "{{ mysql_root_password }}"
             host: localhost
             login_user: root
@@ -41,7 +41,7 @@
           when: reset == "yes" or forgotten_mariadb_root_password
           ansible.builtin.systemd_service:
             name: mariadb
-            daemon-reload: yes
+            daemon_reload: yes
             enabled: yes
             state: stopped
         - name: Start MariaDB in safe mode
@@ -85,7 +85,7 @@
             state: restarted
 - name: Delete anonymous MySQL server user for ansible_fqdn
   community.mysql.mysql_user:
-    user: ""
+    name: ""
     host: "{{ ansible_fqdn }}"
     state: absent
     login_user: root
@@ -93,14 +93,14 @@
   no_log: yes
 - name: Delete anonymous MySQL server user for localhost
   community.mysql.mysql_user:
-    user: ""
+    name: ""
     state: absent
     login_user: root
     login_password: "{{ mysql_root_password }}"
   no_log: yes
 - name: Secure the MySQL root user for IPV6 localhost (::1)
   community.mysql.mysql_user:
-    user: root
+    name: root
     password: "{{ mysql_root_password }}"
     host: "::1"
     login_user: root
@@ -108,7 +108,7 @@
   no_log: yes
 - name: Secure the MySQL root user for IPV4 localhost (127.0.0.1)
   community.mysql.mysql_user:
-    user: root
+    name: root
     password: "{{ mysql_root_password }}"
     host: 127.0.0.1
     login_user: root
@@ -116,7 +116,7 @@
   no_log: yes
 - name: "Secure the MySQL root user for domain: {{ item }}"
   community.mysql.mysql_user:
-    user: root
+    name: root
     password: "{{ mysql_root_password }}"
     host: localhost
     login_user: root
@@ -135,7 +135,7 @@
     - kolab
 - name: Remove the MySQL test database
   community.mysql.mysql_db:
-    db: test
+    name: test
     state: absent
     login_user: root
     login_password: "{{ mysql_root_password }}"
