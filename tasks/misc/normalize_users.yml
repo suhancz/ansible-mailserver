@@ -3,7 +3,10 @@
 # once, so every other task can keep using `item.name`.
 #
 # Precedence: explicit `name` > `nickname` > family mode: first name
-#             > otherwise: first initial + surname (all lowercase)
+#             > otherwise: first initial + surname
+# Derived names are converted to lowercase Latin ASCII on the target host
+# (library/mailserver_ascii_name.py, which needs the Unidecode package);
+# an explicit `name` is used as it is.
 - name: Check that every user has enough data to derive a user name
   ansible.builtin.assert:
     that:
@@ -24,16 +27,53 @@
     loop_var: user_item
     label: "{{ user_item.name | default(user_item.nickname | default(user_item.firstname | default('?'))) }}"
   tags: always
-- name: Derive effective user names
-  ansible.builtin.set_fact:
-    normalized_users: "{{ normalized_users | default([]) + [user_item | combine({'name': effective_user_name | trim})] }}"
-  vars:
-    # noqa yaml[line-length]
-    effective_user_name: "{{ user_item.name if user_item.name is defined else (user_item.nickname | lower if (user_item.nickname | default('', true) | length > 0) else (user_item.firstname | lower if (family_mode | bool) else ((user_item.firstname[0:1] ~ user_item.surname) | lower))) }}"
+- name: Make sure Unidecode is available on the target
+  # Only needed when at least one user name has to be derived
+  when: users | rejectattr('name', 'defined') | list | length > 0
+  tags: always
+  block:
+    - name: Install the EPEL repository
+      ansible.builtin.package:
+        name: epel-release
+        state: present
+    - name: Install the Unidecode package
+      ansible.builtin.package:
+        name: python3-unidecode
+        state: present
+  rescue:
+    - name: Install pip
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
+    - name: Install Unidecode with pip
+      ansible.builtin.pip:
+        name: Unidecode
+        executable: pip3
+- name: Transliterate the names the user names are derived from
+  when: user_item.name is not defined
+  mailserver_ascii_name:
+    text: >-
+      {{ user_item.nickname if (user_item.nickname | default('', true) | length > 0)
+      else (user_item.firstname if (family_mode | bool)
+      else (user_item.firstname[0:1] ~ user_item.surname)) }}
+  register: ascii_name_result
   loop: "{{ users }}"
   loop_control:
     loop_var: user_item
     label: "{{ user_item.name | default(user_item.nickname | default(user_item.firstname | default('?'))) }}"
+  no_log: yes
+  tags: always
+- name: Derive effective user names
+  ansible.builtin.set_fact:
+    normalized_users: "{{ normalized_users | default([]) + [result_item.item | combine({'name': effective_user_name | trim})] }}"
+  vars:
+    effective_user_name: >-
+      {{ result_item.item.name if result_item.item.name is defined
+      else (result_item.ascii | lower | regex_replace("[ ']", "")) }}
+  loop: "{{ ascii_name_result.results }}"
+  loop_control:
+    loop_var: result_item
+    label: "{{ result_item.item.name | default(result_item.item.nickname | default(result_item.item.firstname | default('?'))) }}"
   no_log: yes
   tags: always
 - name: Check that the user names are valid POSIX names

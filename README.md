@@ -13,7 +13,7 @@ Role Variables
     mailserver_admin_user # user to administer the mail server
     users:
       - name # system username - optional, see "User names" below for how it is derived when omitted
-        nickname # optional; used as the default username (lowercased) and as the display name in LDAP/Kolab
+        nickname # optional; used as the default username (lowercased, transliterated to Latin ASCII) and as the display name in LDAP/Kolab
         firstname # required when neither `name` nor `nickname` is set
         surname # in family mode defaults to `default_surname`; required without family mode if neither `name` nor `nickname` is set
         password
@@ -69,14 +69,21 @@ User names
 The user name is the OS login, the LDAP `uid` and the part of the e-mail address before the `@`.
 It is worked out once at the start of the run, in this order:
 
-1. `name`, if you set it explicitly.
-2. `nickname`, lowercased, if set.
-3. In family mode (`family_mode: yes`, the surname is in the domain): the lowercased `firstname`, e.g. `anna@smith.example`.
-4. Otherwise: the first letter of `firstname` followed by `surname`, lowercased, e.g. `asmith@example.com`.
+1. `name`, if you set it explicitly (used exactly as written).
+2. `nickname`, if set.
+3. In family mode (`family_mode: yes`, the surname is in the domain): the `firstname`, e.g. `anna@smith.example`.
+4. Otherwise: the first letter of `firstname` followed by `surname`, e.g. `asmith@example.com`.
 
-The result has to be a lowercase ASCII POSIX user name (`[a-z_][a-z0-9_-]*`), otherwise the run stops with a message.
-For names with accents or other special characters, set `nickname` (or `name`) explicitly.
-The nickname is also stored as the `displayName` of the user in LDAP and Kolab.
+Names derived in steps 2-4 are converted to lowercase Latin ASCII on the target host, and spaces and apostrophes are dropped:
+
+* accents are removed (`Ákos` becomes `akos`, `Kovács` becomes `kovacs`, `Őrs` becomes `ors`, `Straße` becomes `strasse`);
+* Cyrillic (Russian, Ukrainian, Belarusian, Bulgarian, Serbian, Macedonian) and Greek are transliterated with built-in tables (`Щербаков` becomes `shcherbakov`, `Παπαδόπουλος` becomes `papadopoulos`);
+* every other script (e.g. Chinese, Arabic, Hebrew, Hindi) is transliterated by the [Unidecode](https://pypi.org/project/Unidecode/) Python package.
+
+The role installs Unidecode on the target (`python3-unidecode` from EPEL, falling back to `pip`), but only when at least one user has no explicit `name`.
+The conversion itself is done by the `mailserver_ascii_name` module of this role, so it runs on the target and not on the Ansible controller.
+The result has to be a valid POSIX user name (`[a-z_][a-z0-9_-]*`), otherwise the run stops with a message and you can set `nickname` or `name` explicitly.
+The nickname is also stored as the `displayName` of the user in LDAP and Kolab, in its original spelling.
 
 Example Playbook
 ----------------
