@@ -12,11 +12,13 @@ name: Lint Code Base
 # No tool is pinned to a version: always the latest. The unpinned-uses rule of
 # zizmor is therefore off in .github/linters/zizmor.yml.
 #
-# Executable files: .github/executable-files.txt lists the scripts that have to
-# be executable. If a mode is missing, the job repair-script-modes commits the
-# mode-only change to the branch and starts this workflow again; the lint job
-# only runs when the modes are correct. Files that are not listed are not
-# changed.
+# Executable files and line endings: .github/executable-files.txt lists the
+# scripts that have to be executable, .gitattributes defines the line endings.
+# If a mode is missing or a file has other line endings, the job
+# repair-script-modes commits the fixes to the branch (one commit for the modes,
+# one for the line endings) and starts this workflow again; the lint job only
+# runs when modes and line endings are correct. Files that are not listed are
+# not changed in their modes.
 #
 # Documentation:
 # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
@@ -101,6 +103,7 @@ jobs:
     outputs:
       sha: ${{ steps.checkout.outputs.commit }}
       correct: ${{ steps.check.outputs.correct }}
+      eol_correct: ${{ steps.eol.outputs.correct }}
     steps:
       - name: Check out the exact submitted commit without write credentials
         id: checkout
@@ -115,16 +118,31 @@ jobs:
         run: |
           set -euo pipefail
           REPAIR_SCRIPT_MODES=0 MODE_CHECK_OUTPUT="$GITHUB_OUTPUT" python3 -c "$SCRIPT_MODE_CODE"
-      - name: Report a fork mismatch that cannot be repaired automatically
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && steps.check.outputs.correct == 'false' }}
+      - name: Check the line endings of the tracked files
+        id: eol
+        shell: bash
+        # Normalising in this temporary checkout only shows what would change
         run: |
-          echo 'Fork file modes are incorrect; the contributor has to fix the branch. No write token is granted.' >&2
+          set -euo pipefail
+          git add --renormalize .
+          if git diff --cached --quiet; then
+            echo 'correct=true' >> "$GITHUB_OUTPUT"
+            echo 'Line endings audit: all files are normalised.'
+          else
+            echo 'correct=false' >> "$GITHUB_OUTPUT"
+            echo 'Line endings audit: these files have to be normalised:'
+            git diff --cached --name-only
+          fi
+      - name: Report a fork mismatch that cannot be repaired automatically
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && (steps.check.outputs.correct == 'false' || steps.eol.outputs.correct == 'false') }}
+        run: |
+          echo 'Fork file modes or line endings are incorrect; the contributor has to fix the branch. No write token is granted.' >&2
           exit 1
 
   repair-script-modes:
     name: Repair and commit executable permissions
     needs: check-permissions
-    if: ${{ needs.check-permissions.outputs.correct == 'false' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ (needs.check-permissions.outputs.correct == 'false' || needs.check-permissions.outputs.eol_correct == 'false') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -136,7 +154,7 @@ jobs:
           ref: ${{ needs.check-permissions.outputs.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Repair the modes of the manifest files and commit them to the branch
+      - name: Repair the modes and line endings and commit them to the branch
         shell: bash
         env:
           TARGET_BRANCH: ${{ github.head_ref || github.ref_name }}
@@ -151,15 +169,27 @@ jobs:
             echo 'The branch moved after the check; a newer run takes over.'
             exit 0
           fi
+          committed=false
           REPAIR_SCRIPT_MODES=1 python3 -c "$SCRIPT_MODE_CODE"
-          if git diff --cached --quiet; then
+          if ! git diff --cached --quiet; then
+            git diff --cached --numstat | awk '$1 != 0 || $2 != 0 { bad = 1 } END { exit bad }'
+            git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'Apply the executable file modes of .github/executable-files.txt'
+            committed=true
+          fi
+          git add --renormalize .
+          if ! git diff --cached --quiet; then
+            git diff --cached --name-only
+            git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'Normalize line endings according to .gitattributes'
+            committed=true
+          fi
+          if [[ "$committed" == false ]]; then
             echo 'No changes to commit.'
             exit 0
           fi
-          git diff --cached --numstat | awk '$1 != 0 || $2 != 0 { bad = 1 } END { exit bad }'
-          git -c user.name='github-actions[bot]' \
-            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
-            commit -m 'Apply the executable file modes of .github/executable-files.txt'
           git push "$remote" "HEAD:refs/heads/$TARGET_BRANCH"
           # Pushes with the workflow token start no workflows, so start the linter
           gh workflow run linter.yml --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
@@ -167,7 +197,7 @@ jobs:
   lint:
     name: Lint Code Base
     needs: check-permissions
-    if: ${{ needs.check-permissions.outputs.correct == 'true' }}
+    if: ${{ needs.check-permissions.outputs.correct == 'true' && needs.check-permissions.outputs.eol_correct == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -182,6 +212,20 @@ jobs:
           # Full git history is needed to get a proper list of changed files
           fetch-depth: 0
           persist-credentials: false
+      - name: Fetch the merge commit of the pull request
+        # Super-Linter reads GITHUB_SHA, which is the merge commit that GitHub
+        # builds for a pull request. The checkout above is the exact head commit,
+        # so the merge commit is not in it and Super-Linter stops.
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          header="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$header" fetch --no-tags origin "$MERGE_SHA"
+          git cat-file -e "$MERGE_SHA^{commit}"
       - name: Lint Code Base
         uses: super-linter/super-linter@latest # zizmor: ignore[unpinned-uses]
         env:
