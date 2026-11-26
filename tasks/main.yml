@@ -5,6 +5,9 @@
 - name: Derive effective user names
   ansible.builtin.import_tasks: misc/normalize_users.yml
   tags: always
+- name: Generate the email addresses of the users
+  ansible.builtin.import_tasks: misc/generate_addresses.yml
+  tags: always
 - name: Generate passwords if they don't exist yet
   ansible.builtin.set_fact:
     # postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"

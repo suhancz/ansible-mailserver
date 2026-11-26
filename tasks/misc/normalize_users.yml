@@ -6,7 +6,8 @@
 #         > otherwise: first initial + surname
 # Every username, derived or explicit, is converted to lowercase Latin ASCII on
 # the target host (files/misc/ascii_name.py, which needs the Unidecode package).
-# An explicit `name` is kept as `display_name`.
+# The explicit `name` is kept as `name_input` (it can be a nickname with any
+# characters); generate_addresses.yml uses it for the display names.
 #
 # The tasks that carry user data hide their output (`no_log`). Set
 # `mailserver_no_log: false` (only with test data!) to see why they fail.
@@ -76,7 +77,7 @@
 - name: Derive effective usernames
   # The loop item of the registered results is stored under `user_item` (the loop_var above)
   ansible.builtin.set_fact:
-    normalized_users: "{{ normalized_users + [result_item.user_item | combine({'name': effective_user_name, 'display_name': result_item.user_item.name | default(effective_user_name)})] }}"
+    normalized_users: "{{ normalized_users + [result_item.user_item | combine({'name': effective_user_name, 'name_input': result_item.user_item.name | default('')})] }}"
   vars:
     effective_user_name: >-
       {{ result_item.stdout | lower | regex_replace("[ ']", "") }}

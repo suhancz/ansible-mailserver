@@ -1,11 +1,11 @@
 ---
-# Tests for tasks/misc/normalize_users.yml
+# Tests for tasks/misc/normalize_users.yml and tasks/misc/generate_addresses.yml
 # The role is loaded with include_role, exactly as in a real run, so the files of
 # the role are found. Every case runs on its own (local) host, because facts set
 # with set_fact stay on a host and would leak into the next play. Run it with the
 # repository available as a role called ansible_mailserver
 # (see .github/workflows/test-users.yml):
-#   ANSIBLE_ROLES_PATH=/roles ansible-playbook -i case_family,case_plain,case_missing, -c local -e mailserver_no_log=false tests/normalize_users.yml
+#   ANSIBLE_ROLES_PATH=/roles ansible-playbook -i case_family,case_plain,case_missing,case_addresses,case_legacy, -c local -e mailserver_no_log=false tests/normalize_users.yml
 - name: Usernames in family mode
   hosts: case_family
   connection: local
@@ -36,11 +36,11 @@
       ansible.builtin.assert:
         that:
           - users | map(attribute='name') | list == ['akos', 'alexandros', 'beijing', 'maryann', 'oneil', 'tigris']
-    - name: Check that an explicit name is kept as display name
+    - name: Check that an explicit name is kept as typed
       ansible.builtin.assert:
         that:
-          - (users | last).display_name == 'Тигрис'
-          - (users | first).display_name == 'akos'
+          - (users | last).name_input == 'Тигрис'
+          - (users | first).name_input == ''
 
 - name: Usernames without family mode
   hosts: case_plain
@@ -94,3 +94,115 @@
           ansible.builtin.assert:
             that:
               - ansible_failed_task.name == 'Check that every user has enough data to derive a username'
+
+- name: Email addresses and display names
+  hosts: case_addresses
+  connection: local
+  gather_facts: false
+  vars:
+    family_mode: false
+    mailserver_domain: suhan.cz
+    mail_domains:
+      - name: suhan.cz
+        style: username
+      - name: fsck.it.com
+        style: username
+      - name: balla.global
+        style: givenname
+        surname: Balla
+      - name: balla.cloud
+        style: givenname
+        surname: Balla
+      - name: example.org
+        style: givenname.surname
+    users:
+      - firstname: Akos
+        surname: Balla
+        name: sha
+        display_name: suhanc
+        aliases:
+          - info@balla.cloud
+        password: secret
+      - firstname: Éva
+        surname: Nagy
+        password: secret
+      - firstname: Zoë
+        surname: Kiss
+        name: Zoe Kiss
+        password: secret
+      - firstname: Péter
+        surname: Kiss
+        name: Cica
+        password: secret
+  tasks:
+    - name: Derive the usernames and addresses
+      ansible.builtin.include_role:
+        name: ansible_mailserver
+        tasks_from: "{{ role_tasks_item }}"
+      loop:
+        - misc/normalize_users.yml
+        - misc/generate_addresses.yml
+      loop_control:
+        loop_var: role_tasks_item
+    - name: Check the addresses of the owner
+      ansible.builtin.assert:
+        that:
+          - users[0].name == 'sha'
+          - users[0].primary_address == 'sha@suhan.cz'
+          - users[0].all_addresses == ['sha@suhan.cz', 'sha@fsck.it.com', 'akos@balla.global', 'akos@balla.cloud', 'akos.balla@example.org', 'info@balla.cloud']
+    - name: Check the display names of the owner per address
+      ansible.builtin.assert:
+        that:
+          - users[0].display_name == 'suhanc'
+          - users[0].address_display_names['sha@suhan.cz'] == 'suhanc'
+          - users[0].address_display_names['sha@fsck.it.com'] == 'suhanc'
+          - users[0].address_display_names['akos@balla.global'] == 'Akos Balla'
+          - users[0].address_display_names['akos@balla.cloud'] == 'Akos Balla'
+          - users[0].address_display_names['akos.balla@example.org'] == 'Akos Balla'
+    - name: Check the addresses of a user of another family
+      ansible.builtin.assert:
+        that:
+          - users[1].name == 'enagy'
+          - users[1].all_addresses == ['enagy@suhan.cz', 'enagy@fsck.it.com', 'eva.nagy@example.org']
+          - users[1].display_name == 'Éva Nagy'
+    - name: Check the display names of an official-looking and a nickname-looking name
+      ansible.builtin.assert:
+        that:
+          - users[2].name == 'zoekiss'
+          - users[2].display_name == 'Zoë Kiss'
+          - users[3].name == 'cica'
+          - users[3].display_name == 'Cica'
+          - users[3].address_display_names['peter.kiss@example.org'] == 'Péter Kiss'
+    - name: Check the custom domains
+      ansible.builtin.assert:
+        that:
+          - custom_domains == ['fsck.it.com', 'balla.global', 'balla.cloud', 'example.org']
+
+- name: Without mail_domains only the primary address and the aliases are used
+  hosts: case_legacy
+  connection: local
+  gather_facts: false
+  vars:
+    family_mode: false
+    mailserver_domain: example.com
+    users:
+      - name: bob
+        aliases:
+          - a@x.org
+        password: secret
+  tasks:
+    - name: Derive the usernames and addresses
+      ansible.builtin.include_role:
+        name: ansible_mailserver
+        tasks_from: "{{ role_tasks_item }}"
+      loop:
+        - misc/normalize_users.yml
+        - misc/generate_addresses.yml
+      loop_control:
+        loop_var: role_tasks_item
+    - name: Check the addresses
+      ansible.builtin.assert:
+        that:
+          - users[0].primary_address == 'bob@example.com'
+          - users[0].all_addresses == ['bob@example.com', 'a@x.org']
+          - users[0].display_name == 'bob'

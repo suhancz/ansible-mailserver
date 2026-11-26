@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - tasks/misc/normalize_users.yml
+      - tasks/misc/generate_addresses.yml
       - files/misc/ascii_name.py
       - tests/normalize_users.yml
       - tests/mask_log.sh
@@ -37,7 +38,7 @@ jobs:
             microdnf -y install python39 python39-pip dnf
             pip3.9 install "ansible-core>=2.15,<2.17"
             export ANSIBLE_ROLES_PATH=/roles
-            ansible-playbook -v -i case_family,case_plain,case_missing, -c local \
+            ansible-playbook -v -i case_family,case_plain,case_missing,case_addresses,case_legacy, -c local \
               -e ansible_python_interpreter=/usr/libexec/platform-python \
               -e mailserver_no_log=false \
               tests/normalize_users.yml
