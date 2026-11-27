@@ -11,31 +11,67 @@
     group: root
   notify: Restart sssd
   loop:
-    - { section: 'domain/LDAP', option: 'id_provider', value: 'ldap' }
-    - { section: 'domain/LDAP', option: 'autofs_provider', value: 'ldap' }
-    - { section: 'domain/LDAP', option: 'auth_provider', value: 'ldap' }
-    - { section: 'domain/LDAP', option: 'chpass_provider', value: 'ldap' }
-    - { section: 'domain/LDAP', option: 'ldap_uri', value: 'ldaps://{{ mailserver_domain }}' }
-    - { section: 'domain/LDAP', option: 'ldap_chpass_uri', value: 'ldaps://{{ mailserver_domain }}' }
-    - { section: 'domain/LDAP', option: 'ldap_search_base', value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}" }
-    - { section: 'domain/LDAP', option: 'sudoers_base', value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}" }
-    - { section: 'domain/LDAP', option: 'sudo_provider', value: 'ldap' }
-    - { section: 'domain/LDAP', option: 'ldap_id_use_start_tls', value: 'True' }
-    - { section: 'domain/LDAP', option: 'ldap_tls_cacert', value: '/etc/dirsrv/slapd-{{ mailserver_hostname }}/ca.crt' }
-    - { section: 'domain/LDAP', option: 'cache_credentials', value: 'True' }
-    - { section: 'domain/LDAP', option: 'enumerate', value: 'True' }
-    - { section: 'domain/LDAP', option: 'ldap_tls_reqcert', value: 'allow' }
-    - { section: 'domain/LDAP', option: 'entry_cache_timeout', value: '600' }
-    - { section: 'domain/LDAP', option: 'ldap_network_timeout', value: '2' }
-    - { section: 'domain/LDAP', option: 'ldap_schema', value: 'rfc2307bis' }
-    - { section: 'domain/LDAP', option: 'ldap_group_member', value: 'uniqueMember' }
-    - { section: 'domain/LDAP', option: 'ldap_default_authtok_type', value: 'password' }
-    - { section: 'domain/LDAP', option: 'ldap_default_bind_dn', value: "cn=Directory Manager" }
-    - { section: 'domain/LDAP', option: 'ldap_default_authtok', value: '{{ ldap_admin_password }}' }
-    - { section: 'sssd', option: 'services', value: 'nss, pam, autofs, sudo' }
-    - { section: 'sssd', option: 'domains', value: 'LDAP' }
-    - { section: 'nss', option: 'homedir_substring', value: '/home' }
-    - { section: 'sudo', option: '', value: '' }
+    - { section: "domain/LDAP", option: "id_provider", value: "ldap" }
+    - { section: "domain/LDAP", option: "autofs_provider", value: "ldap" }
+    - { section: "domain/LDAP", option: "auth_provider", value: "ldap" }
+    - { section: "domain/LDAP", option: "chpass_provider", value: "ldap" }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_uri",
+        value: "ldaps://{{ mailserver_domain }}",
+      }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_chpass_uri",
+        value: "ldaps://{{ mailserver_domain }}",
+      }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_search_base",
+        value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}",
+      }
+    - {
+        section: "domain/LDAP",
+        option: "sudoers_base",
+        value: "dc={{ mailserver_domain | split('.') | join(',dc=') }}",
+      }
+    - { section: "domain/LDAP", option: "sudo_provider", value: "ldap" }
+    - { section: "domain/LDAP", option: "ldap_id_use_start_tls", value: "True" }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_tls_cacert",
+        value: "/etc/dirsrv/slapd-{{ mailserver_hostname }}/ca.crt",
+      }
+    - { section: "domain/LDAP", option: "cache_credentials", value: "True" }
+    - { section: "domain/LDAP", option: "enumerate", value: "True" }
+    - { section: "domain/LDAP", option: "ldap_tls_reqcert", value: "allow" }
+    - { section: "domain/LDAP", option: "entry_cache_timeout", value: "600" }
+    - { section: "domain/LDAP", option: "ldap_network_timeout", value: "2" }
+    - { section: "domain/LDAP", option: "ldap_schema", value: "rfc2307bis" }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_group_member",
+        value: "uniqueMember",
+      }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_default_authtok_type",
+        value: "password",
+      }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_default_bind_dn",
+        value: "cn=Directory Manager",
+      }
+    - {
+        section: "domain/LDAP",
+        option: "ldap_default_authtok",
+        value: "{{ ldap_admin_password }}",
+      }
+    - { section: "sssd", option: "services", value: "nss, pam, autofs, sudo" }
+    - { section: "sssd", option: "domains", value: "LDAP" }
+    - { section: "nss", option: "homedir_substring", value: "/home" }
+    - { section: "sudo", option: "", value: "" }
   loop_control:
     loop_var: sssd_item
   no_log: true
@@ -49,8 +85,8 @@
   loop:
     - "BASE    dc={{ mailserver_domain | split('.') | join(',dc=') }}"
     - "URI     ldaps://{{ mailserver_domain }}"
-    - 'TLS_CACERT      /etc/dirsrv/slapd-{{ mailserver_hostname }}/ca.crt'
-    - 'TLS_CACERTDIR /etc/dirsrv/slapd-{{ mailserver_hostname }}'
+    - "TLS_CACERT      /etc/dirsrv/slapd-{{ mailserver_hostname }}/ca.crt"
+    - "TLS_CACERTDIR /etc/dirsrv/slapd-{{ mailserver_hostname }}"
   loop_control:
     loop_var: openldap_item
 - name: Configure nscd
@@ -74,7 +110,7 @@
 - name: Add sudoers to nsswitch.conf if not there yet
   ansible.builtin.lineinfile:
     path: /etc/nsswitch.conf
-    line: 'sudoers: files sss'
+    line: "sudoers: files sss"
     regex: "^sudoers: .*"
     state: present
     backup: yes

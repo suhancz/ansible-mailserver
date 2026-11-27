@@ -11,7 +11,7 @@
 - name: Add hostnames to /etc/hosts
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    regexp: '^{{ item }}'
+    regexp: "^{{ item }}"
     line: '{{ item }} {{ mailserver_hostname }}.{{ mailserver_domain }} {{ mailserver_domain }} {{ custom_domains | join(" ") }}'
     mode: u=rw,og=r
     owner: root
@@ -72,8 +72,8 @@
 - name: Set up OS mail aliases
   ansible.builtin.lineinfile:
     path: /etc/aliases
-    regexp: '^root: *{{ mailserver_admin_user }}'
-    line: 'root: {{ mailserver_admin_user }}'
+    regexp: "^root: *{{ mailserver_admin_user }}"
+    line: "root: {{ mailserver_admin_user }}"
     mode: u=rw,og=r
     owner: root
     group: root
@@ -93,7 +93,7 @@
 - name: Add GO path to PATH
   ansible.builtin.lineinfile:
     path: /etc/profile.d/gopath.sh
-    line: 'export PATH=$PATH:$(go env GOPATH)/bin'
+    line: "export PATH=$PATH:$(go env GOPATH)/bin"
     mode: u=rw,og=r
     owner: root
     group: root

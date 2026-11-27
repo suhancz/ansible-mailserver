@@ -143,8 +143,8 @@
 - name: Set up MariaBackup DB privileges
   ansible.mysql.mysql_user:
     name: mariabackup
-    password: '{{ mariabackup_password }}'
-    priv: '*.*:RELOAD,PROCESS,LOCK TABLES,REPLICATION CLIENT'
+    password: "{{ mariabackup_password }}"
+    priv: "*.*:RELOAD,PROCESS,LOCK TABLES,REPLICATION CLIENT"
     host: localhost
     login_user: root
     login_password: "{{ mysql_root_password }}"

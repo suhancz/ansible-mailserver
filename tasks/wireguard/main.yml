@@ -10,8 +10,14 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/vpn.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/vpn-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf" }
+    - {
+        src: "httpd/vpn.conf.j2",
+        dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/vpn-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/418-vpn.{{ mailserver_domain }}-le-ssl.conf",
+      }
   notify: Restart httpd
 - name: Open firewall
   ansible.builtin.import_tasks: security/firewall.yml
@@ -168,8 +174,14 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/poweradmin.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/poweradmin-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf" }
+    - {
+        src: "httpd/poweradmin.conf.j2",
+        dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/poweradmin-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/003-poweradmin.{{ mailserver_domain }}-le-ssl.conf",
+      }
   notify: Restart httpd
 - name: Deploy .htaccess for the WireGuard configs
   ansible.builtin.template:

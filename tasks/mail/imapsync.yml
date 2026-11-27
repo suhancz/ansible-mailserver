@@ -39,13 +39,13 @@
     - name: "Save {{ current_user.old_imap_mail.user }}'s password in a file" # noqa name[template] we need to be informative, even if we deviate from the standards
       when: current_user.imap_dedup is defined and current_user.imap_dedup
       ansible.builtin.lineinfile:
-        path: '~{{ current_user.name }}/.cron_secrets'
-        line: 'IMAP_PASSWORD={{ current_user.password }}'
-        owner: '{{ current_user.name }}'
-        group: '{{ current_user.name }}'
+        path: "~{{ current_user.name }}/.cron_secrets"
+        line: "IMAP_PASSWORD={{ current_user.password }}"
+        owner: "{{ current_user.name }}"
+        group: "{{ current_user.name }}"
         mode: ug=rw,o=
         create: true
-        regexp: '^IMAP_PASSWORD='
+        regexp: "^IMAP_PASSWORD="
         validate: 'grep ^IMAP_PASSWORD="{{ current_user.password }}"$ %s'
     - name: De-duplicate IMAP mail
       when: current_user.imap_dedup is defined and current_user.imap_dedup
@@ -54,6 +54,6 @@
       ansible.builtin.cron:
         name: De-duplicate IMAP mail
         special_time: daily
-        job: "/usr/bin/bash -c 'export IMAP_PASSWORD=\"$(grep ^IMAP_PASSWORD= ~{{ current_user.name }}/.cron_secrets|cut -d= -f2)\"; /usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w ${IMAP_PASSWORD} -c -r -m INBOX'"
+        job: '/usr/bin/bash -c ''export IMAP_PASSWORD="$(grep ^IMAP_PASSWORD= ~{{ current_user.name }}/.cron_secrets|cut -d= -f2)"; /usr/local/bin/imapdedup.py -s mail.{{ mailserver_domain }} -u {{ current_user.name }}@{{ mailserver_domain }} -w ${IMAP_PASSWORD} -c -r -m INBOX'''
         backup: yes
         user: "{{ current_user.name }}"

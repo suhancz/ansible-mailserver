@@ -45,10 +45,22 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/domain.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/domain-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/wildcard.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/wildcard-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf" }
+    - {
+        src: "httpd/domain.conf.j2",
+        dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/domain-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}-le-ssl.conf",
+      }
+    - {
+        src: "httpd/wildcard.conf.j2",
+        dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/wildcard-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf",
+      }
   notify: Restart httpd
 - name: Deploy SSL config
   tags: ssl

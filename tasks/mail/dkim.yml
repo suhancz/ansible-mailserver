@@ -5,7 +5,7 @@
 #     port: 8891/tcp # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
 - name: Configure OpenDKIM
   ansible.builtin.lineinfile:
-    regexp: '{{ item.key }}'
+    regexp: "{{ item.key }}"
     line: "{{ '#' if item.comment }}{{ item.key }}\t{{ item.value }}"
     path: /etc/opendkim.conf
     mode: u=rw,og=r
@@ -15,18 +15,38 @@
     backup: yes
   loop:
     - { key: "Mode", value: "sv", comment: false }
-    - { key: 'ReportAddress', value: '"{{ mailserver_domain }} Postmaster" <postmaster@{{ mailserver_domain }}>', comment: false }
-    - { key: "KeyFile", value: "/etc/opendkim/keys/default.private", comment: true }
+    - {
+        key: "ReportAddress",
+        value: '"{{ mailserver_domain }} Postmaster" <postmaster@{{ mailserver_domain }}>',
+        comment: false,
+      }
+    - {
+        key: "KeyFile",
+        value: "/etc/opendkim/keys/default.private",
+        comment: true,
+      }
     - { key: "KeyTable", value: "/etc/opendkim/KeyTable", comment: false }
-    - { key: "SigningTable", value: "refile:/etc/opendkim/SigningTable", comment: false }
-    - { key: "ExternalIgnoreList", value: "refile:/etc/opendkim/TrustedHosts", comment: false }
-    - { key: "InternalHosts", value: "refile:/etc/opendkim/TrustedHosts", comment: false }
+    - {
+        key: "SigningTable",
+        value: "refile:/etc/opendkim/SigningTable",
+        comment: false,
+      }
+    - {
+        key: "ExternalIgnoreList",
+        value: "refile:/etc/opendkim/TrustedHosts",
+        comment: false,
+      }
+    - {
+        key: "InternalHosts",
+        value: "refile:/etc/opendkim/TrustedHosts",
+        comment: false,
+      }
     - { key: "Selector", value: "{{ dkim_selector }}", comment: false }
-    - { key: "RequireSafeKeys", value: "false", comment: false}
+    - { key: "RequireSafeKeys", value: "false", comment: false }
   notify: Restart opendkim
 - name: Configure OpenDKIM key table
   ansible.builtin.lineinfile:
-    regexp: '{{ item }}'
+    regexp: "{{ item }}"
     line: "{{ dkim_selector }}._domainkey.{{ item }} {{ item }}:{{ dkim_selector }}:/etc/opendkim/keys/{{ item }}/{{ dkim_selector }}.private"
     path: /etc/opendkim/KeyTable
     mode: u=rw,og=r
@@ -38,7 +58,7 @@
   notify: Restart opendkim
 - name: Configure OpenDKIM trusted hosts
   ansible.builtin.lineinfile:
-    regexp: '{{ item }}'
+    regexp: "{{ item }}"
     line: "*.{{ item }}"
     path: /etc/opendkim/TrustedHosts
     mode: u=rw,og=r
@@ -50,7 +70,7 @@
   notify: Restart opendkim
 - name: Configure OpenDKIM signing table
   ansible.builtin.lineinfile:
-    regexp: '{{ item }}'
+    regexp: "{{ item }}"
     line: "*@{{ item }} {{ dkim_selector }}._domainkey.{{ item }}"
     path: /etc/opendkim/SigningTable
     mode: u=rw,o=r

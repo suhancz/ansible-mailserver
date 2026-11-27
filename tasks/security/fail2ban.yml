@@ -59,7 +59,6 @@
     # - slapd
     # - postfixadmin
   notify: Restart fail2ban
-
 # - name: Set PostfixAdmin jail preferences
 #   community.general.ini_file:
 #     path: /etc/fail2ban/jail.d/ansible-mailserver.local

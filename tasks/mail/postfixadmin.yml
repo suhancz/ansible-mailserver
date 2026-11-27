@@ -30,8 +30,8 @@
 - name: Set up postfixadmin DB privileges
   ansible.mysql.mysql_user:
     name: postfixadmin
-    password: '{{ postfixadmin_db_password }}'
-    priv: 'postfixadmin.*:ALL'
+    password: "{{ postfixadmin_db_password }}"
+    priv: "postfixadmin.*:ALL"
     host: localhost
     login_user: root
     login_password: "{{ mysql_root_password }}"

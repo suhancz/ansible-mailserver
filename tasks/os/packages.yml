@@ -513,7 +513,10 @@
     force: yes
     backup: yes
   loop:
-    - { url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py", dest: "/usr/local/bin/imapdedup.py" }
+    - {
+        url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py",
+        dest: "/usr/local/bin/imapdedup.py",
+      }
 - name: Reset the PHP DNF module
   ansible.builtin.command: dnf module reset php -y
   tags:

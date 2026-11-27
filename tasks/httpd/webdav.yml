@@ -12,8 +12,14 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/webdav.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/webdav-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf" }
+    - {
+        src: "httpd/webdav.conf.j2",
+        dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/webdav-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/401-webdav.{{ mailserver_domain }}-le-ssl.conf",
+      }
   notify: Restart httpd
 - name: Create PAM module for HTTPD auth
   tags: webdav
@@ -85,7 +91,7 @@
   block:
     - name: Set SELinux context on WebDAV directory
       community.general.sefcontext:
-        target: '/var/www/html/webdav(/.*)?'
+        target: "/var/www/html/webdav(/.*)?"
         setype: httpd_sys_rw_content_t
         state: present
     - name: Apply SELinux file context on WebDAV directory

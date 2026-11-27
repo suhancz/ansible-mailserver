@@ -10,10 +10,22 @@
     group: root
     backup: yes
   loop:
-    - { src: "httpd/clientip.conf.j2", dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/clientip-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}-le-ssl.conf" }
-    - { src: "httpd/dyndns.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}.conf" }
-    - { src: "httpd/dyndns-le-ssl.conf.j2", dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}-le-ssl.conf" }
+    - {
+        src: "httpd/clientip.conf.j2",
+        dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/clientip-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/004-clientip.{{ mailserver_domain }}-le-ssl.conf",
+      }
+    - {
+        src: "httpd/dyndns.conf.j2",
+        dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/dyndns-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/005-dyndns.{{ mailserver_domain }}-le-ssl.conf",
+      }
   notify: Restart httpd
 - name: Fill PowerDNS DB with DynDNS data replacing Blowfish 2b ident with 2y
   tags:
@@ -23,7 +35,7 @@
   notify: Warn on passwords
   ansible.mysql.mysql_query:
     login_db: powerdnsdb
-    login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    login_user: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
     login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
     query:
       - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (2, 'Dynamic', 'For DNS updates')
@@ -202,7 +214,7 @@
   notify: Warn on passwords
   ansible.mysql.mysql_query:
     login_db: powerdnsdb
-    login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    login_user: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
     login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
     query:
       - REPLACE INTO `users` (`username`, `password`, `fullname`, `email`, `description`, `perm_templ`, `active`, `use_ldap`) VALUES ('{{ user.name }}', '{{ user.password | password_hash("blowfish") | replace("$2b$", "$2y$") }}', 'Dynamic DNS for user {{ user.name }}', '{{ user.name }}@{{ mailserver_domain }}', 'DNS updates for user {{ user.name }}', 2, 1, 0)

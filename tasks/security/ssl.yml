@@ -125,7 +125,8 @@
     - key: "PDNS_API_KEY"
       value: "{{ powerdns_api_key }}"
 - name: Generate LetsEncrypt certificates
-  ansible.builtin.command: "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 \
+  ansible.builtin.command:
+    "/usr/bin/lego -a --dns.disable-cp=1 --dns-timeout 4242 \
     --dns.resolvers {{ ansible_default_ipv4.address }} \
     --email ssl@{{ mailserver_domain }} --dns pdns \
     -d {{ ([mailserver_domain] + custom_domains) | join(' -d ') }} \

@@ -55,12 +55,12 @@
     - poweradmin
     - users
   ansible.mysql.mysql_user:
-    name: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    name: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
     password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
-    priv: 'powerdnsdb.*:SELECT,INSERT,UPDATE,DELETE'
+    priv: "powerdnsdb.*:SELECT,INSERT,UPDATE,DELETE"
     host: localhost
     login_user: root
-    login_password: '{{ mysql_root_password }}'
+    login_password: "{{ mysql_root_password }}"
   no_log: yes
   when: 'public_dns == "yes"'
   notify: Warn on passwords
@@ -71,7 +71,7 @@
     - users
   ansible.mysql.mysql_query:
     login_db: powerdnsdb
-    login_user: '{{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    login_user: "{{ mailserver_admin_user }}@{{ mailserver_domain }}"
     login_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
     query:
       - REPLACE INTO `perm_templ` (`id`, `name`, `descr`) VALUES (1, 'Administrator', 'Administrator template with full rights.')

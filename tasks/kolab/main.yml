@@ -2,7 +2,8 @@
 - name: Setup kolab
   tags: users
   # noqa yaml[line-length]
-  ansible.builtin.command: "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
+  ansible.builtin.command:
+    "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
     --mysqlserver=existing --mysqlhost=127.0.0.1 --mysqlrootpw={{ mysql_root_password }} \
     --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_hostname }}.{{ mailserver_domain }} \
     --domain={{ mailserver_domain }}"
@@ -67,17 +68,17 @@
     backup: true
   register: kolab_configure
   with_items:
-    - key: 'quota'
-      value: '0'
-    - key: 'partition'
-      value: 'archive'
-    - key: 'postfix_virtual_file'
-      value: '/etc/postfix/virtual_alias_maps_manual.cf'
-    - key: 'policy_uid'
+    - key: "quota"
+      value: "0"
+    - key: "partition"
+      value: "archive"
+    - key: "postfix_virtual_file"
+      value: "/etc/postfix/virtual_alias_maps_manual.cf"
+    - key: "policy_uid"
       value: >-
         {{ "%(givenname)s.lower()" if family_mode | bool
         else "'%(givenname)s'[0:1]%(surname)s.lower()" }}
-    - key: 'primary_mail'
+    - key: "primary_mail"
       value: "%(givenname)s{{ '.%(surname)s' if not family_mode | bool }}@%(domain)s"
   notify:
     - Restart kolab
@@ -158,7 +159,7 @@
 - name: Collect LDAP Postfix .cf files
   ansible.builtin.find:
     paths: /etc/postfix/ldap
-    patterns: '*.cf'
+    patterns: "*.cf"
   register: postfix_ldap_cf_files
 - name: Create custom LDAP Postfix .cf files
   when: item.path is not regex(".*_3\.cf$")
@@ -188,7 +189,7 @@
   ansible.builtin.lineinfile:
     dest: "{{ item.path }}"
     regexp: "^search_base = .*$"
-    line: 'search_base = dc=%2,dc=%1'
+    line: "search_base = dc=%2,dc=%1"
     owner: root
     group: root
     mode: u=rw,go=r
@@ -200,7 +201,7 @@
   ansible.builtin.lineinfile:
     dest: "{{ item.path | replace('.cf', '_3.cf') }}"
     regexp: "^domain = .*$"
-    line: 'domain = ldap:/etc/postfix/ldap/mydestination_3.cf'
+    line: "domain = ldap:/etc/postfix/ldap/mydestination_3.cf"
     owner: root
     group: root
     mode: u=rw,go=r
@@ -211,7 +212,7 @@
   ansible.builtin.lineinfile:
     dest: /etc/postfix/main.cf
     regexp: "^{{ item.key }} = .*$"
-    line: '{{ item.key }} = {{ item.value }}'
+    line: "{{ item.key }} = {{ item.value }}"
     owner: root
     group: root
     mode: u=rw,go=r
@@ -240,7 +241,7 @@
 - name: Set up domain aliases
   ansible.builtin.lineinfile:
     dest: /etc/postfix/virtual_alias_maps_manual.cf
-    line: '@{{ item }} @{{ mailserver_domain }}'
+    line: "@{{ item }} @{{ mailserver_domain }}"
     owner: root
     group: root
     mode: u=rw,go=r
@@ -283,7 +284,7 @@
 - name: Configure Roundcube authentication
   ansible.builtin.lineinfile:
     dest: /etc/roundcubemail/kolab_auth.inc.php
-    insertafter: '=> 389,'
+    insertafter: "=> 389,"
     line: "{{ item }}"
     owner: root
     group: root
@@ -361,10 +362,10 @@
     mode: u=rw,g=r,o=
     backup: true
   loop:
-    - key: 'memcache_hosts'
-      value: '127.0.0.1:11211'
-    - key: 'memcache_pconnect'
-      value: 'true'
+    - key: "memcache_hosts"
+      value: "127.0.0.1:11211"
+    - key: "memcache_pconnect"
+      value: "true"
   notify:
     - Restart memcached
     - Restart kolab
@@ -512,7 +513,7 @@
   loop_control:
     loop_var: kolab_service
 - name: Refresh the certificates
-  ansible.builtin.command: 'openssl rehash /etc/dirsrv/slapd-{{ mailserver_hostname }}'
+  ansible.builtin.command: "openssl rehash /etc/dirsrv/slapd-{{ mailserver_hostname }}"
 - name: Configure LDAP
   ansible.builtin.import_tasks: ldap/main.yml
   tags:

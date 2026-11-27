@@ -34,14 +34,30 @@
     group: root
     backup: yes
   loop:
-    - { name: "opendkim", paths: ["/etc/opendkim", "/etc/opendkim.conf"], service: True }
-    - { name: "opendmarc", paths: ["/etc/opendmarc", "/etc/opendmarc.conf"], service: True }
+    - {
+        name: "opendkim",
+        paths: ["/etc/opendkim", "/etc/opendkim.conf"],
+        service: True,
+      }
+    - {
+        name: "opendmarc",
+        paths: ["/etc/opendmarc", "/etc/opendmarc.conf"],
+        service: True,
+      }
     - { name: "kolab", paths: ["/etc/kolab"] }
-    - { name: "cyrus-imap", paths: ["/etc/imap", "/etc/cyrus-imap"], service: True }
+    - {
+        name: "cyrus-imap",
+        paths: ["/etc/imap", "/etc/cyrus-imap"],
+        service: True,
+      }
     # - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
-    - { name: "pdns", paths: ["/etc/pdns", "/etc/pdns-recursor", "/etc/dnsdist"], service: True }
+    - {
+        name: "pdns",
+        paths: ["/etc/pdns", "/etc/pdns-recursor", "/etc/dnsdist"],
+        service: True,
+      }
     - { name: "wg_vpn", paths: ["/etc/wireguard"], service: True }
 - name: Create systemd backup services
   ansible.builtin.template:
