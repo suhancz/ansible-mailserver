@@ -180,4 +180,3 @@
           - "'WantedBy=timers.target' in unit"
           - "'basic.target' not in unit"
           - "'Unit=mariadb-backup.service' in unit"
-          - "'basic.target' not in unit"

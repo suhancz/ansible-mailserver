@@ -8,9 +8,9 @@ Make the Kolab version of the role complete and releasable as 3.0.0: working and
 
 ## Current state
 
-Revision at the last update: 9a9ae0f (on `feature/kolab`, draft pull request #65, work stays on this branch). It follows c57b4b9, which fixes the failed backups and adds the Kolab backup coverage, and 9a9ae0f only adds the lint rule to `AGENTS.md`. The CI of f92d77d, c57b4b9 and 9a9ae0f has not been read yet.
+Revision at the last update: 647bee6 plus the commit that fixes the remaining lint findings (on `feature/kolab`, draft pull request #65, work stays on this branch). Before them come c57b4b9 (the failed backups fixed, the Kolab backup coverage) and 9a9ae0f and af56382 (the lint rule). The lint job of c57b4b9 failed (see the Super-Linter section); the CI of the later commits has not been read yet.
 
-- CI: the pull request run of 3dbf835 is green. The lint job reports success (a full run that includes the YAML files; only yamllint warnings remain) and all tests pass (username and address derivation, whole-role syntax check, unit tests). Earlier, Super-Linter had failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings); the fixes are the Pylint, shfmt and `aci` changes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4), the typo fix in `tasks/os/packages.yml` (c44c463) and the code spans for linter names in this file (3dbf835). The success is the overall result of the job; the per-linter result table was cut off in the fetched log, so no single linter line was read. The first version of the backup template test (e057aad) ran green (all assertions passed, 11 tasks); the extended version in c57b4b9 has not been read yet
+- CI: the pull request run of 3dbf835 is green. The lint job reports success (a full run that includes the YAML files; only yamllint warnings remain) and all tests pass (username and address derivation, whole-role syntax check, unit tests). Earlier, Super-Linter had failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings); the fixes are the Pylint, shfmt and `aci` changes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4), the typo fix in `tasks/os/packages.yml` (c44c463) and the code spans for linter names in this file (3dbf835). The success is the overall result of the job; the per-linter result table was cut off in the fetched log, so no single linter line was read. The first version of the backup template test (e057aad) ran green (all assertions passed, 11 tasks); the extended version has not been read yet
 - tests: the username and address derivation, the syntax check, the script unit tests and the check of the backup templates exist; nothing tests what the role does on a server (see the high-priority section)
 - backups: on the server built on `main` ten backup services were failed on 2026-11-27 (see the evidence below); the templates of this branch fix the causes found in the journal and cover the Kolab equivalents of what `main` backed up for Horde and Dovecot, but nothing has run on a server with them, so the backups count as not working until a backup and a restore ran in a test
 - instructions: `AGENTS.md` no longer copies the shared rules (2cc2922), has the CI test rule, the work-status rule for this file and, since 9a9ae0f, the rule to read the lint log and fix lint failures automatically
@@ -39,7 +39,7 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 - [ ] test: the Horde to Kolab migration on a prepared Horde sample
 - [ ] test: the redirects of the old Horde URLs (web, CalDAV, CardDAV, push and the other client URLs) to Kolab (see the section about the switch from Horde to Kolab)
 - [x] existing: username and address derivation, whole-role syntax check, unit tests of `files/misc/ascii_name.py` (`tests.yml`)
-- [x] new: render and check the systemd templates of the backups (`tests/backup_templates.yml`, entry _Backup service templates_ in `tests.yml`); it must be read green in CI once for the extended version of c57b4b9
+- [x] new: render and check the systemd templates of the backups (`tests/backup_templates.yml`, entry _Backup service templates_ in `tests.yml`); it must be read green in CI once for the extended version
 
 ### CI first
 
@@ -48,7 +48,7 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 - [x] codespell: the typo in the comment at `tasks/os/packages.yml:208` is fixed in c44c463 (one word changed); this file describes it without the misspelled word; green in the pull request run of 3dbf835
 - [x] Prettier: the temporary workflow ran the Prettier fixer of Super-Linter once, and the bot commit 652bb7a formatted exactly the 26 files of the lint log (424 additions, 165 deletions); the lint job of the pull request run of 3dbf835 succeeded with the YAML files included, and the syntax-check test passed after the reformat
 - [x] Trivy: `.trivyignore` at the repository root lists DS-0001, DS-0002 and DS-0026 (7d4c2d4, the same three decisions as the Checkov skips); the lint job of 3dbf835 succeeded, so the three findings do not come back
-- [ ] read the CI of f92d77d, c57b4b9 and 9a9ae0f (the extended test file `tests/backup_templates.yml` and the changed `tasks/backups/main.yml` are linted by the Ansible linter and checked by Prettier for the first time; the new block-style list items must pass Prettier)
+- [ ] read the CI of the commits after c57b4b9 (the extended test file `tests/backup_templates.yml` and the changed `tasks/backups/main.yml` are linted by the Ansible linter; in the lint log of c57b4b9 only CHECKOV and NATURAL_LANGUAGE failed)
 - [ ] optional check: read the Super-Linter result table of the next full lint log once, to see each linter line (the fetched log was cut off before it)
 - [x] codespell typo in `tasks/mariadb/create_mariadb_schema.yml` fixed (5cac1f6)
 - [x] the three tests passed (15c78c6, eacf254, c44c463, 813194b, 11115ea, 3dbf835)
@@ -56,7 +56,7 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 
 ### Kolab backup and restore
 
-The backups did not work on the old Horde setup (`main`) and have to work on Kolab. Evidence from the server built on `main` (2026-11-27, `systemctl --failed` and the journal): ten backup services were failed (dovecot, horde, ldap, opendkim, opendmarc, pdns, postfix, ssl, vsftpd, wg_vpn), `mariadb` was not. The causes found: the directories `/backup/ssl`, `/backup/ldap`, `/backup/vsftpd` (and probably the others) did not exist, so `tar` could not open its archive (`bzip2` is installed, GNU tar is 1.30); the LDAP service used the instance name `mrak.suhan`, but the instance is `slapd-mrak` (`dirsrv@mrak`); the postfix service was killed by the 90 second start timeout of its forking service while archiving `/var/vmail`. The points marked done are fixed in the templates and checked by rendering them in CI; none is verified on a running server. The test for that is the converge test of the high-priority section. The fixes for what only `main` has (the Dovecot and Horde services, `tasks/backups.yml`, its LDAP template with the wrong instance name) are not part of this branch: they go to a separate branch and pull request against `main`, and the one-liners for the running server are in the pull request description and in the chat.
+The backups did not work on the old Horde setup (`main`) and have to work on Kolab. Evidence from the server built on `main` (2026-11-27, `systemctl --failed` and the journal): ten backup services were failed (`dovecot`, `horde`, `ldap`, `opendkim`, `opendmarc`, `pdns`, `postfix`, `ssl`, `vsftpd`, `wg_vpn`), `mariadb` was not. The causes found: the directories `/backup/ssl`, `/backup/ldap`, `/backup/vsftpd` (and probably the others) did not exist, so `tar` could not open its archive (`bzip2` is installed, GNU tar is 1.30); the LDAP service used the instance name `mrak.suhan`, but the instance is `slapd-mrak` (`dirsrv@mrak`); the postfix service was killed by the 90 second start timeout of its forking service while archiving `/var/vmail`. The points marked done are fixed in the templates and checked by rendering them in CI; none is verified on a running server. The test for that is the converge test of the high-priority section. The fixes for what only `main` has (the Dovecot and Horde services, `tasks/backups.yml`, its LDAP template with the wrong instance name) are not part of this branch: they go to a separate branch and pull request against `main`, and the one-liners for the running server are in the pull request description and in the chat.
 
 - [x] every backup service creates its own directory (`ExecStartPre=/usr/bin/mkdir -p /backup/<name>`), so a missing directory cannot fail a backup
 - [x] the LDAP backup service and the LDAP restore use the instance name `mailserver_hostname` (the role uses it for `slapd-` and `dirsrv@` everywhere else); the dependency names are no longer quoted. Still to check on a Kolab server: that the instance is named after the short hostname there too
@@ -113,7 +113,7 @@ The backups did not work on the old Horde setup (`main`) and have to work on Kol
 The workflow `.github/workflows/tests.yml` (name _Tests_) runs four entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, the unit tests of `files/misc/ascii_name.py`, and the rendering check of the backup service templates. The logs are `test-users.log`, `test-role.log`, `test-unit.log` and `test-backups.log` on the `ci-results` branch. The converge test is the first item of the high-priority section.
 
 - [x] the first three entries and the log publishing pass (15c78c6, eacf254, c44c463, 813194b, 11115ea, 3dbf835)
-- [ ] the fourth entry (backup service templates) ran green on e057aad in its first version; the extended version of c57b4b9 has to be read green once
+- [ ] the fourth entry (backup service templates) ran green on e057aad in its first version; the extended version has to be read green once
 - [ ] add a converge test: a systemd-enabled AlmaLinux 8 container that runs the OS and LDAP parts of the role (`tasks/os`, `tasks/ldap`), then Postfix and finally the Kolab installation
 - [ ] check idempotence by running the converge twice
 
@@ -121,8 +121,11 @@ The workflow `.github/workflows/tests.yml` (name _Tests_) runs four entries in a
 
 Rule of the owner (2026-11-27): whenever the linter fails on this repository, read [lint.log](https://github.com/suhancz/ansible-mailserver/blob/ci-lint-results/lint.log) on the `ci-lint-results` branch and fix the findings automatically, at their cause, on the same branch, without waiting to be asked. Check that the linted commit in the first lines is the pushed one, look for errors of every linter in the full log (the excerpt only holds the first 300 matching lines), say so when the readable log is cut off before the failure, do not hide a finding with an ignore entry unless the owner decided that, and read the log again after every fix. The rule is in `AGENTS.md` too (9a9ae0f).
 
-- [x] the lint job saves the log, masks it and publishes `lint.log` on the `ci-lint-results` branch (seen for 2cc2922, 5cac1f6, eacf254, c44c463, 813194b, cb9e339, b446022, 11115ea and 3dbf835)
-- [ ] read `lint.log` for c57b4b9 and 9a9ae0f and fix what is red under the rule above
+- [x] the lint job saves the log, masks it and publishes `lint.log` on the `ci-lint-results` branch (seen for 2cc2922, 5cac1f6, eacf254, c44c463, 813194b, cb9e339, b446022, 11115ea, 3dbf835 and c57b4b9)
+- [x] read `lint.log` of c57b4b9: the lint job failed, and only CHECKOV and NATURAL_LANGUAGE show a failure in the readable log; the Ansible linter only reports its two known ignored warnings
+- [x] NATURAL_LANGUAGE of c57b4b9: the terms `ssl` (the list of failed backup services) and `bash` (a working rule) in this file; the service names are code spans and the word is `Bash` now
+- [ ] CHECKOV of c57b4b9: one failed check (a secrets scan, one failed, resource `a10bb3469022fd147b405e7b5521cb7bc77a86c2`); the readable log is cut off before the detail, so the file is not confirmed; the fake password value in `tests/backup_templates.yml` was replaced by a random one created in the test (647bee6) as the likeliest cause; read the next `lint.log` to confirm
+- [ ] read `lint.log` for the commits after c57b4b9 and fix what is red under the rule above
 - [x] the Ansible linter could not find the role `ansible_mailserver` for `tests/role_syntax.yml`; ignored as `syntax-check[specific]` in `.ansible-lint-ignore`, and it only shows as an ignored warning
 - [x] the natural language linter rejected an all-capitals Ansible, `file name` and `file names` in running text of this file; they are `Ansible`, `filename` and `filenames`
 - [x] the natural language linter also rejected an all-capitals EditorConfig and `host names` in running text of this file; they are `EditorConfig` and `hostnames` (cb9e339, b446022)
@@ -131,10 +134,10 @@ Rule of the owner (2026-11-27): whenever the linter fails on this repository, re
 - [x] editorconfig-checker accepts the files (EditorConfig passed in the logs of eacf254 and cb9e339)
 - [x] decided by the owner: Prettier is run once by a temporary workflow that uses the Super-Linter fixer, so the Prettier configuration is the same as in the lint job; the workflow `prettier-fix-yaml.yml` was added in 7d4c2d4, ran once (bot commit 652bb7a) and was deleted in e2471bf
 - [x] decided by the owner: Trivy gets the same ignores as Checkov for the three Dockerfile findings (`.trivyignore`, 7d4c2d4)
-- [ ] the excerpt at the top of `lint.log` stops after 300 lines and the yamllint warnings fill it, so errors of later linters are cut off; match only errors and failures there, or put the Super-Linter result table first (the lint workflow `linter.yml` has to be read first)
+- [ ] the excerpt at the top of `lint.log` stops after 300 lines and the yamllint warnings fill it, so errors of later linters are cut off; match only errors and failures there, or put the Super-Linter result table first (the lint workflow `linter.yml` has to be read first). The fetch tool also cuts the file before the Checkov detail, so a failed check cannot always be traced to its file
 - [ ] add indentation and trailing whitespace rules to `.editorconfig` once the existing files are checked
 - [ ] check after the next run: `AIX` in the platforms of `meta/main.yml` (an old warning, ignored as `schema[meta]`), `min_ansible_version` 2.9 is far too old, other aliases in other tasks (`user:`, `db:`, `daemon-reload`)
-- [ ] yamllint only warns (line length over 80, spaces inside braces, and the indentation rule on `defaults/main.yml`, still listed in the run of 3dbf835); Prettier now decides the style, so decide if the `.yamllint` rules should follow Prettier
+- [ ] yamllint only warns (line length over 80, spaces inside braces, and the indentation rule on `defaults/main.yml` and on the flow-style items of `tasks/backups/main.yml`, still listed in the run of c57b4b9); Prettier now decides the style, so decide if the `.yamllint` rules should follow Prettier
 
 ### Never pin tool versions
 
@@ -228,7 +231,7 @@ CI tests for every functionality first (high priority above), then LDAP and Post
 - whenever the linter fails, read `lint.log` on the `ci-lint-results` branch and fix the findings automatically at their cause on the same branch (see the Super-Linter section)
 - check the CI results at the start of every task and fix what is red; ask only when something is really unclear
 - explain changes in plain language, work independently, and keep the changes of `main` that are not Horde related
-- fixes that only matter for what `main` has (not used on this branch) go to a separate branch and pull request against `main`; what is in neither branch is given to the owner as instructions (a bash one-liner for the server, also as part of the `main` fix when useful)
+- fixes that only matter for what `main` has (not used on this branch) go to a separate branch and pull request against `main`; what is in neither branch is given to the owner as instructions (a Bash one-liner for the server, also as part of the `main` fix when useful)
 - name files after what they do
 - check the claims of automatic CI summaries against the real log and the documentation before following or rejecting them (a summary was wrong that `fetch-depth: 0` was missing and that `actions/checkout@v4` should be pinned, and right that `community.mysql` was renamed to `ansible.mysql`)
 
