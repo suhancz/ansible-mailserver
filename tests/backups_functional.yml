@@ -5,105 +5,69 @@
 # rendered and installed, every service is started twice with sample files in
 # place (the units they depend on are dummy services), the archives are checked,
 # the sample files are deleted and the newest archive of every service is
-# restored with the restore task file of the role. MariaDB and LDAP are not
-# covered yet (they need real servers). Never run this on a real server: it
-# writes to /etc and /var. Run it from the root of the repository, as root:
+# restored with the restore task file of the role. The list of the services is
+# the one of the role (vars/backup_services.yml); this file only adds the
+# sample files per service and the vsftpd service, which has its own template.
+# MariaDB and LDAP are not covered yet (they need real servers). Never run this
+# on a real server: it writes to /etc and /var. Run it from the root of the
+# repository, as root:
 #   ansible-playbook -i case_container, -c local tests/backups_functional.yml
 - name: Run the tarball backup services and restore from their archives
   hosts: case_container
   connection: local
   gather_facts: false
+  vars_files:
+    - ../vars/backup_services.yml
   vars:
     marker: backup-test-marker
     mailserver_hostname: mrak
     users:
       - name: bob
     template_dir: "{{ playbook_dir }}/../templates/systemd"
-    # Same services as the loop of the tarball services in tasks/backups/main.yml
-    tarball_services:
-      - name: opendkim
-        service: true
-        paths:
-          - /etc/opendkim
-          - /etc/opendkim.conf
-        files:
-          - /etc/opendkim/KeyTable
-          - /etc/opendkim.conf
-      - name: opendmarc
-        service: true
-        paths:
-          - /etc/opendmarc
-          - /etc/opendmarc.conf
-        files:
-          - /etc/opendmarc/ignore.hosts
-          - /etc/opendmarc.conf
-      - name: kolab
-        paths:
-          - /etc/kolab
-          - /etc/roundcubemail
-          - /etc/iRony
-          - /etc/kolab-freebusy
-        files:
-          - /etc/kolab/kolab.conf
-          - /etc/roundcubemail/config.inc.php
-          - /etc/iRony/dav.inc.php
-          - /etc/kolab-freebusy/config.ini
-      - name: cyrus-imap
-        unit: cyrus-imapd
-        service: true
-        paths:
-          - /etc/imapd.conf
-          - /etc/cyrus.conf
-          - /etc/imap
-          - /etc/cyrus-imap
-        files:
-          - /etc/imapd.conf
-          - /etc/cyrus.conf
-      - name: cyrus-imap-data
-        unit: cyrus-imapd
-        service: true
-        mboxlist_dump: true
-        paths:
-          - /var/lib/imap
-          - /var/spool/imap
-        files:
-          - /var/lib/imap/mailboxes.db
-          - /var/spool/imap/user/test/1.
-      - name: postfix
-        service: true
-        paths:
-          - /etc/postfix
-          - /var/vmail
-        files:
-          - /etc/postfix/main.cf
-          - /var/vmail/example.org/bob/Maildir/cur/1
-      - name: ssl
-        paths:
-          - /etc/letsencrypt
-        files:
-          - /etc/letsencrypt/live/example.org/fullchain.pem
-      - name: pdns
-        service: true
-        paths:
-          - /etc/pdns
-          - /etc/pdns-recursor
-          - /etc/dnsdist
-        files:
-          - /etc/pdns/pdns.conf
-          - /etc/pdns-recursor/recursor.conf
-      - name: wg_vpn
-        service: true
-        paths:
-          - /etc/wireguard
-        files:
-          - /etc/wireguard/wg0.conf
-      - name: vsftpd
-        service: true
-        template: vsftpd-backup.service.j2
-        paths: []
-        files:
-          - /etc/vsftpd/vsftpd.conf
-          - /home/bob/ftp/hello.txt
+    vsftpd_service:
+      name: vsftpd
+      service: true
+      template: vsftpd-backup.service.j2
+    # Sample files per service; a service of the role without an entry here
+    # fails the test on purpose
+    sample_files:
+      opendkim:
+        - /etc/opendkim/KeyTable
+        - /etc/opendkim.conf
+      opendmarc:
+        - /etc/opendmarc/ignore.hosts
+        - /etc/opendmarc.conf
+      kolab:
+        - /etc/kolab/kolab.conf
+        - /etc/roundcubemail/config.inc.php
+        - /etc/iRony/dav.inc.php
+        - /etc/kolab-freebusy/config.ini
+      cyrus-imap:
+        - /etc/imapd.conf
+        - /etc/cyrus.conf
+      cyrus-imap-data:
+        - /var/lib/imap/mailboxes.db
+        - /var/spool/imap/user/test/1.
+      postfix:
+        - /etc/postfix/main.cf
+        - /var/vmail/example.org/bob/Maildir/cur/1
+      ssl:
+        - /etc/letsencrypt/live/example.org/fullchain.pem
+      pdns:
+        - /etc/pdns/pdns.conf
+        - /etc/pdns-recursor/recursor.conf
+      wg_vpn:
+        - /etc/wireguard/wg0.conf
+      vsftpd:
+        - /etc/vsftpd/vsftpd.conf
+        - /home/bob/ftp/hello.txt
+  pre_tasks:
+    - name: Combine the backup services of the role with the sample files
+      ansible.builtin.set_fact:
+        tarball_services: "{{ tarball_services | default([]) + [item | combine({'files': sample_files[item.name]})] }}"
+      loop: "{{ backup_tarball_services + [vsftpd_service] }}"
+      loop_control:
+        label: "{{ item.name }}"
   tasks:
     - name: Install a dummy service for every unit the backups depend on
       ansible.builtin.copy:

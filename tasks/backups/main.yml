@@ -37,6 +37,9 @@
     group: root
     mode: u=rw,go=
   no_log: "{{ mailserver_no_log | default(true) }}"
+- name: Load the list of the tarball backup services
+  ansible.builtin.include_vars:
+    file: backup_services.yml
 - name: Create systemd tarball backup services
   ansible.builtin.template:
     src: "systemd/tarball-backup.service.j2"
@@ -45,47 +48,9 @@
     owner: root
     group: root
     backup: yes
-  loop:
-    - {
-        name: "opendkim",
-        paths: ["/etc/opendkim", "/etc/opendkim.conf"],
-        service: True,
-      }
-    - {
-        name: "opendmarc",
-        paths: ["/etc/opendmarc", "/etc/opendmarc.conf"],
-        service: True,
-      }
-    - name: kolab
-      paths:
-        - /etc/kolab
-        - /etc/roundcubemail
-        - /etc/iRony
-        - /etc/kolab-freebusy
-    - name: cyrus-imap
-      paths:
-        - /etc/imapd.conf
-        - /etc/cyrus.conf
-        - /etc/imap
-        - /etc/cyrus-imap
-      unit: cyrus-imapd
-      service: true
-    - name: cyrus-imap-data
-      paths:
-        - /var/lib/imap
-        - /var/spool/imap
-      unit: cyrus-imapd
-      service: true
-      mboxlist_dump: true
-    # - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
-    - { name: "postfix", paths: ["/etc/postfix", "/var/vmail"], service: True }
-    - { name: "ssl", paths: ["/etc/letsencrypt"] }
-    - {
-        name: "pdns",
-        paths: ["/etc/pdns", "/etc/pdns-recursor", "/etc/dnsdist"],
-        service: True,
-      }
-    - { name: "wg_vpn", paths: ["/etc/wireguard"], service: True }
+  loop: "{{ backup_tarball_services }}"
+  loop_control:
+    label: "{{ item.name }}"
 - name: Create systemd backup services
   ansible.builtin.template:
     src: "systemd/{{ item }}-backup.service.j2"

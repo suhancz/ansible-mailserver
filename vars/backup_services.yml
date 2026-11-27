@@ -1,0 +1,58 @@
+---
+# The backup services that archive paths with tar. tasks/backups/main.yml
+# loads this file and renders templates/systemd/tarball-backup.service.j2 for
+# every entry; tests/backups_functional.yml reads the same file, so the role
+# and its test cannot drift apart. Fields: name (backup directory and unit
+# name), paths (archived with a trailing *), service (the backup waits for
+# the unit), unit (the unit name if it differs from name), mboxlist_dump (dump
+# the Cyrus mailbox list before the archive).
+backup_tarball_services:
+  - name: opendkim
+    service: true
+    paths:
+      - /etc/opendkim
+      - /etc/opendkim.conf
+  - name: opendmarc
+    service: true
+    paths:
+      - /etc/opendmarc
+      - /etc/opendmarc.conf
+  - name: kolab
+    paths:
+      - /etc/kolab
+      - /etc/roundcubemail
+      - /etc/iRony
+      - /etc/kolab-freebusy
+  - name: cyrus-imap
+    unit: cyrus-imapd
+    service: true
+    paths:
+      - /etc/imapd.conf
+      - /etc/cyrus.conf
+      - /etc/imap
+      - /etc/cyrus-imap
+  - name: cyrus-imap-data
+    unit: cyrus-imapd
+    service: true
+    mboxlist_dump: true
+    paths:
+      - /var/lib/imap
+      - /var/spool/imap
+  - name: postfix
+    service: true
+    paths:
+      - /etc/postfix
+      - /var/vmail
+  - name: ssl
+    paths:
+      - /etc/letsencrypt
+  - name: pdns
+    service: true
+    paths:
+      - /etc/pdns
+      - /etc/pdns-recursor
+      - /etc/dnsdist
+  - name: wg_vpn
+    service: true
+    paths:
+      - /etc/wireguard
