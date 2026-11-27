@@ -14,7 +14,6 @@
   connection: local
   gather_facts: false
   vars:
-    mariabackup_password: not-a-real-password
     mailserver_hostname: mrak
     mailserver_domain: suhan.cz
     users:
@@ -22,6 +21,10 @@
     template_dir: "{{ playbook_dir }}/../templates/systemd"
     render_dir: /tmp/backup-templates
   tasks:
+    - name: Create a random test password
+      ansible.builtin.set_fact:
+        mariabackup_password: "{{ lookup('ansible.builtin.password', '/dev/null length=24 chars=ascii_letters') }}"
+      no_log: true
     - name: Create the directory for the rendered files
       ansible.builtin.file:
         path: "{{ render_dir }}"
@@ -138,7 +141,7 @@
           - "'-mindepth 1' in unit"
           - "'{} +' in unit"
           - "'--defaults-extra-file=/etc/mariabackup.cnf' in unit"
-          - "'not-a-real-password' not in unit"
+          - "mariabackup_password not in unit"
           - "'--password' not in unit"
           - "unit.index('mariabackup --defaults') < unit.index('/usr/bin/find')"
     - name: Check the LDAP service
@@ -177,3 +180,4 @@
           - "'WantedBy=timers.target' in unit"
           - "'basic.target' not in unit"
           - "'Unit=mariadb-backup.service' in unit"
+          - "'basic.target' not in unit"
