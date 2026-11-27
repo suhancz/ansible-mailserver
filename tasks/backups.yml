@@ -17,6 +17,7 @@
     - /backup/dovecot
     - /backup/postfix
     - /backup/pdns
+    - /backup/wg_vpn
     - /var/www/webdav/.backup
 - name: BindFS mount the backup directory to WebDav
   ansible.posix.mount:
