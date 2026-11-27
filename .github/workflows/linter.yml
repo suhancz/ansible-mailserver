@@ -103,6 +103,7 @@ jobs:
   check-permissions:
     name: Check executable permissions
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     outputs:
@@ -149,6 +150,7 @@ jobs:
     needs: check-permissions
     if: ${{ (needs.check-permissions.outputs.correct == 'false' || needs.check-permissions.outputs.eol_correct == 'false') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
       actions: write
@@ -204,6 +206,7 @@ jobs:
     needs: check-permissions
     if: ${{ needs.check-permissions.outputs.correct == 'true' && needs.check-permissions.outputs.eol_correct == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: read
