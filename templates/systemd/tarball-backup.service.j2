@@ -1,17 +1,14 @@
 [Unit]
 Description={{ item.name }} backup
 {% if item.service is defined and item.service %}
-After={{ item.unit | default(item.name) }}.service
+After={{ item.name }}.service
 After=backup.mount
-Requires={{ item.unit | default(item.name) }}.service
+Requires={{ item.name }}.service
 {% endif %}
 
 [Service]
 Type=oneshot
 ExecStartPre=/usr/bin/mkdir -p /backup/{{ item.name }}
-{% if item.mboxlist_dump is defined and item.mboxlist_dump %}
-ExecStartPre=-/usr/sbin/runuser -u cyrus -- /bin/sh -c '/usr/lib/cyrus-imapd/ctl_mboxlist -d > /var/lib/imap/mailboxes.dump.json'
-{% endif %}
 ExecStart=/bin/sh -c '/usr/bin/tar cjvf /backup/{{ item.name }}/{{ item.name }}-`/usr/bin/date -Iminutes`.tar.bz2 --ignore-failed-read {{ item.paths|join("* ") }}* && /usr/bin/find /backup/{{ item.name }}/ -mindepth 1 -maxdepth 1 -mtime +7 -exec /usr/bin/rm -rf {} +'
 StandardOutput=journal
 
