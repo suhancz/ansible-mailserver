@@ -10,14 +10,14 @@ Durable, non-sensitive lessons and decisions for every agent that works on this 
 - it also rejected an all-capitals `Ansible` or `EditorConfig` and plain-text tool names that look like product names, so put the names of linters and tools in code spans, and quote a rejected term only inside a code span
 - `yamllint` only warns here (line length over 80, spaces inside braces, indentation of `defaults/main.yml` and of flow-style items), and `Prettier` decides the YAML style (one bot commit formatted 26 files), so do not fix these warnings by hand
 - `ansible-lint` reports two known ignored warnings: `schema[meta]` for the platform `AIX` in `meta/main.yml`, and `syntax-check[specific]` for `tests/role_syntax.yml`, which is listed in `.ansible-lint-ignore`
-- `Checkov` and `Trivy` ignore the three Dockerfile findings DS-0001, DS-0002 and DS-0026 by decision of the owner (`.trivyignore` and the `Checkov` configuration); a fake password value in a test template probably triggered `Checkov` once
+- `Checkov` and `Trivy` ignore the three Dockerfile findings DS-0001, DS-0002 and DS-0026 by decision of the owner (`.trivyignore` and the `Checkov` configuration); a fake password value in a test template probably triggered `Checkov` once (the exact rule is unknown, the log was overwritten)
 - the excerpt at the top of `lint.log` stops after 300 lines and the `yamllint` warnings fill it, so the errors of later linters can be cut off; the first lines name the linted commit, which has to be the commit that was pushed
-- the lint job of a pull request run can take about 5.5 minutes while the push run of the same commit needs under 2 minutes; the limit of 20 minutes is far above both
+- the lint job takes about 2 to 6 minutes (the pull request run is the slower one, 6 minutes 3 seconds for `5c491b8`); the limit of 20 minutes is far above
 
 ## Notes on the tools
 
-- the GitHub connector returns only the first part of a large file (about 40 KB; `TODO.md` is about 50 KB) and writes only whole files; to change a large file, read all of it with a scrape of its raw URL at a commit SHA, change only the needed lines, push the complete file, and check the size of the new commit
-- `lint.log` on `ci-lint-results` is overwritten by every run and is about 940 KB, and the connector cuts it off, so for a run whose log was overwritten the result of the job in the check runs is the proof
+- the GitHub connector returns only the first part of a large file (about 40 KB) and writes only whole files, so keep every file under 30 KB (`TODO.md` was about 55 KB and was cut off, so it was shortened); to change a larger file, read all of it with a scrape of its raw URL at a commit SHA, change only the needed lines, push the complete file, and check the size of the new commit
+- `lint.log` on `ci-lint-results` is overwritten by every run (its history shows one commit) and is about 940 KB, and the connector cuts it off, so for a run whose log was overwritten the result of the job in the check runs is the proof
 - the connector has no tool for workflow runs: read the status of a pull request from its check runs, and the status of a branch such as `main` by scraping the Actions page of the repository with the filter `branch:main`
 - tests run only in the CI containers (AlmaLinux 8), not on the machine of the agent
 
@@ -26,3 +26,4 @@ Durable, non-sensitive lessons and decisions for every agent that works on this 
 - never pin the version of a tool, an action, a collection or a package in this repository; the shared rules of `ai-agent-config` pin a `Super-Linter` image tag, which is an open decision in `TODO.md`
 - all AI instructions of this repository, including this memory file, stay in the branch and go to `main` with the release of Kolab; only `TODO.md` is deleted before the merge
 - every commit carries the update of `TODO.md` and a CI test for every change of what the server does
+- write files in as few words as possible while keeping the meaning, and always work around the truncation risk (2026-11-27; the shared rule is merged in `ai-agent-config`)
