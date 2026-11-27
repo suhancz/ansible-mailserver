@@ -1,0 +1,151 @@
+---
+- name: Enable UNIX socket authentication
+  community.general.ini_file:
+    path: /etc/my.cnf.d/mariadb-server.cnf
+    section: mariadb
+    option: plugin_load_add
+    value: auth_socket
+    mode: u=rw,go=r
+    backup: true
+  tags:
+    - kolab
+- name: Make sure MariaDB is running
+  ansible.builtin.systemd_service:
+    name: mariadb
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  tags:
+    - kolab
+- name: Set MariaDB root password
+  block:
+    - name: Set the MariaDB root password
+      ansible.mysql.mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        host: localhost
+      no_log: yes
+  rescue:
+    - name: Make sure MySQL root password is right
+      block:
+        - name: Ensure the MariaDB root password
+          ansible.mysql.mysql_user:
+            name: root
+            password: "{{ mysql_root_password }}"
+            host: localhost
+            login_user: root
+            login_password: "{{ mysql_root_password }}"
+          no_log: yes
+      rescue:
+        - name: Stop MariaDB
+          when: reset == "yes" or forgotten_mariadb_root_password
+          ansible.builtin.systemd_service:
+            name: mariadb
+            daemon_reload: yes
+            enabled: yes
+            state: stopped
+        - name: Start MariaDB in safe mode
+          when: reset == "yes" or forgotten_mariadb_root_password
+          ansible.builtin.shell: "mysqld_safe --skip-grant-tables --skip-networking &"
+          register: mariadb_safe_mode
+          changed_when: mariadb_safe_mode.rc == 0
+        - name: "Generate MariaDB root password reset SQL"
+          when: reset == "yes" or forgotten_mariadb_root_password
+          ansible.builtin.template:
+            src: mariadb/reset_mariadb_root_password.sql.j2
+            dest: /tmp/ansible-mailserver-install.reset_mariadb_root_password.sql
+            mode: u=rw,og=r
+            owner: root
+            group: root
+            backup: yes
+        - name: Force-reset the MariaDB root password
+          when: reset == "yes" or forgotten_mariadb_root_password
+          ansible.mysql.mysql_db:
+            name: all
+            state: import
+            login_user: root
+            target: /tmp/ansible-mailserver-install.reset_mariadb_root_password.sql
+          no_log: yes
+        - name: Read MariaDB PID
+          when: reset == "yes" or forgotten_mariadb_root_password
+          ansible.builtin.command: cat /var/run/mariadb/mariadb.pid
+          register: mariadb_pid
+          changed_when: mariadb_pid.rc == 0
+        - name: Stop MariaDB
+          when: reset == "yes" or forgotten_mariadb_root_password
+          ansible.builtin.command: "kill {{ mariadb_pid.stdout }}"
+          register: kill_mariadb
+          changed_when: kill_mariadb.rc == 0
+        - name: Make sure MariaDB is running
+          when: reset == "yes" or forgotten_mariadb_root_password
+          ansible.builtin.systemd_service:
+            name: mariadb
+            daemon_reload: yes
+            enabled: yes
+            state: restarted
+- name: Delete anonymous MySQL server user for ansible_fqdn
+  ansible.mysql.mysql_user:
+    name: ""
+    host: "{{ ansible_fqdn }}"
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Delete anonymous MySQL server user for localhost
+  ansible.mysql.mysql_user:
+    name: ""
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secure the MySQL root user for IPV6 localhost (::1)
+  ansible.mysql.mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    host: "::1"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Secure the MySQL root user for IPV4 localhost (127.0.0.1)
+  ansible.mysql.mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    host: 127.0.0.1
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: "Secure the MySQL root user for domain: {{ item }}"
+  ansible.mysql.mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+  loop: "{{ ['localhost'] + [ansible_fqdn] + custom_domains }}"
+- name: Secure the MySQL root user for UNIX socket connections
+  ansible.mysql.mysql_user:
+    name: root
+    host: localhost
+    plugin_auth_string: unix_socket
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+  tags:
+    - kolab
+- name: Remove the MySQL test database
+  ansible.mysql.mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes
+- name: Set up MariaBackup DB privileges
+  ansible.mysql.mysql_user:
+    name: mariabackup
+    password: "{{ mariabackup_password }}"
+    priv: "*.*:RELOAD,PROCESS,LOCK TABLES,REPLICATION CLIENT"
+    host: localhost
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  no_log: yes

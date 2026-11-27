@@ -4,10 +4,13 @@ $ORIGIN {{ mailserver_domain }}.
            NS ns.{{ mailserver_domain }}. 
 ; begin RPZ RR definitions
 
-{% set subsites = ['postfixadmin', 'poweradmin']%}
+{# {% set subsites = ['postfixadmin', 'poweradmin']%}
 {% for subsite in subsites %}
 {{ subsite }}.vpn.{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '.1') }}{% else %}127.0.0.1{% endif %}
 
 # {{ subsite }}.vpn.{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', ':1') }}{% else %}::1{% endif %}
 
 {% endfor %}
+ #}
+ poweradmin.vpn.{{ mailserver_domain }} A {% if wireguard is defined %}{{ wireguard.ipv4_pool|split('/')|first|regex_replace('\.0$', '.1') }}{% else %}127.0.0.1{% endif %}
+; poweradmin.vpn.{{ mailserver_domain }} AAAA {% if wireguard is defined %}{{ wireguard.ipv6_pool|split('/')|first|regex_replace('\:0$', ':1') }}{% else %}::1{% endif %}

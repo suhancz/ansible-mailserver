@@ -19,8 +19,13 @@ SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     DAV On
     Options +Indexes
     AuthType Basic
-    AuthName "private area"
-    AuthBasicProvider external
+    AuthName "Enter LDAP credentials"
+    AuthBasicProvider ldap external
+    AuthLDAPGroupAttribute member
+    AuthLDAPSubGroupClass group
+    AuthLDAPGroupAttributeIsDN On  AuthLDAPURL ldaps://{{ mailserver_domain }}/ou=People,dc={{ mailserver_domain | split('.') | join(',dc=') }}
+    AuthLDAPBindDN cn=Directory Manager
+    AuthLDAPBindPassword {{ ldap_admin_password }}
     AuthExternal pwauth
     Require valid-user
     Require file-owner

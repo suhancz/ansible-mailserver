@@ -1,0 +1,106 @@
+---
+- name: Check SELinux status
+  ansible.builtin.command: getenforce
+  changed_when: getenforce.rc == 0
+  register: getenforce
+  tags: always
+- name: "Set hostname to {{ mailserver_hostname }}.{{ mailserver_domain }}" # noqa name[template] we need to be informative, even if we deviate from the standards
+  ansible.builtin.command: "hostnamectl set-hostname {{ mailserver_hostname }}.{{ mailserver_domain }}"
+  register: set_hostname
+  changed_when: set_hostname.rc == 0
+- name: Add hostnames to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "^{{ item }}"
+    line: '{{ item }} {{ mailserver_hostname }}.{{ mailserver_domain }} {{ mailserver_domain }} {{ custom_domains | join(" ") }}'
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+  loop:
+    - 127.0.0.1 localhost.localdomain localhost
+    - ::1 localhost6.localdomain6 localhost6
+  tags: kolab
+
+- name: Enable IPv6
+  when: ansible_default_ipv6.address is not defined
+  block:
+    - name: Enable IPv6 via sysctl
+      ansible.posix.sysctl:
+        name: "{{ item }}"
+        value: 0
+        state: present
+        sysctl_set: true
+      loop:
+        - "net.ipv6.conf.all.disable_ipv6"
+        - "net.ipv6.conf.{{ ansible_default_ipv4.interface }}.disable_ipv6"
+      register: ipv6_enable
+    - name: Reboot to pick up changes
+      when: ipv6_enable.changed
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        msg: "Reboot initiated by Ansible to enable IPv6"
+    - name: Gather facts
+      ansible.builtin.setup:
+- name: Install requiremets
+  block:
+    - name: Install packages
+      ansible.builtin.import_tasks: os/packages.yml
+  rescue:
+    - name: Find repo configs
+      ansible.builtin.find:
+        paths: /etc/yum.repos.d
+        patterns: "*.repo"
+      register: repo_files
+    - name: Disable CentOS mirrorlist
+      ansible.builtin.replace:
+        path: "{{ item.path }}"
+        regexp: "^mirrorlist=http://mirrorlist.centos.org"
+        replace: "#mirrorlist=http://mirrorlist.centos.org"
+        validate: "grep '#mirrorlist=http://mirrorlist.centos.org' %s"
+      loop: "{{ repo_files.files }}"
+    - name: Move to CentOS Vault
+      ansible.builtin.replace:
+        path: "{{ item.path }}"
+        regexp: "#baseurl=http://mirror.centos.org"
+        replace: "baseurl=http://vault.centos.org"
+        validate: "grep '^baseurl=http://vault.centos.org' %s"
+      loop: "{{ repo_files.files }}"
+    - name: Install packages
+      ansible.builtin.import_tasks: os/packages.yml
+- name: Set up OS mail aliases
+  ansible.builtin.lineinfile:
+    path: /etc/aliases
+    regexp: "^root: *{{ mailserver_admin_user }}"
+    line: "root: {{ mailserver_admin_user }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+- name: Enable ip_conntrack
+  community.general.modprobe:
+    name: ip_conntrack
+    state: present
+  tags: wireguard
+- name: Set up cron mailto
+  ansible.builtin.cron:
+    backup: yes
+    env: yes
+    name: MAILTO
+    job: "hostmaster+cron@{{ mailserver_domain }}"
+- name: Add GO path to PATH
+  ansible.builtin.lineinfile:
+    path: /etc/profile.d/gopath.sh
+    line: "export PATH=$PATH:$(go env GOPATH)/bin"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    create: yes
+    backup: yes
+  tags: ssl
+- name: Configure AIDE
+  ansible.builtin.import_tasks: security/aide.yml
+  tags: aide

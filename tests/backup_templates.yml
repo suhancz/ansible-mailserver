@@ -1,0 +1,182 @@
+---
+# Tests for the systemd templates of the backups (templates/systemd). The
+# templates are rendered with test data and the result is checked: the services
+# must be oneshot services without RemainAfterExit (no start timeout), create
+# their backup directory themselves, run the retention after the new backup is
+# written without matching the backup directory itself, the MariaDB password
+# must not be in the unit file, the LDAP service must use the instance named
+# after the hostname, the Cyrus services must depend on cyrus-imapd.service and
+# the mailbox data service must dump the mailbox list, and the timers belong to
+# timers.target. Run it from the root of the repository:
+#   ansible-playbook -i case_backups, -c local tests/backup_templates.yml
+- name: Render and check the systemd templates of the backups
+  hosts: case_backups
+  connection: local
+  gather_facts: false
+  vars:
+    mailserver_hostname: mrak
+    mailserver_domain: suhan.cz
+    users:
+      - name: bob
+    template_dir: "{{ playbook_dir }}/../templates/systemd"
+    render_dir: /tmp/backup-templates
+  tasks:
+    - name: Create a random test password
+      ansible.builtin.set_fact:
+        mariabackup_password: "{{ lookup('ansible.builtin.password', '/dev/null length=24 chars=ascii_letters') }}"
+      no_log: true
+    - name: Create the directory for the rendered files
+      ansible.builtin.file:
+        path: "{{ render_dir }}"
+        state: directory
+        mode: u=rwx
+    - name: Render the tarball service of the Cyrus configuration
+      ansible.builtin.template:
+        src: "{{ template_dir }}/tarball-backup.service.j2"
+        dest: "{{ render_dir }}/tarball.service"
+        mode: u=rw,og=r
+      vars:
+        item:
+          name: cyrus-imap
+          paths:
+            - /etc/imapd.conf
+            - /etc/imap
+          unit: cyrus-imapd
+          service: true
+    - name: Render the tarball service of the Cyrus mailbox data
+      ansible.builtin.template:
+        src: "{{ template_dir }}/tarball-backup.service.j2"
+        dest: "{{ render_dir }}/tarball-data.service"
+        mode: u=rw,og=r
+      vars:
+        item:
+          name: cyrus-imap-data
+          paths:
+            - /var/lib/imap
+            - /var/spool/imap
+          unit: cyrus-imapd
+          service: true
+          mboxlist_dump: true
+    - name: Render the tarball service of a configuration without a service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/tarball-backup.service.j2"
+        dest: "{{ render_dir }}/tarball-kolab.service"
+        mode: u=rw,og=r
+      vars:
+        item:
+          name: kolab
+          paths:
+            - /etc/kolab
+            - /etc/roundcubemail
+    - name: Render the MariaDB service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/mariadb-backup.service.j2"
+        dest: "{{ render_dir }}/mariadb.service"
+        mode: u=rw,og=r
+    - name: Render the LDAP service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/ldap-backup.service.j2"
+        dest: "{{ render_dir }}/ldap.service"
+        mode: u=rw,og=r
+    - name: Render the FTP service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/vsftpd-backup.service.j2"
+        dest: "{{ render_dir }}/vsftpd.service"
+        mode: u=rw,og=r
+    - name: Render the timer
+      ansible.builtin.template:
+        src: "{{ template_dir }}/backup.timer.j2"
+        dest: "{{ render_dir }}/backup.timer"
+        mode: u=rw,og=r
+      vars:
+        item: mariadb
+    - name: Check the tarball service of the Cyrus configuration
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/tarball.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'ExecStartPre=/usr/bin/mkdir -p /backup/cyrus-imap' in unit"
+          - "'--ignore-failed-read' in unit"
+          - "'-mindepth 1' in unit"
+          - "'{} +' in unit"
+          - "'/etc/imapd.conf* /etc/imap*' in unit"
+          - "'Requires=cyrus-imapd.service' in unit"
+          - "'After=cyrus-imapd.service' in unit"
+          - "'ctl_mboxlist' not in unit"
+          - "unit.index('tar cjvf') < unit.index('/usr/bin/find')"
+    - name: Check the tarball service of the Cyrus mailbox data
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/tarball-data.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'ExecStartPre=/usr/bin/mkdir -p /backup/cyrus-imap-data' in unit"
+          - "'ExecStartPre=-' in unit"
+          - "'ctl_mboxlist -d' in unit"
+          - "'Requires=cyrus-imapd.service' in unit"
+          - "'/var/lib/imap* /var/spool/imap*' in unit"
+          - "'{} +' in unit"
+          - "unit.index('ctl_mboxlist') < unit.index('tar cjvf')"
+          - "unit.index('tar cjvf') < unit.index('/usr/bin/find')"
+    - name: Check the tarball service of a configuration without a service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/tarball-kolab.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'Requires=' not in unit"
+          - "'ExecStartPre=/usr/bin/mkdir -p /backup/kolab' in unit"
+          - "'/etc/kolab* /etc/roundcubemail*' in unit"
+    - name: Check the MariaDB service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/mariadb.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'ExecStartPre=/usr/bin/mkdir -p /backup/mariadb' in unit"
+          - "'-mindepth 1' in unit"
+          - "'{} +' in unit"
+          - "'--defaults-extra-file=/etc/mariabackup.cnf' in unit"
+          - "mariabackup_password not in unit"
+          - "'--password' not in unit"
+          - "unit.index('mariabackup --defaults') < unit.index('/usr/bin/find')"
+    - name: Check the LDAP service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/ldap.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'ExecStartPre=/usr/bin/mkdir -p /backup/ldap' in unit"
+          - "'-mindepth 1' in unit"
+          - "'{} +' in unit"
+          - "'Requires=dirsrv@mrak.service' in unit"
+          - "'After=dirsrv@mrak.service' in unit"
+          - "'/usr/sbin/dsconf mrak backup create' in unit"
+          - "'dsctl mrak backups' in unit"
+          - "'mrak.suhan' not in unit"
+          - "unit.index('backup create') < unit.index('/usr/bin/find')"
+    - name: Check the FTP service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/vsftpd.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'ExecStartPre=/usr/bin/mkdir -p /backup/vsftpd' in unit"
+          - "'-mindepth 1' in unit"
+          - "'{} +' in unit"
+          - "'/home/bob/ftp' in unit"
+          - "unit.index('tar cjvf') < unit.index('/usr/bin/find')"
+    - name: Check the timer
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/backup.timer') }}"
+      ansible.builtin.assert:
+        that:
+          - "'WantedBy=timers.target' in unit"
+          - "'basic.target' not in unit"
+          - "'Unit=mariadb-backup.service' in unit"

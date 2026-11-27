@@ -1,0 +1,13 @@
+<VirtualHost *:80>
+  ServerName kolab.{{ mailserver_domain }}
+  ServerAlias autodiscover.{{ mailserver_domain }} {{ custom_domains | join(' kolab.') }} {{ custom_domains | join(' autodiscover.') }}
+
+{% for custom_domain in [mailserver_domain] + custom_domains %}
+  RewriteCond %{SERVER_NAME} =kolab.{{ custom_domain }}
+{%- if loop.index != loop.length %}
+   [OR]
+{% endif %}
+{% endfor %}
+
+  RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+</VirtualHost>

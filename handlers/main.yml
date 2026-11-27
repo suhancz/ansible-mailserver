@@ -11,6 +11,12 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Restart cyrus-imapd
+  ansible.builtin.systemd_service:
+    name: cyrus-imapd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: "Restart dirsrv@{{ mailserver_hostname }}"
   ansible.builtin.systemd_service:
     name: "dirsrv@{{ mailserver_hostname }}"
@@ -47,6 +53,23 @@
     daemon_reload: yes
     enabled: yes
     state: restarted
+- name: Restart kolab
+  ansible.builtin.systemd_service:
+    name: "{{ kolab_service }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  loop:
+    - kolabd
+    - kolab-saslauthd
+  loop_control:
+    loop_var: kolab_service
+- name: Restart memcached
+  ansible.builtin.systemd_service:
+    name: memcached
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
 - name: Restart mongod
   ansible.builtin.systemd_service:
     name: mongod
@@ -56,6 +79,18 @@
 - name: Restart NetworkManager
   ansible.builtin.systemd_service:
     name: NetworkManager
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart nscd
+  ansible.builtin.systemd_service:
+    name: nscd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart oddjobd
+  ansible.builtin.systemd_service:
+    name: oddjobd
     daemon_reload: yes
     enabled: yes
     state: restarted
@@ -90,8 +125,8 @@
     enabled: yes
     state: restarted
   loop:
+    - php72-php-fpm
     - php74-php-fpm
-    # - php81-php-fpm
   loop_control:
     loop_var: php_fpm_service
 - name: Restart postfix
@@ -115,6 +150,12 @@
 - name: Restart spamass-milter
   ansible.builtin.systemd_service:
     name: spamass-milter
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Restart sssd
+  ansible.builtin.systemd_service:
+    name: sssd
     daemon_reload: yes
     enabled: yes
     state: restarted

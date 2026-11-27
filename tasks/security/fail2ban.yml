@@ -1,0 +1,84 @@
+---
+# - name: Create custom fail2ban filters
+#   ansible.builtin.copy:
+#     src: "fail2ban/{{ item }}"
+#     dest: "/etc/fail2ban/filter.d/{{ item }}"
+#     owner: root
+#     group: root
+#     mode: u=rw,go=r
+#   loop:
+#     - postfixadmin.conf
+#   notify: Restart fail2ban
+
+- name: Enable fail2ban jails
+  community.general.ini_file:
+    path: /etc/fail2ban/jail.d/ansible-mailserver.local
+    section: DEFAULT
+    option: ignoreip
+    value: "127.0.0.1/8, ::1"
+    backup: true
+    mode: u=rw,og=r
+    owner: root
+    group: root
+  notify: Restart fail2ban
+
+- name: Enable fail2ban jails
+  community.general.ini_file:
+    path: /etc/fail2ban/jail.d/ansible-mailserver.local
+    section: "{{ item }}"
+    option: enabled
+    value: "true"
+    backup: true
+    mode: u=rw,og=r
+    owner: root
+    group: root
+  loop:
+    - sshd
+    - selinux-ssh
+    - apache-auth
+    - apache-badbots
+    - apache-noscript
+    - apache-overflows
+    - apache-nohome
+    - apache-botsearch
+    - apache-fakegooglebot
+    - apache-modsecurity
+    - apache-shellshock
+    - php-url-fopen
+    - cyrus-imap
+    - vsftpd
+    - postfix
+    - postfix-rbl
+    - sendmail-auth
+    - sendmail-reject
+    - sieve
+    - postfix-sasl
+    - mysqld-auth
+    - mongodb-auth
+    - pam-generic
+    # - slapd
+    # - postfixadmin
+  notify: Restart fail2ban
+# - name: Set PostfixAdmin jail preferences
+#   community.general.ini_file:
+#     path: /etc/fail2ban/jail.d/ansible-mailserver.local
+#     section: postfixadmin
+#     option: "{{ item.key }}"
+#     value: "{{ item.value }}"
+#     backup: true
+#     mode: u=rw,og=r
+#     owner: root
+#     group: root
+#   loop:
+#     - key: port
+#       value: http,https
+#     - key: filter
+#       value: postfixadmin
+#     - key: logpath
+#       value: /var/log/php-fpm/www-error.log
+#     - key: findtime
+#       value: 60
+#     - key: maxretry
+#       value: 3
+#     - key: bantime
+#       value: 120

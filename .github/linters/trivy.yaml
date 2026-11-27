@@ -1,0 +1,16 @@
+---
+exit-code: 1
+exit-on-eol: 2
+scan:
+  disable-telemetry: true
+  # Only misconfiguration checks: the vulnerability scanner needs a database
+  # download that fails often, and there are no dependency manifests to scan.
+  # Secrets are left to Gitleaks.
+  scanners:
+    - misconfig
+  # ansible-lint installs collections into .ansible/ while Super-linter runs
+  skip-dirs:
+    - .ansible
+    - "**/.ansible"
+  skip-files:
+    - "**/*.license"

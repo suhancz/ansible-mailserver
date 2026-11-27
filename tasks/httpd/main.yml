@@ -1,0 +1,144 @@
+---
+- name: Open firewall
+  tags:
+    - dyndns
+    # - postfixadmin
+    - poweradmin
+    - wireguard
+    - webdav
+  ansible.builtin.include_tasks: security/firewall.yml
+  vars:
+    port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
+  loop:
+    - http
+    - https
+- name: Set up SELinux rules
+  when: getenforce.stdout != 'Disabled'
+  block:
+    - name: Set SELinux booleans
+      ansible.posix.seboolean:
+        name: "{{ item }}"
+        state: yes
+        persistent: yes
+      loop:
+        - httpd_can_network_connect
+        - httpd_execmem
+        - httpd_read_user_content
+        - httpd_mod_auth_pam
+    # - name: Generate SELinux policy
+    #   ansible.builtin.shell: |
+    #     set -o pipefail &&
+    #     sepolicy generate --init /usr/sbin/httpd
+    #     echo 'dovecot_read_config(httpd_t)' >> httpd.te
+    #     ./httpd.sh
+    #     ausearch -m AVC -ts recent | audit2allow -R
+    #   args:
+    #     executable: /usr/bin/bash
+    #   register: generate_apache_selinux_policy
+    #   changed_when: generate_apache_selinux_policy.rc == 0
+- name: Render generic web config templates
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - {
+        src: "httpd/domain.conf.j2",
+        dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/domain-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/999-{{ mailserver_hostname }}.{{ mailserver_domain }}-le-ssl.conf",
+      }
+    - {
+        src: "httpd/wildcard.conf.j2",
+        dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}.conf",
+      }
+    - {
+        src: "httpd/wildcard-le-ssl.conf.j2",
+        dest: "/etc/httpd/conf.d/000-wildcard.{{ mailserver_domain }}-le-ssl.conf",
+      }
+  notify: Restart httpd
+- name: Deploy SSL config
+  tags: ssl
+  ansible.builtin.copy:
+    src: httpd/options-ssl-apache.conf
+    dest: /etc/letsencrypt/options-ssl-apache.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  notify: Restart httpd
+- name: Serve user ~/public_html directories
+  tags:
+    - webdav
+    - ftp
+    - wireguard
+  ansible.builtin.copy:
+    src: httpd/userdir.conf
+    dest: /etc/httpd/conf.d/userdir.conf
+    mode: u=rw,og=r
+    backup: yes
+    owner: root
+    group: root
+  notify: Restart httpd
+- name: Set home directory permissions
+  tags:
+    - webdav
+    - ftp
+    - wireguard
+    - users
+  ansible.builtin.file:
+    path: "~{{ item.name }}"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: u=rwX,go=X
+  loop: "{{ users }}"
+  no_log: true
+- name: Set public_html directory permissions
+  tags:
+    - webdav
+    - ftp
+    - wireguard
+    - users
+  ansible.builtin.file:
+    path: "~{{ item.name }}/public_html"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: u=rwX,go=rX
+    recurse: yes
+  loop: "{{ users }}"
+  no_log: true
+- name: BindFS mount SSL certificates to user public_html
+  tags:
+    - ssl
+    - users
+  ansible.posix.mount:
+    path: "~{{ item.name }}/public_html/.certificates"
+    src: /etc/letsencrypt/certificates
+    opts: "map=root/{{ item.name }}:@root/@apache,perms=u=rwX:g=rwX"
+    state: mounted
+    fstype: fuse.bindfs
+  loop: "{{ users }}"
+  no_log: true
+- name: Create HTTPD SystemD drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/httpd.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
+- name: Increase startup timeout
+  ansible.builtin.copy:
+    src: systemd/httpd.timeout.conf
+    dest: /etc/systemd/system/httpd.service.d/timeout.conf
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
+    backup: yes
+  notify: Restart httpd

@@ -1,66 +1,346 @@
 ---
-#################################
-#################################
-## Super Linter GitHub Actions ##
-#################################
-#################################
 name: Lint Code Base
 
+# One tool per file type. Where several tools exist, keep the stricter one:
+# - Python: pylint (not flake8, not Ruff), mypy, isort and Black (not Ruff
+#   format).
+# - JSON, JavaScript, CSS: ESLint and Prettier (not Biome).
+# - Secrets: Gitleaks (the Trivy secret scanner is off in
+#   .github/linters/trivy.yaml).
+# FAIL_ON_CONFLICTING_TOOLS_ENABLED makes Super-linter fail when conflicting
+# tools are enabled again.
+# No tool is pinned to a version: always the latest. The unpinned-uses rule of
+# zizmor is therefore off in .github/linters/zizmor.yml.
+#
+# Executable files and line endings: .github/executable-files.txt lists the
+# scripts that have to be executable, .gitattributes defines the line endings.
+# If a mode is missing or a file has other line endings, the job
+# repair-script-modes commits the fixes to the branch (one commit for the modes,
+# one for the line endings) and starts this workflow again; the lint job only
+# runs when modes and line endings are correct. Files that are not listed are
+# not changed in their modes.
+#
+# Lint log: the lint job saves the log of Super-Linter, masks it with
+# tests/mask_log.sh and the job report-lint publishes it as lint.log on the
+# branch ci-lint-results, so that the findings can be read without opening the
+# Actions page.
 #
 # Documentation:
 # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-#
 
-#############################
-# Start the job on all push #
-#############################
-on:
+on: # yamllint disable-line rule:truthy
   push:
     branches-ignore: [master, main]
-    # Remove the line above to run when pushing to master
   pull_request:
     branches: [master, main]
+  workflow_dispatch:
 
-###############
-# Set the Job #
-###############
+permissions: {}
+
+concurrency:
+  group: lint-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  SCRIPT_MODE_CODE: |
+    import os
+    from pathlib import PurePosixPath
+    import subprocess
+    import sys
+
+    repair = os.environ.get("REPAIR_SCRIPT_MODES") == "1"
+    raw = subprocess.check_output(["git", "ls-files", "--stage", "-z"])
+    entries = {}
+    for entry in raw.split(b"\0"):
+        if not entry:
+            continue
+        metadata, raw_path = entry.split(b"\t", 1)
+        mode, oid, stage = metadata.split()
+        if stage != b"0":
+            raise SystemExit("Unmerged index; refusing permission changes")
+        entries[os.fsdecode(raw_path)] = mode
+    manifest = ".github/executable-files.txt"
+    if entries.get(manifest) not in (b"100644", b"100755"):
+        raise SystemExit("Executable manifest must be a tracked regular file")
+    text = subprocess.check_output(["git", "show", ":" + manifest]).decode("utf-8")
+    allowed = []
+    for line in text.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        path = PurePosixPath(line)
+        if line != line.strip() or path.is_absolute() or path.as_posix() != line or ".." in path.parts or any(char in line for char in "*?[]\\"):
+            raise SystemExit("Manifest requires exact repository-relative paths: " + line)
+        if line in allowed:
+            raise SystemExit("Duplicate executable manifest entry: " + line)
+        allowed.append(line)
+    if not allowed:
+        raise SystemExit("Executable manifest must not be empty")
+    changes = []
+    for path in allowed:
+        if entries.get(path) not in (b"100644", b"100755"):
+            raise SystemExit("Manifest entry must be a tracked regular file: " + path)
+        blob = subprocess.check_output(["git", "show", ":" + path])
+        if not blob.startswith(b"#!"):
+            raise SystemExit("Executable entry point needs a shebang: " + path)
+        if entries[path] != b"100755":
+            changes.append(path)
+    for path in changes:
+        if repair:
+            if os.path.islink(path) or not os.path.isfile(path):
+                raise SystemExit("Working tree file is not regular: " + path)
+            os.chmod(path, os.stat(path).st_mode | 0o111)
+            subprocess.run(["git", "update-index", "--chmod=+x", "--", path], check=True)
+        print(("Fixed " if repair else "Expected 100755: ") + path)
+    print("Executable manifest audit: %d %s" % (len(changes), "fixed" if repair else "incorrect"))
+    report = os.environ.get("MODE_CHECK_OUTPUT")
+    if report:
+        with open(report, "a", encoding="utf-8") as stream:
+            stream.write("correct=" + ("false" if changes else "true") + "\n")
+        sys.exit(0)
+    sys.exit(0 if repair or not changes else 1)
+
 jobs:
-  build:
-    # Name the Job
-    name: Lint Code Base
-    # Set the agent to run on
+  check-permissions:
+    name: Check executable permissions
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
+      correct: ${{ steps.check.outputs.correct }}
+      eol_correct: ${{ steps.eol.outputs.correct }}
+    steps:
+      - name: Check out the exact submitted commit without write credentials
+        id: checkout
+        uses: actions/checkout@main # zizmor: ignore[unpinned-uses]
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check the modes of the files in the manifest
+        id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPAIR_SCRIPT_MODES=0 MODE_CHECK_OUTPUT="$GITHUB_OUTPUT" python3 -c "$SCRIPT_MODE_CODE"
+      - name: Check the line endings of the tracked files
+        id: eol
+        shell: bash
+        # Normalising in this temporary checkout only shows what would change
+        run: |
+          set -euo pipefail
+          git add --renormalize .
+          if git diff --cached --quiet; then
+            echo 'correct=true' >> "$GITHUB_OUTPUT"
+            echo 'Line endings audit: all files are normalised.'
+          else
+            echo 'correct=false' >> "$GITHUB_OUTPUT"
+            echo 'Line endings audit: these files have to be normalised:'
+            git diff --cached --name-only
+          fi
+      - name: Report a fork mismatch that cannot be repaired automatically
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && (steps.check.outputs.correct == 'false' || steps.eol.outputs.correct == 'false') }}
+        run: |
+          echo 'Fork file modes or line endings are incorrect; the contributor has to fix the branch. No write token is granted.' >&2
+          exit 1
 
-    ############################################
-    # Grant status permission for MULTI_STATUS #
-    ############################################
+  repair-script-modes:
+    name: Repair and commit executable permissions
+    needs: check-permissions
+    if: ${{ (needs.check-permissions.outputs.correct == 'false' || needs.check-permissions.outputs.eol_correct == 'false') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Check out the exact commit that was checked
+        uses: actions/checkout@main # zizmor: ignore[unpinned-uses]
+        with:
+          ref: ${{ needs.check-permissions.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Repair the modes and line endings and commit them to the branch
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ github.head_ref || github.ref_name }}
+          CHECKED_SHA: ${{ needs.check-permissions.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          test "$(git rev-parse HEAD)" = "$CHECKED_SHA"
+          git fetch "$remote" "refs/heads/$TARGET_BRANCH"
+          if [[ "$(git rev-parse FETCH_HEAD)" != "$CHECKED_SHA" ]]; then
+            echo 'The branch moved after the check; a newer run takes over.'
+            exit 0
+          fi
+          committed=false
+          REPAIR_SCRIPT_MODES=1 python3 -c "$SCRIPT_MODE_CODE"
+          if ! git diff --cached --quiet; then
+            git diff --cached --numstat | awk '$1 != 0 || $2 != 0 { bad = 1 } END { exit bad }'
+            git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'Apply the executable file modes of .github/executable-files.txt'
+            committed=true
+          fi
+          git add --renormalize .
+          if ! git diff --cached --quiet; then
+            git diff --cached --name-only
+            git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'Normalize line endings according to .gitattributes'
+            committed=true
+          fi
+          if [[ "$committed" == false ]]; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git push "$remote" "HEAD:refs/heads/$TARGET_BRANCH"
+          # Pushes with the workflow token start no workflows, so start the linter
+          gh workflow run linter.yml --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
+
+  lint:
+    name: Lint Code Base
+    needs: check-permissions
+    if: ${{ needs.check-permissions.outputs.correct == 'true' && needs.check-permissions.outputs.eol_correct == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: read
+      # MULTI_STATUS needs the status permission
       statuses: write
-
-    ##################
-    # Load all steps #
-    ##################
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@main # zizmor: ignore[unpinned-uses]
         with:
-          # Full git history is needed to get a proper
-          # list of changed files within `super-linter`
+          ref: ${{ needs.check-permissions.outputs.sha }}
+          # Full git history is needed to get a proper list of changed files
           fetch-depth: 0
-
-      ################################
-      # Run Linter against code base #
-      ################################
+          persist-credentials: false
+      - name: Fetch the merge commit of the pull request
+        # Super-Linter reads GITHUB_SHA, which is the merge commit that GitHub
+        # builds for a pull request. The checkout above is the exact head commit,
+        # so the merge commit is not in it and Super-Linter stops.
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          header="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$header" fetch --no-tags origin "$MERGE_SHA"
+          git cat-file -e "$MERGE_SHA^{commit}"
       - name: Lint Code Base
-        uses: super-linter/super-linter@v5
+        uses: super-linter/super-linter@latest # zizmor: ignore[unpinned-uses]
         env:
           VALIDATE_ALL_CODEBASE: false
-          # Change to 'master' if your main branch differs
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANSIBLE_DIRECTORY: .
+          # The read-only token of pull requests cannot comment (HTTP 403)
+          ENABLE_GITHUB_PULL_REQUEST_SUMMARY_COMMENT: false
+          # Save the log, the output of every linter and the summary in the
+          # workspace; the next step masks and uploads them
+          CREATE_LOG_FILE: true
+          SAVE_SUPER_LINTER_OUTPUT: true
+          SAVE_SUPER_LINTER_SUMMARY: true
+          GITHUB_ACTIONS_ZIZMOR_CONFIG_FILE: zizmor.yml
+          VALIDATE_JSCPD: false # temporarily disable duplicate detection
+          FAIL_ON_CONFLICTING_TOOLS_ENABLED: true
+          VALIDATE_BIOME_FORMAT: false
+          VALIDATE_BIOME_LINT: false
+          VALIDATE_PYTHON_FLAKE8: false
+          VALIDATE_PYTHON_RUFF: false
+          VALIDATE_PYTHON_RUFF_FORMAT: false
+      - name: Mask and collect the Super-Linter log
+        if: ${{ always() }}
+        shell: bash
+        # Only the masked log is uploaded; if masking fails, nothing of the raw log is published.
+        # The Actions shell exits on the first error by default, so set +e keeps the step going.
+        run: |
+          set +e
+          set -u
+          # Super-Linter runs as root and leaves its files owned by root
+          sudo chown -R "$(id -u):$(id -g)" . 2>/dev/null
+          mkdir -p lint-result
+          : > lint-result/raw.log
+          for file in super-linter.log super-linter-summary.md; do
+            if [[ -f "$file" ]]; then
+              printf '\n=== %s ===\n' "$file" >> lint-result/raw.log
+              cat "$file" >> lint-result/raw.log
+            fi
+          done
+          if [[ -d super-linter-output ]]; then
+            while IFS= read -r -d '' file; do
+              printf '\n=== %s ===\n' "$file" >> lint-result/raw.log
+              cat "$file" >> lint-result/raw.log
+            done < <(find super-linter-output -type f -print0 | sort -z)
+          fi
+          esc="$(printf '\033')"
+          sed -E "s/${esc}\[[0-9;]*[A-Za-z]//g" lint-result/raw.log > lint-result/plain.log
+          if ! bash tests/mask_log.sh < lint-result/plain.log > lint-result/masked.log; then
+            echo 'masking failed, log withheld' > lint-result/masked.log
+          fi
+          {
+            echo '=== Excerpt: findings ==='
+            grep -n -i -e error -e fail -e violation -e warn lint-result/masked.log | head -n 300
+            echo
+            echo '=== Full log (masked) ==='
+            cat lint-result/masked.log
+          } > lint-result/lint.log
+          exit 0
+      - name: Upload the masked lint log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@main # zizmor: ignore[unpinned-uses]
+        with:
+          name: lint-log
+          path: lint-result/lint.log
+          if-no-files-found: warn
+
+  report-lint:
+    name: Publish the lint log on the ci-lint-results branch
+    needs: [check-permissions, lint]
+    # Pull requests from forks only get a read-only token
+    if: ${{ always() && needs.lint.result != 'skipped' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download the lint log
+        uses: actions/download-artifact@main # zizmor: ignore[unpinned-uses]
+        with:
+          name: lint-log
+          path: result
+      - name: Push the lint log to the ci-lint-results branch
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          COMMIT_SHA: ${{ needs.check-permissions.outputs.sha }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -eu
+          git init -q publish
+          cd publish
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git checkout -q -b ci-lint-results
+          {
+            echo "result of the lint job: ${LINT_RESULT}"
+            echo "linted commit: ${COMMIT_SHA}"
+            echo "branch: ${BRANCH_NAME}"
+            echo "event: ${EVENT_NAME}"
+            echo "run: ${RUN_URL}"
+            echo
+            cat ../result/lint.log
+          } > lint.log
+          git add lint.log
+          git commit -q -m "Lint results of ${COMMIT_SHA}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-lint-results

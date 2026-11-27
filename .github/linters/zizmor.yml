@@ -1,0 +1,5 @@
+---
+rules:
+  # No tool is pinned to a version or a commit: always the latest
+  unpinned-uses:
+    disable: true

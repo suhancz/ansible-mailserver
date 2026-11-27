@@ -1,0 +1,542 @@
+---
+- name: Setup kolab
+  tags: users
+  # noqa yaml[line-length]
+  ansible.builtin.command:
+    "setup-kolab --default --timezone={{ ansible_date_time.tz }} \
+    --mysqlserver=existing --mysqlhost=127.0.0.1 --mysqlrootpw={{ mysql_root_password }} \
+    --directory-manager-pwd={{ ldap_admin_password }} --fqdn={{ mailserver_hostname }}.{{ mailserver_domain }} \
+    --domain={{ mailserver_domain }}"
+  register: kolab_setup
+  failed_when: kolab_setup.rc != 0 and "existing" not in kolab_setup.stderr
+  changed_when: kolab_setup.rc == 0
+  no_log: true
+
+# Disable version info
+- name: Add config httpd.conf
+  ansible.builtin.lineinfile:
+    dest: "/etc/httpd/conf/httpd.conf"
+    regexp: "^(.*){{ item.regexp }}(.*)$"
+    line: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: u=rw,og=r
+    backup: yes
+  with_items:
+    - regexp: "ServerTokens"
+      line: "ServerTokens ProductOnly"
+    - regexp: "ServerSignature"
+      line: "ServerSignature Off"
+    - regexp: "SSLCipherSuite"
+      # noqa yaml[line-length]
+      line: "SSLCipherSuite \
+        ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
+    - regexp: "SSLProtocol"
+      line: "SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1"
+    - regexp: "SSLHonorCipherOrder"
+      line: "SSLHonorCipherOrder on"
+    - regexp: "SSLCompression"
+      line: "SSLCompression off"
+  notify:
+    - Restart httpd
+
+- name: Disable php version
+  community.general.ini_file:
+    path: "{{ item }}"
+    section: PHP
+    option: expose_php
+    value: off
+    owner: root
+    group: root
+    mode: u=rw,og=r
+    backup: true
+  loop:
+    - /etc/php.ini
+    - /etc/opt/remi/php72/php.ini
+  notify:
+    - Restart httpd
+
+- name: Configure kolab.conf
+  community.general.ini_file:
+    path: /etc/kolab/kolab.conf
+    section: kolab
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    owner: kolab-n
+    group: kolab
+    mode: u=rw,g=r,o=
+    backup: true
+  register: kolab_configure
+  with_items:
+    - key: "quota"
+      value: "0"
+    - key: "partition"
+      value: "archive"
+    - key: "postfix_virtual_file"
+      value: "/etc/postfix/virtual_alias_maps_manual.cf"
+    - key: "policy_uid"
+      value: >-
+        {{ "%(givenname)s.lower()" if family_mode | bool
+        else "'%(givenname)s'[0:1]%(surname)s.lower()" }}
+    - key: "primary_mail"
+      value: "%(givenname)s{{ '.%(surname)s' if not family_mode | bool }}@%(domain)s"
+  notify:
+    - Restart kolab
+  tags:
+    - users
+
+# Kolab Patch for Multidomains
+- name: Kolab patch download
+  ansible.builtin.git:
+    # noqa yaml[line-length]
+    repo: https://github.com/suhancz/KolabScripts.git # I use my own mirror here so we're sure the upstream doesn't get lost
+    dest: /usr/src/KolabScripts
+    version: Kolab16
+    update: yes
+
+- name: Change kolab patch premissons
+  ansible.builtin.file:
+    path: /usr/src/KolabScripts
+    owner: root
+    group: root
+    mode: u=rwx,og=
+
+- name: Initiate Roundcube plugins
+  ansible.builtin.command: bash /usr/src/KolabScripts/kolab/initRoundcubePlugins.sh
+  args:
+    chdir: /usr/src/KolabScripts/kolab
+
+- name: Configure IMAPD
+  ansible.builtin.lineinfile:
+    dest: /etc/imapd.conf
+    regexp: "^{{ item.key }}: "
+    line: "{{ item.key }}: {{ item.value }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  loop:
+    - key: "ldap_base"
+      value: "dc=%2,dc=%1"
+    - key: "ldap_group_base"
+      value: "dc=%2,dc=%1"
+    - key: "ldap_member_base"
+      value: "ou=People,dc=%2,dc=%1"
+    - key: "ldap_domain_base_dn"
+      value: "cn=kolab,cn=config"
+    - key: "ldap_domain_filter"
+      value: "(&(objectclass=domainrelatedobject)(associateddomain=%s))"
+    - key: "ldap_domain_name_attribute"
+      value: "associatedDomain"
+    - key: "ldap_domain_scope"
+      value: "sub"
+    - key: "ldap_domain_result_attribute"
+      value: "inetdomainbasedn"
+    - key: "tls_server_cert"
+      value: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.pem"
+    - key: "tls_server_key"
+      value: "/etc/letsencrypt/certificates/{{ mailserver_domain }}.key"
+  register: kolab_imapd_config_patch
+  notify: Restart cyrus-imapd
+- name: Restart cyrus-imapd
+  when: kolab_imapd_config_patch.changed
+  ansible.builtin.systemd_service:
+    name: cyrus-imapd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+- name: Configure unique UID across domains
+  community.general.ini_file:
+    path: /etc/kolab/kolab.conf
+    section: kolab
+    option: unique_uid_across_domains
+    value: "true"
+    owner: kolab-n
+    group: kolab
+    mode: u=rw,g=r,o=
+    backup: true
+  notify: Restart kolab
+- name: Collect LDAP Postfix .cf files
+  ansible.builtin.find:
+    paths: /etc/postfix/ldap
+    patterns: "*.cf"
+  register: postfix_ldap_cf_files
+- name: Create custom LDAP Postfix .cf files
+  when: item.path is not regex(".*_3\.cf$")
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ item.path | replace('.cf', '_3.cf') }}"
+    remote_src: yes
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: true
+    force: false
+  loop: "{{ postfix_ldap_cf_files.files }}"
+  notify: Restart postfix
+- name: Set query filter in mydestination_3.cf
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/ldap/mydestination_3.cf
+    regexp: "^query_filter = .*$"
+    line: 'query_filter = (\&(associateddomain=%s)(associateddomain=*.*.*))'
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  notify: Restart postfix
+- name: "Set search base in {{ item.path }}"
+  when: item.path is not regex(".*_3\.cf$")
+  ansible.builtin.lineinfile:
+    dest: "{{ item.path }}"
+    regexp: "^search_base = .*$"
+    line: "search_base = dc=%2,dc=%1"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  loop: "{{ postfix_ldap_cf_files.files }}"
+  notify: Restart postfix
+- name: "Set domain in {{ item.path | replace('.cf', '_3.cf') }}"
+  when: item.path is not regex(".*_3\.cf$")
+  ansible.builtin.lineinfile:
+    dest: "{{ item.path | replace('.cf', '_3.cf') }}"
+    regexp: "^domain = .*$"
+    line: "domain = ldap:/etc/postfix/ldap/mydestination_3.cf"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  loop: "{{ postfix_ldap_cf_files.files }}"
+  notify: Restart postfix
+- name: Patch Postfix main.cf
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: "^{{ item.key }} = .*$"
+    line: "{{ item.key }} = {{ item.value }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  loop:
+    - key: "transport_maps"
+      value: "ldap:/etc/postfix/ldap/transport_maps.cf, \
+        ldap:/etc/postfix/ldap/transport_maps_3.cf, hash:/etc/postfix/transport"
+    - key: "virtual_alias_maps"
+      value: "$alias_maps, ldap:/etc/postfix/ldap/virtual_alias_maps.cf, \
+        hash:/etc/postfix/virtual_alias_maps_manual.cf, \
+        ldap:/etc/postfix/ldap/virtual_alias_maps_3.cf, \
+        ldap:/etc/postfix/ldap/mailenabled_distgroups_3.cf, \
+        ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups_3.cf, \
+        ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders_3.cf, \
+        ldap:/etc/postfix/ldap/virtual_alias_maps_mailforwarding.cf, \
+        ldap:/etc/postfix/ldap/virtual_alias_maps_sharedfolders.cf, \
+        ldap:/etc/postfix/ldap/mailenabled_distgroups.cf, \
+        ldap:/etc/postfix/ldap/mailenabled_dynamic_distgroups.cf, \
+        ldap:/etc/postfix/ldap/virtual_alias_maps_catchall.cf, \
+        ldap:/etc/postfix/ldap/virtual_alias_maps_catchall_3.cf"
+    - key: "local_recipient_maps"
+      value: "ldap:/etc/postfix/ldap/local_recipient_maps.cf, \
+        ldap:/etc/postfix/ldap/local_recipient_maps_3.cf"
+  notify: Restart postfix
+- name: Set up domain aliases
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/virtual_alias_maps_manual.cf
+    line: "@{{ item }} @{{ mailserver_domain }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+    create: yes
+  loop: "{{ custom_domains }}"
+  notify: Restart postfix
+- name: Set up default mail aliases
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/virtual_alias_maps_manual.cf
+    line: '{{ item }}@{{ mailserver_domain }} \
+      {{ mailserver_admin_user }}@{{ mailserver_domain }}'
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+    create: yes
+  loop:
+    - abuse
+    - dmarc-reports
+    - spam-report
+    - ham-report
+    - hostmaster
+    - postmaster
+    - root
+    - ssl
+    - vpn
+    - webmaster
+  notify: Restart postfix
+  tags:
+    - users
+- name: Set up user mail aliases
+  ansible.builtin.include_tasks: mail/user_mail_alias.yml
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user
+  no_log: true
+  tags:
+    - users
+- name: Configure Roundcube authentication
+  ansible.builtin.lineinfile:
+    dest: /etc/roundcubemail/kolab_auth.inc.php
+    insertafter: "=> 389,"
+    line: "{{ item }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  loop:
+    - "'domain_base_dn'            => 'cn=kolab,cn=config',"
+    - "'domain_filter'             => \
+      '(\\&(objectclass=domainrelatedobject)(associateddomain=%s))',"
+    - "'domain_name_attr'          => 'associateddomain',"
+  notify: Restart kolab
+- name: Configure Roundcube organizational units
+  ansible.builtin.replace:
+    path: /etc/roundcubemail/kolab_auth.inc.php
+    regexp: "'ou={{ item }},.*'"
+    replace: "'ou={{ item }},%dc'"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  loop:
+    - People
+    - Groups
+  notify: Restart kolab
+- name: Enable freebusy for the main domain
+  community.general.ini_file:
+    path: /usr/share/kolab-freebusy/config/config.ini
+    section: 'directory "kolab-people"'
+    option: domain_base_dn
+    value: "%dc"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: true
+    create: yes
+  notify: Restart kolab
+- name: Enable freebusy for all domains
+  community.general.ini_file:
+    path: /usr/share/kolab-freebusy/config/config.ini
+    section: "{{ item }}"
+    option: base_dn
+    value: "%dc"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: true
+    create: yes
+  loop:
+    - 'directory "kolab-people"'
+    - 'directory "kolab-resources"'
+    - 'directory "kolab-resource-collections"'
+    - httpauth
+  notify: Restart kolab
+- name: Fix global address book
+  ansible.builtin.replace:
+    path: /etc/roundcubemail/config.inc.php
+    regexp: "'ou={{ item }},.*'"
+    replace: "'ou={{ item }},%dc'"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    backup: yes
+  loop:
+    - People
+    - Groups
+  notify: Restart kolab
+- name: Configure kolab.conf
+  community.general.ini_file:
+    path: /etc/kolab/kolab.conf
+    section: kolab_wap
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    owner: kolab-n
+    group: kolab
+    mode: u=rw,g=r,o=
+    backup: true
+  loop:
+    - key: "memcache_hosts"
+      value: "127.0.0.1:11211"
+    - key: "memcache_pconnect"
+      value: "true"
+  notify:
+    - Restart memcached
+    - Restart kolab
+
+- name: Patch kolab
+  ansible.builtin.command: "bash /usr/src/KolabScripts/kolab/{{ item }}"
+  args:
+    chdir: /usr/src/KolabScripts/kolab
+  with_items:
+    # - initMultiDomain.sh
+    - initMailForward.sh
+    - initMailCatchall.sh
+
+- name: Configure kolab for multidomains
+  ansible.builtin.lineinfile:
+    # noqa yaml[line-length]
+    dest: "/usr/share/roundcubemail/program/localization/{{ item.lang }}/labels.inc"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  with_items:
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "en_US"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "de_DE"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "de_CH"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "fr_FR"
+    - regexp: "username"
+      line: "$labels['username']  = 'Email';"
+      lang: "it_IT"
+  notify:
+    - Restart kolab
+
+- name: Render Kolab web config templates
+  tags:
+    - kolab
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    backup: yes
+  loop:
+    - src: "httpd/kolab.conf.j2"
+      dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}.conf"
+    - src: "httpd/kolab-le-ssl.conf.j2"
+      # noqa yaml[line-length]
+      dest: "/etc/httpd/conf.d/993-kolab.{{ mailserver_domain }}-le-ssl.conf"
+  register: kolab_apache_config
+  notify: Restart httpd
+- name: Restart httpd
+  when: kolab_apache_config.changed
+  ansible.builtin.systemd_service:
+    name: httpd
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Enable domains
+  tags: ldap
+  block:
+    # The editing domains in the Kolab API is not documented at the tome of this writing, so I go plain LDAP here
+    - name: Find the main domain in LDAP entry
+      community.general.ldap_search:
+        dn: "associateddomain={{ mailserver_domain }},cn=kolab,cn=config"
+        server_uri: ldap://127.0.0.1/
+        bind_dn: "cn=Directory Manager"
+        bind_pw: "{{ ldap_admin_password }}"
+      register: kolab_ldap_domain
+    - name: Delete old domain LDAP entry
+      community.general.ldap_entry:
+        dn: "associateddomain={{ mailserver_domain }},cn=kolab,cn=config"
+        server_uri: ldap://127.0.0.1/
+        bind_dn: "cn=Directory Manager"
+        bind_pw: "{{ ldap_admin_password }}"
+        state: absent
+    - name: Create new LDAP entry
+      community.general.ldap_entry:
+        dn: "associateddomain={{ mailserver_domain }},cn=kolab,cn=config"
+        server_uri: ldap://127.0.0.1/
+        bind_dn: "cn=Directory Manager"
+        bind_pw: "{{ ldap_admin_password }}"
+        attributes:
+          associatedDomain: "{{ [mailserver_domain, \
+            'localhost.localdomain', 'localhost'] \
+            + custom_domains }}"
+        objectClass: "{{ (kolab_ldap_domain.results | first).objectClass }}"
+    - name: Configure primary mail
+      community.general.ini_file:
+        path: /etc/kolab/kolab.conf
+        section: "{{ item }}"
+        option: primary_mail
+        value: "%(givenname)s{{ '.%(surname)s' if not family_mode | bool }}@%(domain)s"
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
+        backup: true
+      loop: "{{ [mailserver_domain] + custom_domains }}"
+      notify:
+        - Restart kolab
+      tags:
+        - users
+    - name: Set timestamp format
+      community.general.ini_file:
+        path: /etc/kolab/kolab.conf
+        section: ldap
+        option: modifytimestamp_format
+        value: "%%Y%%m%%d%%H%%M%%SZ"
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
+        backup: true
+    - name: Set IMAP virtual domains
+      community.general.ini_file:
+        path: /etc/kolab/kolab.conf
+        section: imap
+        option: virtual_domains
+        value: userid
+        owner: kolab-n
+        group: kolab
+        mode: u=rw,g=r,o=
+        backup: true
+- name: Restart kolab
+  tags:
+    - kolab
+    - ldap
+  ansible.builtin.systemd_service:
+    name: "{{ kolab_service }}"
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  loop:
+    - kolabd
+    - kolab-saslauthd
+  loop_control:
+    loop_var: kolab_service
+- name: Refresh the certificates
+  ansible.builtin.command: "openssl rehash /etc/dirsrv/slapd-{{ mailserver_hostname }}"
+- name: Configure LDAP
+  ansible.builtin.import_tasks: ldap/main.yml
+  tags:
+    - ldap
+    - users
+- name: Enable SSSD with mkhomedir
+  tags: ldap
+  block:
+    - name: Run authselect
+      ansible.builtin.command: authselect select sssd with-mkhomedir with-sudo with-pamaccess --force
+      register: authselect_result
+      changed_when: authselect_result.rc == 0
+      notify:
+        - Restart sssd
+        - Restart oddjobd
+    - name: Restart auth services
+      ansible.builtin.systemd_service:
+        name: "{{ auth_service_item }}"
+        daemon_reload: yes
+        enabled: yes
+        state: restarted
+      loop:
+        - sssd
+        - oddjobd
+      loop_control:
+        loop_var: auth_service_item

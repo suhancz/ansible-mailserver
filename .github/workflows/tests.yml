@@ -1,0 +1,233 @@
+---
+name: Tests
+
+on: # yamllint disable-line rule:truthy
+  push:
+    paths:
+      - tasks/**
+      - templates/**
+      - files/**
+      - defaults/**
+      - handlers/**
+      - meta/**
+      - vars/**
+      - collections/**
+      - tests/**
+      - .github/workflows/tests.yml
+  # Every pull request runs all tests, whatever it changes
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: ${{ matrix.title }} on AlmaLinux 8
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: users
+            title: Username and address derivation
+            script: |
+              microdnf -y install python3.12 python3.12-pip dnf
+              python3.12 -m pip install --upgrade pip ansible-core Unidecode
+              export ANSIBLE_ROLES_PATH=/roles
+              ansible-playbook -v -i case_family,case_plain,case_missing,case_addresses,case_legacy, -c local \
+                -e ansible_python_interpreter=/usr/bin/python3.12 \
+                -e mailserver_no_log=false \
+                tests/normalize_users.yml
+          - name: role
+            title: Syntax check of the whole role
+            script: |
+              microdnf -y install python3.12 python3.12-pip git
+              python3.12 -m pip install --upgrade pip ansible-core
+              ansible-galaxy collection install -r collections/requirements.yml
+              export ANSIBLE_ROLES_PATH=/roles
+              ansible-playbook --syntax-check -i localhost, tests/role_syntax.yml
+          - name: unit
+            title: Unit tests of the scripts
+            script: |
+              microdnf -y install python3.12 python3.12-pip
+              python3.12 -m pip install --upgrade pip Unidecode
+              python3.12 -m unittest discover -s tests -v
+          - name: backups
+            title: Backup service templates
+            script: |
+              microdnf -y install python3.12 python3.12-pip
+              python3.12 -m pip install --upgrade pip ansible-core
+              ansible-playbook -v -i case_backups, -c local \
+                -e ansible_python_interpreter=/usr/bin/python3.12 \
+                tests/backup_templates.yml
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@main
+        with:
+          persist-credentials: false
+      - name: Run the test in a minimal AlmaLinux 8 container
+        shell: bash
+        # No tool is pinned: the latest ansible-core needs Python 3.12 or newer,
+        # so python3.12 from AlmaLinux 8 runs Ansible and is the interpreter of
+        # the test hosts too. The repository is mounted as the role
+        # ansible_mailserver. The test data contains no secrets, so no_log is
+        # switched off to see failures.
+        env:
+          TEST_SCRIPT: ${{ matrix.script }}
+        run: |
+          mkdir -p result
+          docker run --rm -v "$PWD:/roles/ansible_mailserver:ro" -w /roles/ansible_mailserver almalinux:8-minimal bash -euxc "$TEST_SCRIPT" 2>&1 | tee result/full.log
+      - name: Mask and collect the log for the report
+        if: ${{ always() }}
+        shell: bash
+        env:
+          TEST_NAME: ${{ matrix.name }}
+        # Only the masked log is uploaded; if masking fails, nothing of the raw log is published
+        run: |
+          mkdir -p result
+          touch result/full.log
+          if ! bash tests/mask_log.sh < result/full.log > result/masked.log; then
+            echo 'masking failed, log withheld' > result/masked.log
+          fi
+          {
+            echo '=== Excerpt: failures and recap ==='
+            grep -n -e fatal: -e FAILED -e failed= -e 'PLAY RECAP' -e ERROR -e 'Ran ' -e OK -e FAIL result/masked.log | tail -n 120 || true
+            echo
+            echo '=== Full log (masked) ==='
+            cat result/masked.log
+          } > "result/test-${TEST_NAME}.log"
+      - name: Upload the masked log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@main
+        with:
+          name: test-${{ matrix.name }}-result
+          path: result/test-${{ matrix.name }}.log
+          if-no-files-found: error
+
+  systemd:
+    name: Backups and restores in a systemd container on AlmaLinux 8
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@main
+        with:
+          persist-credentials: false
+      - name: Run the test in a container with systemd as PID 1
+        shell: bash
+        # The container is privileged and shares the cgroup tree of the runner,
+        # which systemd needs. The repository is mounted read-only as the role
+        # ansible_mailserver. Nothing is pinned: the latest ansible-core needs
+        # python3.12, which AlmaLinux 8 provides.
+        env:
+          TEST_SCRIPT: |
+            dnf -y install python3.12 python3.12-pip tar bzip2 findutils
+            python3.12 -m pip install --upgrade pip ansible-core
+            ansible-playbook -v -i case_container, -c local \
+              -e ansible_python_interpreter=/usr/bin/python3.12 \
+              tests/backups_functional.yml
+        run: |
+          set -o pipefail
+          mkdir -p result
+          {
+            docker run -d --name mrak --privileged --cgroupns=host \
+              -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+              -v "$PWD:/roles/ansible_mailserver:ro" \
+              quay.io/almalinuxorg/8-init:latest
+            for _ in $(seq 1 60); do
+              state="$(docker exec mrak systemctl is-system-running || true)"
+              case "$state" in
+                running | degraded) break ;;
+              esac
+              sleep 2
+            done
+            echo "systemd state: ${state}"
+            docker exec -w /roles/ansible_mailserver mrak bash -euxc "$TEST_SCRIPT"
+          } 2>&1 | tee result/full.log
+      - name: Add the journal of the container to the log
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          mkdir -p result
+          touch result/full.log
+          {
+            echo
+            echo '=== journal of the container (last 300 lines) ==='
+            docker exec mrak journalctl --no-pager -n 300 || true
+          } >> result/full.log 2>&1
+      - name: Mask and collect the log for the report
+        if: ${{ always() }}
+        shell: bash
+        # Only the masked log is uploaded; if masking fails, nothing of the raw log is published
+        run: |
+          mkdir -p result
+          touch result/full.log
+          if ! bash tests/mask_log.sh < result/full.log > result/masked.log; then
+            echo 'masking failed, log withheld' > result/masked.log
+          fi
+          {
+            echo '=== Excerpt: failures and recap ==='
+            grep -n -e fatal: -e FAILED -e failed= -e 'PLAY RECAP' -e ERROR -e 'systemd state' result/masked.log | tail -n 120 || true
+            echo
+            echo '=== Full log (masked) ==='
+            cat result/masked.log
+          } > result/test-backups-functional.log
+      - name: Upload the masked log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@main
+        with:
+          name: test-backups-functional-result
+          path: result/test-backups-functional.log
+          if-no-files-found: error
+
+  report:
+    name: Publish the logs on the ci-results branch
+    needs:
+      - tests
+      - systemd
+    # Pull requests from forks only get a read-only token
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download the logs
+        uses: actions/download-artifact@main
+        with:
+          pattern: test-*-result
+          merge-multiple: true
+          path: result
+      - name: Push the logs to the ci-results branch
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEST_RESULT: ${{ (needs.tests.result == 'success' && needs.systemd.result == 'success') && 'success' || 'failure' }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -eu
+          git init -q publish
+          cd publish
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git checkout -q -b ci-results
+          for file in ../result/test-*.log; do
+            name="$(basename "$file")"
+            {
+              echo "result of all tests: ${TEST_RESULT}"
+              echo "tested commit: ${COMMIT_SHA}"
+              echo "branch: ${BRANCH_NAME}"
+              echo "event: ${EVENT_NAME}"
+              echo "run: ${RUN_URL}"
+              echo
+              cat "$file"
+            } > "$name"
+            git add "$name"
+          done
+          git commit -q -m "CI results of ${COMMIT_SHA}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-results

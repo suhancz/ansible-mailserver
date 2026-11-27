@@ -1,0 +1,525 @@
+---
+- name: Install EL repositories
+  tags:
+    - always
+  ansible.builtin.package:
+    name:
+      - yum-utils
+      - epel-release
+      - elrepo-release
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
+- name: Set up UEK repository
+  tags: wireguard
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/uek-ol8.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Unbreakable Enterprise Kernel Release 7 for Oracle Linux repository"
+    block: |
+      [ol8_UEKR7]
+      name=Latest Unbreakable Enterprise Kernel Release 7 for Oracle Linux $releasever ($basearch)
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL$releasever/UEKR7/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol$releasever
+      gpgcheck=1
+      enabled=1
+
+      [ol8_baseos_latest]
+      name=Oracle Linux 8 BaseOS Latest ($basearch)
+      baseurl=https://yum.oracle.com/repo/OracleLinux/OL$releasever/baseos/latest/$basearch/
+      gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol$releasever
+      gpgcheck=1
+      enabled=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Set up Remi repository
+  ansible.builtin.dnf:
+    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
+    disable_gpg_check: yes
+- name: Set up ElasticSearch repository
+  tags: elasticsearch
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/elastic.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK ElasticSearch 8.x repository"
+    block: |
+      [elasticsearch]
+      name=Elasticsearch repository for 8.x packages
+      baseurl=https://artifacts.elastic.co/packages/8.x/yum
+      gpgcheck=1
+      gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      enabled=1
+      autorefresh=1
+      type=rpm-md
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Accept Kolab GPG key
+  tags:
+    - kolab
+    - users
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://mirror.apheleia-it.ch/repos/Kolab:/16/key.asc
+- name: Set up Kolab repository
+  tags:
+    - kolab
+    - users
+  ansible.builtin.dnf:
+    name: "https://mirror.apheleia-it.ch/repos/Kolab:/16/kolab-16-for-el{{ ansible_distribution_major_version }}.rpm"
+# - name: Set up Symas OpenLDAP for Linux RPM repository
+#   tags:
+#     - ldap
+#     - users
+#   ansible.builtin.blockinfile:
+#     path: /etc/yum.repos.d/sofl.repo
+#     marker: "# {mark} ANSIBLE MANAGED BLOCK Symas OpenLDAP for Linux RPM repository"
+#     block: |
+#       [sofl]
+#       name=Symas OpenLDAP for Linux RPM repository
+#       baseurl=https://repo.symas.com/repo/rpm/SOFL/rhel{{ ansible_distribution_major_version }}
+#       gpgkey=https://repo.symas.com/repo/gpg/RPM-GPG-KEY-symas-com-signing-key
+#       gpgcheck=1
+#       enabled=1
+#     mode: u=rw,og=r
+#     owner: root
+#     group: root
+#     state: present
+#     backup: yes
+#     create: yes
+- name: Set up Extra Packages for Enterprise Linux 7 repository
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/epel-el7.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Extra Packages for Enterprise Linux 7 repository"
+    block: |
+      [epel-el7]
+      name=Extra Packages for Enterprise Linux 7 - x86_64
+      baseurl=https://dl.fedoraproject.org/pub/epel/7/x86_64/
+      enabled=0
+      gpgcheck=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Set up PowerDNS repository
+  tags: dns
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/powerdns.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK PowerDNS repository"
+    block: |
+      [powerdns-auth-master]
+      name=PowerDNS repository for PowerDNS Authoritative Server – master branch
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/auth-master
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
+      gpgcheck=1
+      enabled=1
+      priority=90
+      includepkg=pdns*
+
+      [powerdns-auth-master-debuginfo]
+      name=PowerDNS repository for PowerDNS Authoritative Server – master branch debug symbols
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/auth-master/debug
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
+      gpgcheck=1
+      enabled=0
+      priority=90
+      includepkg=pdns*
+
+      [powerdns-recursor-master]
+      name=PowerDNS repository for PowerDNS recursor – master branch
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/rec-master
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
+      gpgcheck=1
+      enabled=1
+      priority=90
+      includepkg=pdns*
+
+      [powerdns-recursor-master-debuginfo]
+      name=PowerDNS repository for PowerDNS recursor – master branch debug symbols
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/rec-master/debug
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
+      gpgcheck=1
+      enabled=0
+      priority=90
+      includepkg=pdns*
+
+      [dnsdist-auth-master]
+      name=PowerDNS repository for DNSDist – master branch
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/dnsdist-master
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
+      gpgcheck=1
+      enabled=1
+      priority=90
+      includepkg=dnsdist*
+
+      [dnsdist-auth-master-debuginfo]
+      name=PowerDNS repository for DNSDist – master branch debug symbols
+      baseurl=http://repo.powerdns.com/el/$basearch/$releasever/dnsdist-master/debug
+      gpgkey=https://repo.powerdns.com/CBC8B383-pub.asc
+      gpgcheck=1
+      enabled=0
+      priority=90
+      includepkg=dnsdist*
+
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Set up MongoDB repository
+  tags: mongodb
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/mongodb-org-5.0.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK MongoDB 5.0 repository"
+    block: |
+      [mongodb-org-5.0]
+      name=MongoDB 5.0 Repository
+      baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/5.0/$basearch/
+      gpgcheck=0
+      enabled=1
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Enable PowerTools
+  ansible.builtin.command: dnf config-manager --set-enable powertools
+  register: enable_powertools
+  changed_when: enable_powertools.rc == 0
+- name: Enable the go-toolset DNF module
+  ansible.builtin.command: dnf module enable go-toolset -y
+  register: enable_go_toolset
+  changed_when: enable_go_toolset.rc == 0
+- name: Query DNF repo list
+  tags:
+    - ldap
+    - dns
+  ansible.builtin.command: dnf repolist
+  register: dnf_repolist
+  changed_when: dnf_repolist.rc == 0
+- name: Enable the COPR repositories
+  when: "{{ ('copr:copr.fedorainfracloud.org:' ~ (item | split(' ') | first | replace('@', 'group_') | replace('/', ':'))) not in dnf_repolist.stdout }}" # noqa no-jinja-when this logic starts with a variable concatenation, no other way I found to do such
+  ansible.builtin.command: "dnf copr enable -y {{ item }}"
+  tags:
+    - ldap
+    - dns
+  loop:
+    - "@389ds/389-directory-server"
+    - "eclipseo/golang-ng custom-1-x86_64"
+    # - "suhanc/MigrationTools"
+  register: enable_copr_repo
+  changed_when: enable_copr_repo.rc == 0
+- name: Set CentOS 7 repo for MigrationTools
+  tags:
+    - ldap
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/CentOS-Base.repo
+    marker: "# {mark} ANSIBLE MANAGED BLOCK CentOS 7 repository"
+    block: |
+      [CentOS-Base]
+      name=CentOS-Base
+      mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=os&infra=$infra
+      #baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+      gpgcheck=1
+      gpgkey=http://mirror.centos.org/centos/7/os/x86_64/RPM-GPG-KEY-CentOS-7
+      exclude=cloud-utils-growpart
+      enabled=0
+    mode: u=rw,og=r
+    owner: root
+    group: root
+    state: present
+    backup: yes
+    create: yes
+- name: Enable the php:remi-7.2 DNF module
+  tags:
+    - always
+  block:
+    - name: Enable the php:remi-7.2 DNF module
+      ansible.builtin.command: dnf module enable php:remi-7.2 -y
+      register: enable_php72_module
+      changed_when: enable_php72_module.rc == 0
+  rescue:
+    - name: Reset the php DNF module
+      ansible.builtin.command: dnf module reset php -y
+      register: reset_php_module
+      changed_when: reset_php_module.rc == 0
+    - name: Enable the php:remi-7.2 DNF module
+      ansible.builtin.command: dnf module enable php:remi-7.2 -y
+      register: enable_php72_module
+      changed_when: enable_php72_module.rc == 0
+- name: Install packages
+  tags:
+    - always
+  ansible.builtin.package:
+    name:
+      - postfix
+      - mailx
+      - certbot
+      - httpd
+      - python3-certbot-apache
+      - mariadb-server
+      - mariadb
+      - python3-mysqlclient
+      - wget
+      - tar
+      - binutils
+      - rpm-build
+      - setools-console
+      - policycoreutils-python3
+      - policycoreutils-devel
+      - postfix-mysql
+      - pypolicyd-spf
+      - opendkim
+      - opendkim-tools
+      - perl-Getopt-Long
+      - opendmarc
+      - bind-utils
+      - postgrey
+      - postfix-perl-scripts
+      - NetworkManager-libnm
+      - nm-connection-editor
+      - spamassassin
+      - spamass-milter
+      - ImageMagick
+      - aspell
+      - memcached
+      - mod_ssl
+      - php-bcmath
+      - libmemcached
+      - gettext
+      - gettext-common-devel
+      - gettext-devel
+      - gettext-libs
+      - openldap
+      - openldap-clients
+      - openldap-devel
+      - gd
+      - gd-devel
+      - tidy
+      - libtidy
+      - libtidy-devel
+      - intltool
+      - curl
+      - libcurl
+      - libcurl-devel
+      - vsftpd
+      - java-1.8.0-openjdk
+      - elasticsearch
+      - python3-dns
+      - python3-py3dns
+      - mariadb-backup
+      - cyrus-sasl-devel
+      - libtool-ltdl-devel
+      - openssl-devel
+      - libdb-devel
+      - make
+      - libtool
+      - autoconf
+      - gcc
+      - perl
+      - perl-devel
+      - GeoIP-devel
+      - GeoIP
+      - GeoIP-GeoLite-data
+      - GeoIP-GeoLite-data-extra
+      - libgweather
+      - libgweather-devel
+      - cyrus-sasl-ldap
+      - mod_ldap
+      - openssh-ldap
+      - openssh-ldap-authkeys
+      - postfix-ldap
+      - sssd-ldap
+      # - 389-ds-base
+      - fortune-mod
+      - mongodb-org
+      - fail2ban-all
+      - fail2ban-firewalld
+      - fail2ban-selinux
+      - fail2ban-sendmail
+      - fail2ban-server
+      - fail2ban-systemd
+      - fail2ban
+      - procmail
+      - fetchmail
+      - mutt
+      - moreutils
+      - incron
+      - perl-DBI
+      - perl-MIME-Base64
+      - perl-File-Temp
+      - perl-Sys-Syslog
+      - perl-LockFile-Simple
+      - figlet
+      - telnet
+      - htop
+      - iotop
+      - screen
+      - amavisd-milter
+      - clamav-unofficial-sigs
+      - clamav-milter
+      - clamav-update
+      - iptables-services
+      - conntrack-tools
+      - pdns
+      - pdns-backend-mysql
+      - pdns-recursor
+      - libedit-devel
+      - boost-devel
+      - lua-devel
+      - libsodium-devel
+      - systemd-devel
+      - ragel
+      - dnsdist
+      - python3-netaddr
+      - redis
+      - mod_authnz_pam
+      - mod_authnz_external
+      - pwauth
+      - wireguard-tools
+      - bindfs
+      - golang
+      - python3-pyyaml
+      - python3-jinja2
+      - qrencode
+      - python3-pip
+      - golang-github-acme-lego
+      - perl-Proc-ProcessTable
+      - perl-CGI
+      - imapsync
+      - aide
+      - kolab
+      - php-kolabformat
+      - php72-php-fpm
+      - libkolabxml
+      - libkolab
+      - php-kolab
+      - php72-php-pecl-memcache
+      - sssd
+      - sssd-ldap
+      - oddjob-mkhomedir
+      - openssl-perl
+      # - libsss_sudo
+      # - symas-openldap-clients
+      # - symas-openldap-servers
+      - openldap-servers
+      - nss-pam-ldapd
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
+- name: Install packages for PowerAdmin
+  tags:
+    - poweradmin
+  ansible.builtin.package:
+    name:
+      - php74-php-fpm
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
+# - name: Reset the PHP DNF module
+#   ansible.builtin.command: dnf module reset php -y
+#   tags:
+#     - wireguard
+#     - dyndns
+# - name: Enable the php:remi-8.1 DNF module
+#   tags:
+#     - wireguard
+#     - dyndns
+#   ansible.builtin.command: dnf module enable php:remi-8.1 -y
+# - name: Install PHP 8.1 packages
+#   tags:
+#     - wireguard
+#     - dyndns
+#   ansible.builtin.package:
+#     name:
+#       - php81-php-fpm
+#       - php81-php-intl
+#       - php81-php-pecl-crypto
+#       - php81-php-pdo
+#       - php81-php-mysql
+#       - php81-php-mysqlnd
+#       - php81-php-pecl-mysql-xdevapi
+#       - php81-php-ldap
+#     state: latest # noqa package-latest I do prefer fresh stuff ;)
+#   register: php81_packages
+# - name: Restart php81-php-fpm
+#   when: php81_packages.changed
+#   tags:
+#     - wireguard
+#     - dyndns
+#   ansible.builtin.systemd_service:
+#     name: php81-php-fpm
+#     daemon_reload: yes
+#     enabled: yes
+#     state: restarted
+- name: Reset the PHP DNF module
+  ansible.builtin.command: dnf module reset php -y
+  tags:
+    - always
+  register: reset_php_module
+  changed_when: reset_php_module.rc == 0
+- name: Install EL7 packages
+  tags: ldap
+  ansible.builtin.dnf:
+    name:
+      - wiredtiger
+      - wiredtiger-devel
+      - getmail
+      - migrationtools
+    enablerepo:
+      - CentOS-Base
+      - epel-el7
+    state: latest # noqa package-latest I do prefer fresh stuff ;)
+- name: Enable WireGuard kernel module
+  tags: wireguard
+  block:
+    - name: Load the WireGuard kernel module
+      community.general.modprobe:
+        name: wireguard
+  rescue:
+    - name: Install UEK packages
+      ansible.builtin.dnf:
+        name:
+          - kmod-wireguard
+        enablerepo: ol8_baseos_latest
+        state: latest # noqa package-latest I do prefer fresh stuff ;)
+    - name: Reboot to pick up changes
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        msg: "Reboot initiated by Ansible to enable WireGuard"
+    - name: Load the WireGuard kernel module
+      community.general.modprobe:
+        name: wireguard
+# - name: Install go packages
+#   ansible.builtin.command: "go install {{ item }}"
+#   loop:
+#     - github.com/go-acme/lego/v4/cmd/lego@latest
+#   tags: ssl
+# - name: Copy GO binaries to /usr/local/bin
+#   ansible.builtin.copy:
+#     src: "{{ ansible_env.HOME }}/go/bin/"
+#     dest: /usr/local/bin/
+#     remote_src: yes
+#     backup: yes
+- name: Download as-is executables
+  tags: imapsync
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: u=rwx,go=rx
+    force: yes
+    backup: yes
+  loop:
+    - {
+        url: "https://github.com/quentinsf/IMAPdedup/raw/master/imapdedup.py",
+        dest: "/usr/local/bin/imapdedup.py",
+      }
+- name: Reset the PHP DNF module
+  ansible.builtin.command: dnf module reset php -y
+  tags:
+    - always
+  register: reset_php_module
+  changed_when: reset_php_module.rc == 0

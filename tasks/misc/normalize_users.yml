@@ -1,0 +1,105 @@
+---
+# Works out the effective system username (`name`) of every entry in `users`
+# once, so every other task can keep using `item.name`.
+#
+# Source: explicit `name` > family mode: first name
+#         > otherwise: first initial + surname
+# Every username, derived or explicit, is converted to lowercase Latin ASCII on
+# the target host (files/misc/ascii_name.py, which needs the Unidecode package).
+# The explicit `name` is kept as `name_input` (it can be a nickname with any
+# characters); generate_addresses.yml uses it for the display names.
+#
+# The tasks that carry user data hide their output (`no_log`). Set
+# `mailserver_no_log: false` (only with test data!) to see why they fail.
+- name: Check that every user has enough data to derive a username
+  ansible.builtin.assert:
+    that:
+      - >-
+        user_item.name is defined
+        or (user_item.firstname | default('', true) | length > 0)
+      - >-
+        user_item.name is defined
+        or (family_mode | bool)
+        or (user_item.surname | default('', true) | length > 0)
+    fail_msg: >-
+      Cannot derive a username: set `name`, or give `firstname`
+      (and `surname` when family_mode is off).
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user_item
+    label: "{{ user_item.name | default(user_item.firstname | default('?')) }}"
+  tags: always
+- name: Make sure Unidecode is available on the target
+  when: users | length > 0
+  tags: always
+  block:
+    - name: Install the EPEL repository
+      ansible.builtin.package:
+        name: epel-release
+        state: present
+    - name: Install the Unidecode package
+      ansible.builtin.package:
+        name: python3-unidecode
+        state: present
+  rescue:
+    - name: Install pip
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
+    - name: Install Unidecode with pip
+      ansible.builtin.pip:
+        name: Unidecode
+        executable: pip3
+- name: Convert the usernames to plain Latin ASCII
+  check_mode: false
+  changed_when: false
+  ansible.builtin.script:
+    # The name goes over as ASCII-only JSON, so the locale of the target does not matter
+    cmd: "files/misc/ascii_name.py {{ raw_name | to_json | quote }}"
+    executable: "{{ ansible_python_interpreter | default('/usr/bin/python3') }}"
+  vars:
+    raw_name: >-
+      {{ user_item.name if user_item.name is defined
+      else (user_item.firstname if (family_mode | bool)
+      else (user_item.firstname[0:1] ~ user_item.surname)) }}
+  register: ascii_name_result
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user_item
+    label: "{{ user_item.name | default(user_item.firstname | default('?')) }}"
+  no_log: "{{ mailserver_no_log | default(true) }}"
+  tags: always
+- name: Start with an empty list of users with effective names
+  # Facts stay on the host, so a second run would otherwise append to the old list
+  ansible.builtin.set_fact:
+    normalized_users: []
+  tags: always
+- name: Derive effective usernames
+  # The loop item of the registered results is stored under `user_item` (the loop_var above)
+  ansible.builtin.set_fact:
+    normalized_users: "{{ normalized_users + [result_item.user_item | combine({'name': effective_user_name, 'name_input': result_item.user_item.name | default('')})] }}"
+  vars:
+    effective_user_name: >-
+      {{ result_item.stdout | lower | regex_replace("[ ']", "") }}
+  loop: "{{ ascii_name_result.results }}"
+  loop_control:
+    loop_var: result_item
+    label: "{{ result_item.user_item.name | default(result_item.user_item.firstname | default('?')) }}"
+  no_log: "{{ mailserver_no_log | default(true) }}"
+  tags: always
+- name: Check that the usernames are valid POSIX names
+  ansible.builtin.assert:
+    that: user_item.name is match('^[a-z_][a-z0-9_-]*$')
+    fail_msg: >-
+      Username '{{ user_item.name }}' is not a valid lowercase ASCII username.
+      Set `name` explicitly for this user.
+  loop: "{{ normalized_users }}"
+  loop_control:
+    loop_var: user_item
+    label: "{{ user_item.name }}"
+  tags: always
+- name: Use the users with effective names from now on
+  ansible.builtin.set_fact:
+    users: "{{ normalized_users }}"
+  no_log: "{{ mailserver_no_log | default(true) }}"
+  tags: always

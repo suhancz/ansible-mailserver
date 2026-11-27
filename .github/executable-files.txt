@@ -1,0 +1,7 @@
+# Exact tracked script entry points that must have the Git mode 100755.
+# The workflow .github/workflows/linter.yml adds the executable bit to them
+# when it is missing. Files that are not listed here are left as they are.
+# Every entry needs a shebang line.
+tests/mask_log.sh
+files/ldap/extract_user_data_to_migrate.sh
+files/misc/ascii_name.py

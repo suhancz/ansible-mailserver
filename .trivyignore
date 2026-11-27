@@ -1,0 +1,7 @@
+# Same decisions as the Checkov skips in the Dockerfile (owner's reasons):
+# DS-0001: the base image is always the latest
+DS-0001
+# DS-0002: no special user in the test container
+DS-0002
+# DS-0026: no health check needed in the test container
+DS-0026

@@ -2,115 +2,128 @@
 # tasks file for ansible-mailserver
 - name: Gather facts
   ansible.builtin.setup:
+- name: Derive effective user names
+  ansible.builtin.import_tasks: misc/normalize_users.yml
+  tags: always
+- name: Generate the email addresses of the users
+  ansible.builtin.import_tasks: misc/generate_addresses.yml
+  tags: always
 - name: Generate passwords if they don't exist yet
   ansible.builtin.set_fact:
-    postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"
-    horde_db_password: "{{ horde_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.horde_db_password chars=ascii_letters,digits')) }}"
+    # postfixadmin_db_password: "{{ postfixadmin_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.postfixadmin_db_password chars=ascii_letters,digits')) }}"
     powerdns_db_password: "{{ powerdns_db_password | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_db_password chars=ascii_letters,digits')) }}"
     powerdns_api_key: "{{ powerdns_api_key | default(lookup('password', '/tmp/ansible-mailserver-install.powerdns_api_key chars=ascii_letters,digits')) }}"
     mysql_root_password: "{{ mysql_root_password | default(lookup('password', '/tmp/ansible-mailserver-install.mysql_root_password chars=ascii_letters,digits')) }}"
-    ldap_admin_password: "{{ ldap_admin_password | default(lookup('password', '/tmp/ansible-mailserver-install.ldap_admin_password chars=ascii_letters,digits')) }}"
+    ldap_admin_password: "{{ users | selectattr('name', 'equalto', mailserver_admin_user) | map(attribute='password') | first }}"
     mariabackup_password: "{{ mariabackup_password | default(lookup('password', '/tmp/ansible-mailserver-install.mariabackup_password chars=ascii_letters,digits')) }}"
-    horde_secret_key: "{{ horde_secret_key | default(lookup('password', '/tmp/ansible-mailserver-install.horde_secret_key chars=ascii_letters,digits')) }}"
-  no_log: yes
-  tags: always
-- name: Fill authorized submit user list
-  ansible.builtin.set_fact:
-    authorized_submit_users: "{{ authorized_submit_users + [item.name] }}"
-  loop: "{{ users }}"
   no_log: yes
   tags: always
 - name: Configure OS
-  ansible.builtin.import_tasks: os.yml
+  ansible.builtin.import_tasks: os/main.yml
   tags: os
 - name: Configure MariaDB
-  ansible.builtin.import_tasks: mariadb.yml
+  ansible.builtin.import_tasks: mariadb/main.yml
   tags: mariadb
 - name: Configure DNS
-  ansible.builtin.import_tasks: dns.yml
+  ansible.builtin.import_tasks: dns/main.yml
   tags:
     - dns
     - poweradmin
     - dyndns
-- name: Configure PostfixAdmin
-  ansible.builtin.import_tasks: postfixadmin.yml
-  tags:
-    - postfix
-    - postfixadmin
+# - name: Configure PostfixAdmin
+#   ansible.builtin.import_tasks: mail/postfixadmin.yml
+#   tags:
+#     - postfix
+#     - postfixadmin
 - name: Set up SSL
-  ansible.builtin.import_tasks: ssl.yml
-  tags: ssl
-- name: Configure LDAP
-  ansible.builtin.import_tasks: ldap.yml
-  tags: ldap
-- name: Set up Horde
-  ansible.builtin.import_tasks: horde.yml
-  tags: horde
+  ansible.builtin.import_tasks: security/ssl.yml
+  tags:
+    - ssl
+    - security
+- name: Set up Kolab
+  ansible.builtin.import_tasks: kolab/main.yml
+  tags:
+    - kolab
+    - users
+    - mail
+# - name: Add users
+#   ansible.builtin.import_tasks: os/users.yml
+#   tags: users
 - name: Set up ElasticSearch
-  ansible.builtin.import_tasks: elasticsearch.yml
+  ansible.builtin.import_tasks: misc/elasticsearch.yml
   tags: elasticsearch
 - name: Set up FTP
-  ansible.builtin.import_tasks: ftp.yml
+  ansible.builtin.import_tasks: misc/ftp.yml
   tags: ftp
 - name: Configure Apache
-  ansible.builtin.import_tasks: httpd.yml
+  ansible.builtin.import_tasks: httpd/main.yml
   tags:
     - httpd
     - dyndns
-    - horde
-    - postfixadmin
+    - kolab
+    # - postfixadmin
     - poweradmin
     - wireguard
     - webdav
 - name: Set up SPAMAssassin
-  ansible.builtin.import_tasks: spamassassin.yml
-  tags: spamassassin
+  ansible.builtin.import_tasks: mail/spamassassin.yml
+  tags:
+    - spamassassin
+    - mail
 - name: Configure Antivirus
-  ansible.builtin.import_tasks: antivirus.yml
-  tags: antivirus
+  ansible.builtin.import_tasks: security/antivirus.yml
+  tags:
+    - antivirus
+    - security
 - name: Configure Redis
-  ansible.builtin.import_tasks: redis.yml
+  ansible.builtin.import_tasks: misc/redis.yml
   tags: redis
 - name: Configure Postfix
-  ansible.builtin.import_tasks: postfix.yml
-  tags: postfix
-- name: Configure Dovecot
-  ansible.builtin.import_tasks: dovecot.yml
+  ansible.builtin.import_tasks: mail/postfix.yml
   tags:
-    - dovecot
-    - imapsync
+    - postfix
+    - mail
 - name: Sync old IMAP account
   # noqa jinja[invalid] for some reason this was the only way I found to pass the variable to the included task list
-  ansible.builtin.include_tasks: imapsync.yml
+  ansible.builtin.include_tasks: mail/imapsync.yml
   loop: "{{ users }}"
   loop_control:
     loop_var: current_user
   vars:
     current_user: "{{ current_user }}"
   no_log: yes
-  tags: imapsync
+  tags:
+    - imapsync
+    - users
+    - mail
 - name: Set up DKIM
-  ansible.builtin.import_tasks: dkim.yml
-  tags: dkim
+  ansible.builtin.import_tasks: mail/dkim.yml
+  tags:
+    - dkim
+    - mail
 - name: Set up DMARC
-  ansible.builtin.import_tasks: dmarc.yml
-  tags: dmarc
+  ansible.builtin.import_tasks: mail/dmarc.yml
+  tags:
+    - dmarc
+    - mail
 - name: Set up MongoDB
-  ansible.builtin.import_tasks: mongodb.yml
+  ansible.builtin.import_tasks: misc/mongodb.yml
   tags: mongodb
 - name: Set up WebDav
-  ansible.builtin.import_tasks: webdav.yml
+  ansible.builtin.import_tasks: httpd/webdav.yml
   tags: webdav
 - name: Set up WireGuard
-  ansible.builtin.import_tasks: wireguard.yml
+  ansible.builtin.import_tasks: wireguard/main.yml
   tags:
     - wireguard
     - dyndns
     - poweradmin
-    - postfixadmin
+    # - postfixadmin
 - name: Set up backups
-  ansible.builtin.import_tasks: backups.yml
+  ansible.builtin.import_tasks: backups/main.yml
   tags: backup
 - name: Configure fail2ban
-  ansible.builtin.import_tasks: fail2ban.yml
-  tags: fail2ban
+  ansible.builtin.import_tasks: security/fail2ban.yml
+  tags:
+    - fail2ban
+    - security

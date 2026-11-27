@@ -1,0 +1,121 @@
+---
+# Works out the email addresses and display names of every user (after
+# normalize_users.yml).
+#
+# Adds to every entry of `users`:
+#   primary_address        sender address and mailbox; default username@mailserver_domain
+#   generated_aliases      addresses generated from the optional `mail_domains`
+#   all_addresses          primary + generated + the aliases the administrator set
+#   address_display_names  display name per address
+#   display_name           the display name of the primary address (LDAP displayName)
+#
+# Display name per address: if the local part of the address contains a word of
+# the firstname or surname (compared as plain lowercase Latin; words of 3+
+# letters also match inside the local part), the address looks official and gets
+# the official full name (firstname surname, full Unicode). Otherwise it looks
+# like a nickname and gets the nickname: the optional `display_name`, else the
+# explicit `name` as written, else the official name.
+#
+# `mail_domains` (optional) is a list of domains with an address style each:
+#   - name: suhan.cz
+#     style: username            # username@suhan.cz
+#   - name: balla.global
+#     style: givenname           # givenname@balla.global
+#     surname: Balla             # family domain: only users with this surname
+#   - name: example.org
+#     style: givenname.surname   # givenname.surname@example.org (default style)
+# Without `mail_domains` only the primary address and the `aliases` are used.
+- name: Collect the names the addresses and display names are built from
+  ansible.builtin.set_fact:
+    address_inputs: "{{ address_inputs_json | from_json }}"
+  vars:
+    address_inputs_json: |-
+      {% set out = [] %}
+      {% for u in users %}
+      {% for text in [u.firstname | default(''), u.surname | default('')] %}
+      {% set _ = out.append(text) %}
+      {% for w in (text | regex_replace('[._ -]+', ' ')).split() %}
+      {% set _ = out.append(w) %}
+      {% endfor %}
+      {% endfor %}
+      {% endfor %}
+      {% set _ = out.append(default_surname | default('')) %}
+      {% for d in mail_domains | default([]) %}
+      {% set _ = out.append(d.surname | default('')) %}
+      {% endfor %}
+      {{ out | select | unique | list | to_json }}
+  tags: always
+- name: Convert the names to plain Latin ASCII
+  check_mode: false
+  changed_when: false
+  ansible.builtin.script:
+    cmd: "files/misc/ascii_name.py {{ input_item | to_json | quote }}"
+    executable: "{{ ansible_python_interpreter | default('/usr/bin/python3') }}"
+  register: address_ascii_results
+  loop: "{{ address_inputs }}"
+  loop_control:
+    loop_var: input_item
+  no_log: "{{ mailserver_no_log | default(true) }}"
+  tags: always
+- name: Remember the converted names
+  ansible.builtin.set_fact:
+    address_ascii_names: >-
+      {{ dict(address_ascii_results.results | map(attribute='input_item') | list
+      | zip(address_ascii_results.results | map(attribute='stdout')
+      | map('lower') | map('regex_replace', "[ ']", "") | list)) }}
+  no_log: "{{ mailserver_no_log | default(true) }}"
+  tags: always
+- name: Work out the addresses and display names of every user
+  ansible.builtin.set_fact:
+    users: "{{ address_users_json | from_json }}"
+  vars:
+    address_users_json: |-
+      {% set out = [] %}
+      {% for u in users %}
+      {% set first = address_ascii_names.get(u.firstname, '') if u.firstname is defined else '' %}
+      {% set last = address_ascii_names.get(u.surname | default(default_surname | default('')), '') %}
+      {% set primary = (u.primary_address | default(u.name ~ '@' ~ mailserver_domain)) | lower %}
+      {% set gen = [] %}
+      {% for d in mail_domains | default([]) %}
+      {% set dsur = address_ascii_names.get(d.surname, '') if d.surname is defined else '' %}
+      {% if d.surname is not defined or (dsur != '' and dsur == last) %}
+      {% if d.style | default('givenname.surname') == 'username' %}
+      {% set _ = gen.append(u.name ~ '@' ~ d.name) %}
+      {% elif d.style | default('givenname.surname') == 'givenname' and first != '' %}
+      {% set _ = gen.append(first ~ '@' ~ d.name) %}
+      {% elif d.style | default('givenname.surname') == 'givenname.surname' and first != '' and last != '' %}
+      {% set _ = gen.append(first ~ '.' ~ last ~ '@' ~ d.name) %}
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+      {% set every = ([primary] + gen + (u.aliases | default([]))) | map('lower') | unique | list %}
+      {% set official_words = [] %}
+      {% for src in [u.firstname | default(''), u.surname | default('')] %}
+      {% for w in (src | regex_replace('[._ -]+', ' ')).split() %}
+      {% set _ = official_words.append(address_ascii_names.get(w, '')) %}
+      {% endfor %}
+      {% endfor %}
+      {% set official_name = ((u.firstname ~ ' ' ~ u.surname) if u.surname is defined else u.firstname) if u.firstname is defined else '' %}
+      {% set nick = (u.display_name | default('', true)) or (u.name_input | default('', true)) or official_name or u.name %}
+      {% set names = {} %}
+      {% for a in every %}
+      {% set local = a.split('@')[0] %}
+      {% set words = (local | regex_replace('[._+-]+', ' ')).split() %}
+      {% set ns = namespace(official=false) %}
+      {% for ow in official_words %}
+      {% if ow != '' and (ow in words or (ow | length >= 3 and ow in local)) %}
+      {% set ns.official = true %}
+      {% endif %}
+      {% endfor %}
+      {% set _ = names.update({a: official_name if ns.official else nick}) %}
+      {% endfor %}
+      {% set _ = out.append(u | combine({'primary_address': primary, 'generated_aliases': gen, 'all_addresses': every, 'address_display_names': names, 'display_name': names[primary]})) %}
+      {% endfor %}
+      {{ out | to_json }}
+  no_log: "{{ mailserver_no_log | default(true) }}"
+  tags: always
+- name: Use the domains of mail_domains as custom domains
+  when: mail_domains is defined
+  ansible.builtin.set_fact:
+    custom_domains: "{{ mail_domains | map(attribute='name') | reject('equalto', mailserver_domain) | list }}"
+  tags: always
