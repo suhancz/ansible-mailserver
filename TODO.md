@@ -8,9 +8,9 @@ Make the Kolab version of the role complete and releasable as 3.0.0: working and
 
 ## Current state
 
-Revision at the last update: b446022 on `feature/kolab` (draft pull request #65, work stays on this branch).
+Revision at the last update: 11115ea on `feature/kolab` (draft pull request #65, work stays on this branch).
 
-- CI: the three tests (username and address derivation, whole-role syntax check, unit tests) passed on eacf254, c44c463 and 813194b (the syntax check passed after the Prettier reformat of 26 YAML files). Super-Linter failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings). Since then the Pylint, shfmt and `aci` fixes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4) and the typo fix in `tasks/os/packages.yml` (c44c463) are pushed. The push lint run of cb9e339 linted `TODO.md` only: ANSIBLE, CHECKOV, EDITORCONFIG, GITLEAKS, MARKDOWN and TRIVY passed, NATURAL_LANGUAGE and SPELL_CODESPELL failed on this file and are fixed in b446022 and in the next commit. The YAML linters did not run on that push, so Prettier is still unconfirmed
+- CI: the three tests (username and address derivation, whole-role syntax check, unit tests) passed on eacf254, c44c463, 813194b and 11115ea (the syntax check passed after the Prettier reformat of 26 YAML files). Super-Linter failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings). Since then the Pylint, shfmt and `aci` fixes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4) and the typo fix in `tasks/os/packages.yml` (c44c463) are pushed. The push lint runs of cb9e339 and 11115ea linted `TODO.md` only: on 11115ea `ANSIBLE`, `CHECKOV`, `GITMERGECONFLICTMARKERS`, `MARKDOWN`, `MARKDOWN_PRETTIER`, `PRECOMMIT`, `SPELL_CODESPELL` and `TRIVY` passed, and `NATURAL_LANGUAGE` failed on three plain-text linter names in this bullet, which are code spans now. The YAML linters did not run on those pushes, so Prettier is still unconfirmed
 - tests: only the username and address derivation, the syntax check and the script unit tests exist; nothing tests what the role does on a server (see the high-priority section)
 - backups: read, not fixed and not verified; they count as not working until a backup and a restore ran in a test
 - instructions: `AGENTS.md` no longer copies the shared rules (2cc2922) and has the CI test rule
@@ -43,11 +43,11 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 
 - [ ] fix the red Super-Linter findings at their cause, from the full `lint.log` on `ci-lint-results` (an automatic summary named files the log does not confirm, so do not follow it blindly):
 - [ ] Pylint `C0415` in `files/misc/ascii_name.py`, shfmt in `files/ldap/extract_user_data_to_migrate.sh` and `tests/mask_log.sh`, codespell `aci`: pushed in 4a64f43, waiting for a full lint run (pull request) that shows them green
-- [ ] codespell: the typo in the comment at `tasks/os/packages.yml:208` is fixed in c44c463 (one word changed); codespell also flagged this file, where the typo was spelled out (cb9e339), so the lines describe it without the misspelled word now; waiting for a lint run that shows `SPELL_CODESPELL` green
-- [ ] Prettier: the temporary workflow ran the Prettier fixer of Super-Linter once, and the bot commit 652bb7a formatted exactly the 26 files of the lint log (424 additions, 165 deletions; the biggest change is `defaults/main.yml` with 178 additions); the syntax-check test passed after it (c44c463); waiting for a lint log that shows `YAML_PRETTIER` green (the push lint of cb9e339 did not run the YAML linters)
-- [ ] Trivy: `.trivyignore` at the repository root lists DS-0001, DS-0002 and DS-0026 (7d4c2d4, the same three decisions as the Checkov skips); `TRIVY` passed with 0 findings for the Dockerfile in the push lint of cb9e339, so the root file seems to be read; waiting for a pull request lint log to confirm, and if the three findings come back, set `ignorefile` in `.github/linters/trivy.yaml`
+- [ ] codespell: the typo in the comment at `tasks/os/packages.yml:208` is fixed in c44c463 (one word changed); codespell also flagged this file, where the typo was spelled out (cb9e339), so the lines describe it without the misspelled word now; `SPELL_CODESPELL` passed in the push lint of 11115ea; waiting for a full lint run (pull request) to confirm
+- [ ] Prettier: the temporary workflow ran the Prettier fixer of Super-Linter once, and the bot commit 652bb7a formatted exactly the 26 files of the lint log (424 additions, 165 deletions; the biggest change is `defaults/main.yml` with 178 additions); the syntax-check test passed after it (c44c463); waiting for a lint log that shows `YAML_PRETTIER` green (the push lints of cb9e339 and 11115ea did not run the YAML linters)
+- [ ] Trivy: `.trivyignore` at the repository root lists DS-0001, DS-0002 and DS-0026 (7d4c2d4, the same three decisions as the Checkov skips); `TRIVY` passed with 0 findings for the Dockerfile in the push lints of cb9e339 and 11115ea, so the root file seems to be read; waiting for a pull request lint log to confirm, and if the three findings come back, set `ignorefile` in `.github/linters/trivy.yaml`
 - [x] codespell typo in `tasks/mariadb/create_mariadb_schema.yml` fixed (5cac1f6)
-- [x] the three tests passed (15c78c6, eacf254, c44c463, 813194b)
+- [x] the three tests passed (15c78c6, eacf254, c44c463, 813194b, 11115ea)
 - [ ] read the logs after every push and keep the tests green
 
 ### Kolab backup and restore
@@ -97,20 +97,22 @@ The backups did not work on the old Horde setup (`main`) and have to work on Kol
 
 The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch. The converge test is the first item of the high-priority section.
 
-- [x] all three entries and the log publishing pass (15c78c6, eacf254, c44c463, 813194b)
+- [x] all three entries and the log publishing pass (15c78c6, eacf254, c44c463, 813194b, 11115ea)
 - [ ] add a converge test: a systemd-enabled AlmaLinux 8 container that runs the OS and LDAP parts of the role (`tasks/os`, `tasks/ldap`), then Postfix and finally the Kolab installation
 - [ ] check idempotence by running the converge twice
 
 ### Super-Linter log and findings
 
-- [x] the lint job saves the log, masks it and publishes `lint.log` on the `ci-lint-results` branch (seen for 2cc2922, 5cac1f6, eacf254, c44c463, 813194b and cb9e339)
+- [x] the lint job saves the log, masks it and publishes `lint.log` on the `ci-lint-results` branch (seen for 2cc2922, 5cac1f6, eacf254, c44c463, 813194b, cb9e339, b446022 and 11115ea)
 - [x] the Ansible linter could not find the role `ansible_mailserver` for `tests/role_syntax.yml`; ignored as `syntax-check[specific]` in `.ansible-lint-ignore`, and it only shows as an ignored warning
 - [x] the natural language linter rejected an all-capitals Ansible, `file name` and `file names` in running text of this file; they are `Ansible`, `filename` and `filenames`
 - [x] the natural language linter also rejected an all-capitals EditorConfig and `host names` in running text of this file; they are `EditorConfig` and `hostnames` (cb9e339, b446022)
+- [x] the natural language linter rejected plain-text linter names that look like product names (Ansible, EditorConfig, Markdown) in the CI bullet of the current state; write linter names as code spans in this file
 - [x] line endings: the check passed and the repair job was skipped on e730605 (the files were LF already)
 - [x] editorconfig-checker accepts the files (EditorConfig passed in the logs of eacf254 and cb9e339)
 - [x] decided by the owner: Prettier is run once by a temporary workflow that uses the Super-Linter fixer, so the Prettier configuration is the same as in the lint job; the workflow `prettier-fix-yaml.yml` was added in 7d4c2d4, ran once (bot commit 652bb7a) and was deleted in e2471bf
 - [x] decided by the owner: Trivy gets the same ignores as Checkov for the three Dockerfile findings (`.trivyignore`, 7d4c2d4)
+- [ ] the excerpt at the top of `lint.log` stops after 300 lines and the yamllint warnings fill it, so errors of later linters are cut off; match only errors and failures there, or put the Super-Linter result table first
 - [ ] add indentation and trailing whitespace rules to `.editorconfig` once the existing files are checked
 - [ ] check after the next run: `AIX` in the platforms of `meta/main.yml` (an old warning, ignored as `schema[meta]`), `min_ansible_version` 2.9 is far too old, other aliases in other tasks (`user:`, `db:`, `daemon-reload`)
 - [ ] yamllint only warns (line length over 80, spaces inside braces, and the indentation rule on `defaults/main.yml`); Prettier now decides the style, so decide if the `.yamllint` rules should follow Prettier
