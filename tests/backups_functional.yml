@@ -166,7 +166,7 @@
         state: touch
         mode: u=rw,go=r
         modification_time: "200001010000.00"
-        modification_format: "%Y%m%d%H%M.%S"
+        modification_time_format: "%Y%m%d%H%M.%S"
     - name: Run every backup service
       ansible.builtin.command: "systemctl start {{ item.name }}-backup.service" # noqa command-instead-of-module
       changed_when: true
