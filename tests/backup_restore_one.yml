@@ -1,0 +1,30 @@
+---
+# Restores one service in tests/backups_functional.yml. The loop item is a pair:
+# item.0 is the definition of the service, item.1 the result that holds the
+# path of its newest archive in item.1.stdout.
+- name: "Remove the sample files of {{ item.0.name }}"
+  ansible.builtin.file:
+    path: "{{ file }}"
+    state: absent
+  loop: "{{ item.0.files }}"
+  loop_control:
+    loop_var: file
+- name: "Restore the service with the restore task file of the role {{ item.0.name }}"
+  when: item.0.service | default(false)
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/../tasks/backups/restore_service_tarball_backup.yml"
+  vars:
+    service: "{{ item.0.unit | default(item.0.name) }}"
+    service_backup_path: "{{ item.1.stdout }}"
+- name: "Restore the backup without a service {{ item.0.name }}"
+  when: not (item.0.service | default(false))
+  ansible.builtin.unarchive:
+    src: "{{ item.1.stdout }}"
+    dest: /
+    remote_src: true
+- name: "Check the restored files of {{ item.0.name }}"
+  ansible.builtin.assert:
+    that:
+      - "(marker ~ ' ' ~ item.0.name) in lookup('ansible.builtin.file', file)"
+  loop: "{{ item.0.files }}"
+  loop_control:
+    loop_var: file

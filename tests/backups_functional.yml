@@ -1,0 +1,225 @@
+---
+# Functional test of the tarball backup services and their restore. It runs in
+# a container with systemd as PID 1 (job "Backups and restores in a systemd
+# container" of .github/workflows/tests.yml): the real unit templates are
+# rendered and installed, every service is started twice with sample files in
+# place (the units they depend on are dummy services), the archives are checked,
+# the sample files are deleted and the newest archive of every service is
+# restored with the restore task file of the role. MariaDB and LDAP are not
+# covered yet (they need real servers). Never run this on a real server: it
+# writes to /etc and /var. Run it from the root of the repository, as root:
+#   ansible-playbook -i case_container, -c local tests/backups_functional.yml
+- name: Run the tarball backup services and restore from their archives
+  hosts: case_container
+  connection: local
+  gather_facts: false
+  vars:
+    marker: backup-test-marker
+    mailserver_hostname: mrak
+    users:
+      - name: bob
+    template_dir: "{{ playbook_dir }}/../templates/systemd"
+    # Same services as the loop of the tarball services in tasks/backups/main.yml
+    tarball_services:
+      - name: opendkim
+        service: true
+        paths:
+          - /etc/opendkim
+          - /etc/opendkim.conf
+        files:
+          - /etc/opendkim/KeyTable
+          - /etc/opendkim.conf
+      - name: opendmarc
+        service: true
+        paths:
+          - /etc/opendmarc
+          - /etc/opendmarc.conf
+        files:
+          - /etc/opendmarc/ignore.hosts
+          - /etc/opendmarc.conf
+      - name: kolab
+        paths:
+          - /etc/kolab
+          - /etc/roundcubemail
+          - /etc/iRony
+          - /etc/kolab-freebusy
+        files:
+          - /etc/kolab/kolab.conf
+          - /etc/roundcubemail/config.inc.php
+          - /etc/iRony/dav.inc.php
+          - /etc/kolab-freebusy/config.ini
+      - name: cyrus-imap
+        unit: cyrus-imapd
+        service: true
+        paths:
+          - /etc/imapd.conf
+          - /etc/cyrus.conf
+          - /etc/imap
+          - /etc/cyrus-imap
+        files:
+          - /etc/imapd.conf
+          - /etc/cyrus.conf
+      - name: cyrus-imap-data
+        unit: cyrus-imapd
+        service: true
+        mboxlist_dump: true
+        paths:
+          - /var/lib/imap
+          - /var/spool/imap
+        files:
+          - /var/lib/imap/mailboxes.db
+          - /var/spool/imap/user/test/1.
+      - name: postfix
+        service: true
+        paths:
+          - /etc/postfix
+          - /var/vmail
+        files:
+          - /etc/postfix/main.cf
+          - /var/vmail/example.org/bob/Maildir/cur/1
+      - name: ssl
+        paths:
+          - /etc/letsencrypt
+        files:
+          - /etc/letsencrypt/live/example.org/fullchain.pem
+      - name: pdns
+        service: true
+        paths:
+          - /etc/pdns
+          - /etc/pdns-recursor
+          - /etc/dnsdist
+        files:
+          - /etc/pdns/pdns.conf
+          - /etc/pdns-recursor/recursor.conf
+      - name: wg_vpn
+        service: true
+        paths:
+          - /etc/wireguard
+        files:
+          - /etc/wireguard/wg0.conf
+      - name: vsftpd
+        service: true
+        template: vsftpd-backup.service.j2
+        paths: []
+        files:
+          - /etc/vsftpd/vsftpd.conf
+          - /home/bob/ftp/hello.txt
+  tasks:
+    - name: Install a dummy service for every unit the backups depend on
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ item.unit | default(item.name) }}.service"
+        content: |
+          [Unit]
+          Description=Dummy service for the backup test
+          [Service]
+          ExecStart=/usr/bin/sleep infinity
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: u=rw,go=r
+      loop: "{{ tarball_services | selectattr('service', 'defined') | selectattr('service') | list }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Create the directories of the sample files
+      ansible.builtin.file:
+        path: "{{ item.1 | dirname }}"
+        state: directory
+        mode: u=rwx,go=rx
+      loop: "{{ tarball_services | subelements('files') }}"
+      loop_control:
+        label: "{{ item.1 }}"
+    - name: Create the sample files
+      ansible.builtin.copy:
+        dest: "{{ item.1 }}"
+        content: "{{ marker }} {{ item.0.name }}\n"
+        mode: u=rw,go=r
+      loop: "{{ tarball_services | subelements('files') }}"
+      loop_control:
+        label: "{{ item.1 }}"
+    - name: Install the real backup service templates
+      ansible.builtin.template:
+        src: "{{ template_dir }}/{{ item.template | default('tarball-backup.service.j2') }}"
+        dest: "/etc/systemd/system/{{ item.name }}-backup.service"
+        owner: root
+        group: root
+        mode: u=rw,og=r
+      loop: "{{ tarball_services }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Start the dummy services and let systemd read the new units
+      ansible.builtin.systemd_service:
+        name: "{{ item.unit | default(item.name) }}"
+        daemon_reload: true
+        state: started
+      loop: "{{ tarball_services | selectattr('service', 'defined') | selectattr('service') | list }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Create the backup directory of the first service with an old archive in it
+      ansible.builtin.file:
+        path: /backup/opendkim
+        state: directory
+        mode: u=rwx,go=rx
+    - name: Create an old archive that the retention has to remove
+      ansible.builtin.file:
+        path: /backup/opendkim/old.tar.bz2
+        state: touch
+        mode: u=rw,go=r
+        modification_time: "200001010000.00"
+        modification_format: "%Y%m%d%H%M.%S"
+    - name: Run every backup service
+      ansible.builtin.command: "systemctl start {{ item.name }}-backup.service" # noqa command-instead-of-module
+      changed_when: true
+      loop: "{{ tarball_services }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Run every backup service a second time
+      ansible.builtin.command: "systemctl start {{ item.name }}-backup.service" # noqa command-instead-of-module
+      changed_when: true
+      loop: "{{ tarball_services }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Find the newest archive of every service
+      ansible.builtin.shell: "set -o pipefail; ls -t /backup/{{ item.name }}/*.tar.bz2 | head -n 1" # noqa command-instead-of-module
+      args:
+        executable: /bin/bash
+      changed_when: false
+      loop: "{{ tarball_services }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: newest_archives
+    - name: List the content of the newest archives
+      ansible.builtin.command: "tar tjf {{ item.stdout }}" # noqa command-instead-of-module
+      changed_when: false
+      loop: "{{ newest_archives.results }}"
+      loop_control:
+        label: "{{ item.stdout }}"
+      register: archive_listings
+    - name: Check that every archive holds the sample files
+      ansible.builtin.assert:
+        that:
+          - "item.0.files | map('regex_replace', '^/', '') | list | difference(item.1.stdout_lines) | length == 0"
+        fail_msg: "The archive of {{ item.0.name }} misses sample files: {{ item.1.stdout_lines }}"
+      loop: "{{ tarball_services | zip(archive_listings.results) | list }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+    - name: Check that the retention removed the old archive
+      ansible.builtin.stat:
+        path: /backup/opendkim/old.tar.bz2
+      register: old_archive
+    - name: Assert that the old archive is gone and the new one is kept
+      ansible.builtin.assert:
+        that:
+          - not old_archive.stat.exists
+          - "newest_archives.results[0].stdout is match('/backup/opendkim/opendkim-.*[.]tar[.]bz2')"
+    - name: Restore every service from its newest archive
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/backup_restore_one.yml"
+      loop: "{{ tarball_services | zip(newest_archives.results) | list }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+    - name: Check that the restored services are active
+      ansible.builtin.command: "systemctl is-active {{ item.unit | default(item.name) }}" # noqa command-instead-of-module
+      changed_when: false
+      loop: "{{ tarball_services | selectattr('service', 'defined') | selectattr('service') | list }}"
+      loop_control:
+        label: "{{ item.name }}"

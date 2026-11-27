@@ -106,9 +106,87 @@ jobs:
           path: result/test-${{ matrix.name }}.log
           if-no-files-found: error
 
+  systemd:
+    name: Backups and restores in a systemd container on AlmaLinux 8
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@main
+        with:
+          persist-credentials: false
+      - name: Run the test in a container with systemd as PID 1
+        shell: bash
+        # The container is privileged and shares the cgroup tree of the runner,
+        # which systemd needs. The repository is mounted read-only as the role
+        # ansible_mailserver. Nothing is pinned: the latest ansible-core needs
+        # python3.12, which AlmaLinux 8 provides.
+        env:
+          TEST_SCRIPT: |
+            dnf -y install python3.12 python3.12-pip tar bzip2 findutils
+            python3.12 -m pip install --upgrade pip ansible-core
+            ansible-playbook -v -i case_container, -c local \
+              -e ansible_python_interpreter=/usr/bin/python3.12 \
+              tests/backups_functional.yml
+        run: |
+          set -o pipefail
+          mkdir -p result
+          {
+            docker run -d --name mrak --privileged --cgroupns=host \
+              -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+              -v "$PWD:/roles/ansible_mailserver:ro" \
+              quay.io/almalinuxorg/8-init:latest
+            for _ in $(seq 1 60); do
+              state="$(docker exec mrak systemctl is-system-running || true)"
+              case "$state" in
+                running | degraded) break ;;
+              esac
+              sleep 2
+            done
+            echo "systemd state: ${state}"
+            docker exec -w /roles/ansible_mailserver mrak bash -euxc "$TEST_SCRIPT"
+          } 2>&1 | tee result/full.log
+      - name: Add the journal of the container to the log
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          mkdir -p result
+          touch result/full.log
+          {
+            echo
+            echo '=== journal of the container (last 300 lines) ==='
+            docker exec mrak journalctl --no-pager -n 300 || true
+          } >> result/full.log 2>&1
+      - name: Mask and collect the log for the report
+        if: ${{ always() }}
+        shell: bash
+        # Only the masked log is uploaded; if masking fails, nothing of the raw log is published
+        run: |
+          mkdir -p result
+          touch result/full.log
+          if ! bash tests/mask_log.sh < result/full.log > result/masked.log; then
+            echo 'masking failed, log withheld' > result/masked.log
+          fi
+          {
+            echo '=== Excerpt: failures and recap ==='
+            grep -n -e fatal: -e FAILED -e failed= -e 'PLAY RECAP' -e ERROR -e 'systemd state' result/masked.log | tail -n 120 || true
+            echo
+            echo '=== Full log (masked) ==='
+            cat result/masked.log
+          } > result/test-backups-functional.log
+      - name: Upload the masked log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@main
+        with:
+          name: test-backups-functional-result
+          path: result/test-backups-functional.log
+          if-no-files-found: error
+
   report:
     name: Publish the logs on the ci-results branch
-    needs: tests
+    needs:
+      - tests
+      - systemd
     # Pull requests from forks only get a read-only token
     if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
@@ -126,7 +204,7 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TEST_RESULT: ${{ needs.tests.result }}
+          TEST_RESULT: ${{ (needs.tests.result == 'success' && needs.systemd.result == 'success') && 'success' || 'failure' }}
           COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
