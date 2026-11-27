@@ -107,7 +107,7 @@ The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in 
 - [x] the Ansible linter could not find the role `ansible_mailserver` for `tests/role_syntax.yml`; ignored as `syntax-check[specific]` in `.ansible-lint-ignore`, and it only shows as an ignored warning
 - [x] the natural language linter rejected an all-capitals Ansible, `file name` and `file names` in running text of this file; they are `Ansible`, `filename` and `filenames`
 - [x] line endings: the check passed and the repair job was skipped on e730605 (the files were LF already)
-- [x] editorconfig-checker accepts the files (EDITORCONFIG passed in the log of eacf254)
+- [x] editorconfig-checker accepts the files (EditorConfig passed in the log of eacf254)
 - [x] decided by the owner: Prettier is run once by a temporary workflow that uses the Super-Linter fixer, so the Prettier configuration is the same as in the lint job; the workflow `prettier-fix-yaml.yml` was added in 7d4c2d4, ran once (bot commit 652bb7a) and was deleted in e2471bf
 - [x] decided by the owner: Trivy gets the same ignores as Checkov for the three Dockerfile findings (`.trivyignore`, 7d4c2d4)
 - [ ] add indentation and trailing whitespace rules to `.editorconfig` once the existing files are checked
