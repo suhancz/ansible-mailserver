@@ -1,0 +1,309 @@
+result of all tests: success
+tested commit: 0dc45764ce98ab8c421f97fa82ebeb9d0a3a3e2b
+branch: feature/kolab
+event: pull_request
+run: https://github.com/suhancz/ansible-mailserver/actions/runs/46039966338
+
+=== Excerpt: failures and recap ===
+
+=== Full log (masked) ===
+Unable to find image 'almalinux:8-minimal' locally
+8-minimal: Pulling from library/almalinux
+360c60938947: Pulling fs layer
+360c60938947: Download complete
+3bbe8ed04247: Download complete
+e111c916f40e: Download complete
+360c60938947: Pull complete
+Digest: sha256:771e3223b49005328247f22e21f41164dab2f5c3f80ba06f6f970cfd0fb3691a
+Status: Downloaded newer image for almalinux:8-minimal
++ microdnf -y install python3.12 python3.12-pip git
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Package                                                         Repository     Size
+Installing:                                                                        
+ cracklib-2.9.6-15.el8.x86_64                                   baseos      95.3 kB
+ cracklib-dicts-2.9.6-15.el8.x86_64                             baseos       4.1 MB
+ emacs-filesystem-1:26.1-15.el8_10.4.noarch                     baseos      72.0 kB
+ expat-2.5.0-10.el8_10.x86_64                                   baseos     138.9 kB
+ gdbm-libs-1:1.18-2.el8.x86_64                                  baseos      60.7 kB
+ git-2.43.7-1.el8_10.x86_64                                     appstream   93.7 kB
+ git-core-2.43.7-1.el8_10.x86_64                                appstream   11.6 MB
+ git-core-doc-2.43.7-1.el8_10.noarch                            appstream    3.2 MB
+ groff-base-1.22.3-18.el8.x86_64                                baseos       1.1 MB
+ gzip-1.9-15.el8_10.x86_64                                      baseos     170.3 kB
+ less-530-3.el8_10.x86_64                                       baseos     167.1 kB
+ libedit-3.1-23.20170329cvs.el8.x86_64                          baseos     104.3 kB
+ libfdisk-2.32.1-50.el8_10.x86_64                               baseos     260.2 kB
+ libnsl2-1.2.0-2.20180605git4a062cf.el8.x86_64                  baseos      58.9 kB
+ libpwquality-1.4.4-6.el8.x86_64                                baseos     108.6 kB
+ libsemanage-2.9-12.el8_10.x86_64                               baseos     171.9 kB
+ libtirpc-1.1.4-12.el8_10.x86_64                                baseos     115.7 kB
+ libutempter-1.1.6-14.el8.x86_64                                baseos      32.3 kB
+ mpdecimal-2.5.1-3.el8.x86_64                                   appstream   94.1 kB
+ ncurses-6.1-10.20180224.el8.x86_64                             baseos     395.4 kB
+ openssh-8.0p1-35.el8_10.x86_64                                 baseos     542.3 kB
+ openssh-clients-8.0p1-35.el8_10.x86_64                         baseos     691.9 kB
+ openssl-1:1.1.1k-18.el8_6.x86_64                               baseos     727.6 kB
+ pam-1.3.1-40.el8_10.x86_64                                     baseos     767.1 kB
+ perl-Carp-1.42-396.el8.noarch                                  baseos      30.7 kB
+ perl-Data-Dumper-2.167-399.el8.x86_64                          baseos      59.2 kB
+ perl-Digest-1.17-395.el8.noarch                                baseos      27.4 kB
+ perl-Digest-MD5-2.55-396.el8.x86_64                            baseos      37.6 kB
+ perl-Encode-4:2.97-3.el8.x86_64                                baseos       1.5 MB
+ perl-Errno-1.28-423.el8_10.1.x86_64                            baseos      77.6 kB
+ perl-Error-1:0.17025-2.el8.noarch                              appstream   47.0 kB
+ perl-Exporter-5.72-396.el8.noarch                              baseos      34.6 kB
+ perl-File-Path-2.15-2.el8.noarch                               baseos      38.8 kB
+ perl-File-Temp-0.230.600-1.el8.noarch                          baseos      63.9 kB
+ perl-Getopt-Long-1:2.50-4.el8.noarch                           baseos      64.3 kB
+ perl-Git-2.43.7-1.el8_10.noarch                                appstream   80.0 kB
+ perl-HTTP-Tiny-0.074-3.el8.noarch                              baseos      58.9 kB
+ perl-IO-1.38-423.el8_10.1.x86_64                               baseos     144.7 kB
+ perl-IO-Socket-IP-0.39-5.el8.noarch                            baseos      47.8 kB
+ perl-IO-Socket-SSL-2.066-4.module_el8.6.0+2811+fe6c84b0.noarch appstream  303.7 kB
+ perl-MIME-Base64-3.15-396.el8.x86_64                           baseos      31.1 kB
+ perl-Mozilla-CA-20160104-7.module_el8.5.0+2812+ed912d05.noarch appstream   14.6 kB
+ perl-Net-SSLeay-1.88-2.module_el8.6.0+2811+fe6c84b0.x86_64     appstream  387.2 kB
+ perl-PathTools-3.74-1.el8.x86_64                               baseos      91.9 kB
+ perl-Pod-Escapes-1:1.07-395.el8.noarch                         baseos      20.8 kB
+ perl-Pod-Perldoc-3.28-396.el8.noarch                           baseos      88.3 kB
+ perl-Pod-Simple-1:3.35-395.el8.noarch                          baseos     217.9 kB
+ perl-Pod-Usage-4:1.69-395.el8.noarch                           baseos      35.1 kB
+ perl-Scalar-List-Utils-3:1.49-2.el8.x86_64                     baseos      69.2 kB
+ perl-Socket-4:2.027-3.el8.x86_64                               baseos      60.0 kB
+ perl-Storable-1:3.11-3.el8.x86_64                              baseos     100.4 kB
+ perl-Term-ANSIColor-4.06-396.el8.noarch                        baseos      46.9 kB
+ perl-Term-Cap-1.17-395.el8.noarch                              baseos      23.2 kB
+ perl-TermReadKey-2.37-7.el8.x86_64                             appstream   41.0 kB
+ perl-Text-ParseWords-3.30-395.el8.noarch                       baseos      18.2 kB
+ perl-Text-Tabs+Wrap-2013.0523-395.el8.noarch                   baseos      24.5 kB
+ perl-Time-Local-1:1.280-1.el8.noarch                           baseos      34.1 kB
+ perl-URI-1.73-4.el8_10.noarch                                  baseos     118.5 kB
+ perl-Unicode-Normalize-1.25-396.el8.x86_64                     baseos      83.6 kB
+ perl-constant-1.33-396.el8.noarch                              baseos      25.8 kB
+ perl-interpreter-4:5.26.3-423.el8_10.1.x86_64                  baseos       6.6 MB
+ perl-libnet-3.11-3.el8.noarch                                  baseos     123.6 kB
+ perl-libs-4:5.26.3-423.el8_10.1.x86_64                         baseos       1.6 MB
+ perl-macros-4:5.26.3-423.el8_10.1.x86_64                       baseos      73.5 kB
+ perl-parent-1:0.237-1.el8.noarch                               baseos      20.3 kB
+ perl-podlators-4.11-1.el8.noarch                               baseos     120.6 kB
+ perl-threads-1:2.21-2.el8.x86_64                               baseos      62.4 kB
+ perl-threads-shared-1.58-2.el8.x86_64                          baseos      48.6 kB
+ python3.12-3.12.16-2.el8_10.x86_64                             appstream   32.8 kB
+ python3.12-libs-3.12.16-2.el8_10.x86_64                        appstream   10.5 MB
+ python3.12-pip-23.2.1-4.el8.noarch                             appstream    3.4 MB
+ python3.12-pip-wheel-23.2.1-4.el8.noarch                       appstream    1.5 MB
+ python3.12-setuptools-68.2.2-5.el8_10.noarch                   appstream    1.8 MB
+ shadow-utils-2:4.6-23.el8_10.x86_64                            baseos       1.3 MB
+ util-linux-2.32.1-50.el8_10.x86_64                             baseos       2.6 MB
+Transaction Summary:
+ Installing:       75 packages
+ Reinstalling:      0 packages
+ Upgrading:         0 packages
+ Obsoleting:        0 packages
+ Removing:          0 packages
+ Downgrading:       0 packages
+Enabling module streams:
+    perl-IO-Socket-SSL:2.066
+    perl-libwww-perl:6.34
+
+
+Downloading packages...
+Running transaction test...
+Installing: libtirpc;1.1.4-12.el8_10;x86_64;baseos
+Installing: libnsl2;1.2.0-2.20180605git4a062cf.el8;x86_64;baseos
+Installing: gdbm-libs;1:1.18-2.el8;x86_64;baseos
+Installing: expat;2.5.0-10.el8_10;x86_64;baseos
+Installing: python3.12-pip-wheel;23.2.1-4.el8;noarch;appstream
+Installing: mpdecimal;2.5.1-3.el8;x86_64;appstream
+Installing: python3.12;3.12.16-2.el8_10;x86_64;appstream
+Installing: python3.12-libs;3.12.16-2.el8_10;x86_64;appstream
+Installing: python3.12-setuptools;68.2.2-5.el8_10;noarch;appstream
+Installing: openssl;1:1.1.1k-18.el8_6;x86_64;baseos
+Installing: ncurses;6.1-10.20180224.el8;x86_64;baseos
+Installing: libsemanage;2.9-12.el8_10;x86_64;baseos
+Installing: shadow-utils;2:4.6-23.el8_10;x86_64;baseos
+Installing: libutempter;1.1.6-14.el8;x86_64;baseos
+Installing: libfdisk;2.32.1-50.el8_10;x86_64;baseos
+Installing: libedit;3.1-23.20170329cvs.el8;x86_64;baseos
+Installing: less;530-3.el8_10;x86_64;baseos
+Installing: gzip;1.9-15.el8_10;x86_64;baseos
+Installing: cracklib;2.9.6-15.el8;x86_64;baseos
+Installing: cracklib-dicts;2.9.6-15.el8;x86_64;baseos
+Installing: libpwquality;1.4.4-6.el8;x86_64;baseos
+Installing: pam;1.3.1-40.el8_10;x86_64;baseos
+Installing: util-linux;2.32.1-50.el8_10;x86_64;baseos
+Installing: openssh;8.0p1-35.el8_10;x86_64;baseos
+Installing: openssh-clients;8.0p1-35.el8_10;x86_64;baseos
+Installing: git-core;2.43.7-1.el8_10;x86_64;appstream
+Installing: git-core-doc;2.43.7-1.el8_10;noarch;appstream
+Installing: groff-base;1.22.3-18.el8;x86_64;baseos
+Installing: perl-Digest;1.17-395.el8;noarch;baseos
+Installing: perl-Digest-MD5;2.55-396.el8;x86_64;baseos
+Installing: perl-Data-Dumper;2.167-399.el8;x86_64;baseos
+Installing: perl-libnet;3.11-3.el8;noarch;baseos
+Installing: perl-URI;1.73-4.el8_10;noarch;baseos
+Installing: perl-Pod-Escapes;1:1.07-395.el8;noarch;baseos
+Installing: perl-IO-Socket-IP;0.39-5.el8;noarch;baseos
+Installing: perl-Time-Local;1:1.280-1.el8;noarch;baseos
+Installing: perl-Mozilla-CA;20160104-7.module_el8.5.0+2812+ed912d05;noarch;appstream
+Installing: perl-IO-Socket-SSL;2.066-4.module_el8.6.0+2811+fe6c84b0;noarch;appstream
+Installing: perl-Net-SSLeay;1.88-2.module_el8.6.0+2811+fe6c84b0;x86_64;appstream
+Installing: perl-Term-ANSIColor;4.06-396.el8;noarch;baseos
+Installing: perl-Term-Cap;1.17-395.el8;noarch;baseos
+Installing: perl-File-Temp;0.230.600-1.el8;noarch;baseos
+Installing: perl-Pod-Simple;1:3.35-395.el8;noarch;baseos
+Installing: perl-HTTP-Tiny;0.074-3.el8;noarch;baseos
+Installing: perl-podlators;4.11-1.el8;noarch;baseos
+Installing: perl-Pod-Perldoc;3.28-396.el8;noarch;baseos
+Installing: perl-Text-ParseWords;3.30-395.el8;noarch;baseos
+Installing: perl-Pod-Usage;4:1.69-395.el8;noarch;baseos
+Installing: perl-MIME-Base64;3.15-396.el8;x86_64;baseos
+Installing: perl-Storable;1:3.11-3.el8;x86_64;baseos
+Installing: perl-Getopt-Long;1:2.50-4.el8;noarch;baseos
+Installing: perl-Errno;1.28-423.el8_10.1;x86_64;baseos
+Installing: perl-Socket;4:2.027-3.el8;x86_64;baseos
+Installing: perl-Encode;4:2.97-3.el8;x86_64;baseos
+Installing: perl-Carp;1.42-396.el8;noarch;baseos
+Installing: perl-Exporter;5.72-396.el8;noarch;baseos
+Installing: perl-libs;4:5.26.3-423.el8_10.1;x86_64;baseos
+Installing: perl-Scalar-List-Utils;3:1.49-2.el8;x86_64;baseos
+Installing: perl-parent;1:0.237-1.el8;noarch;baseos
+Installing: perl-macros;4:5.26.3-423.el8_10.1;x86_64;baseos
+Installing: perl-Text-Tabs+Wrap;2013.0523-395.el8;noarch;baseos
+Installing: perl-Unicode-Normalize;1.25-396.el8;x86_64;baseos
+Installing: perl-File-Path;2.15-2.el8;noarch;baseos
+Installing: perl-IO;1.38-423.el8_10.1;x86_64;baseos
+Installing: perl-PathTools;3.74-1.el8;x86_64;baseos
+Installing: perl-constant;1.33-396.el8;noarch;baseos
+Installing: perl-threads;1:2.21-2.el8;x86_64;baseos
+Installing: perl-threads-shared;1.58-2.el8;x86_64;baseos
+Installing: perl-interpreter;4:5.26.3-423.el8_10.1;x86_64;baseos
+Installing: perl-Error;1:0.17025-2.el8;noarch;appstream
+Installing: perl-TermReadKey;2.37-7.el8;x86_64;appstream
+Installing: emacs-filesystem;1:26.1-15.el8_10.4;noarch;baseos
+Installing: perl-Git;2.43.7-1.el8_10;noarch;appstream
+Installing: git;2.43.7-1.el8_10;x86_64;appstream
+Installing: python3.12-pip;23.2.1-4.el8;noarch;appstream
+Complete.
++ python3.12 -m pip install --upgrade pip ansible-core
+Requirement already satisfied: pip in /usr/lib/python3.12/site-packages (23.2.1)
+Collecting pip
+  Obtaining dependency information for pip from https://files.pythonhosted.org/packages/07/25/ee8c38ae72d66b844ce8eb9711ba905dba21ca1a8a0c960057c41cd23337/pip-26.3-py3-none-any.whl.metadata
+  Downloading pip-26.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting ansible-core
+  Obtaining dependency information for ansible-core from https://files.pythonhosted.org/packages/20/5a/9e6cc7686b40bec066211200b6c393a7a333dfcfa91aa67a07c031df87c8/ansible_core-2.21.6-py3-none-any.whl.metadata
+  Downloading ansible_core-2.21.6-py3-none-any.whl.metadata (7.8 kB)
+Collecting jinja2>=3.1.0 (from ansible-core)
+  Obtaining dependency information for jinja2>=3.1.0 from https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl.metadata
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting PyYAML>=5.1 (from ansible-core)
+  Obtaining dependency information for PyYAML>=5.1 from https://files.pythonhosted.org/packages/94/80/1d27f7084b983b7cfd1fb35e65a38276d9eddfdcdabc0922bb26cf9521bc/pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.3 kB)
+Collecting cryptography (from ansible-core)
+  Obtaining dependency information for cryptography from https://files.pythonhosted.org/packages/1a/f1/b474e930c4d910328780e3940da76f5aa5cbc48ce1fc14e44d239d9ea9db/cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl.metadata
+  Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl.metadata (4.4 kB)
+Collecting packaging (from ansible-core)
+  Obtaining dependency information for packaging from https://files.pythonhosted.org/packages/ba/7b/5504f91c9c2733f693d7759e50ede5d27119d4da7e5836c46d3b5ff81d56/packaging-26.4-py3-none-any.whl.metadata
+  Downloading packaging-26.4-py3-none-any.whl.metadata (3.5 kB)
+Collecting resolvelib<2.0.0,>=0.8.0 (from ansible-core)
+  Obtaining dependency information for resolvelib<2.0.0,>=0.8.0 from https://files.pythonhosted.org/packages/e2/23/c941a0d0353681ca138489983c4309e0f5095dfd902e1357004f2357ddf2/resolvelib-1.2.1-py3-none-any.whl.metadata
+  Downloading resolvelib-1.2.1-py3-none-any.whl.metadata (3.7 kB)
+Collecting MarkupSafe>=2.0 (from jinja2>=3.1.0->ansible-core)
+  Obtaining dependency information for MarkupSafe>=2.0 from https://files.pythonhosted.org/packages/4f/a7/aeedb5140afa41fc74c225e9184ab96723a6e873b6ee1c9fede7283456d8/markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting cffi>=2.0.0 (from cryptography->ansible-core)
+  Obtaining dependency information for cffi>=2.0.0 from https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata
+  Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+Collecting pycparser (from cffi>=2.0.0->cryptography->ansible-core)
+  Obtaining dependency information for pycparser from https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl.metadata
+  Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+Downloading pip-26.3-py3-none-any.whl (2.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 44.8 MB/s eta 0:00:00
+Downloading ansible_core-2.21.6-py3-none-any.whl (2.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.5/2.5 MB 132.1 MB/s eta 0:00:00
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 104.4 MB/s eta 0:00:00
+Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (849 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 849.2/849.2 kB 265.4 MB/s eta 0:00:00
+Downloading resolvelib-1.2.1-py3-none-any.whl (18 kB)
+Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl (4.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 128.9 MB/s eta 0:00:00
+Downloading packaging-26.4-py3-none-any.whl (140 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 140.0/140.0 kB 108.2 MB/s eta 0:00:00
+Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.8/221.8 kB 139.8 MB/s eta 0:00:00
+Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 kB 40.4 MB/s eta 0:00:00
+Installing collected packages: resolvelib, PyYAML, pycparser, pip, packaging, MarkupSafe, jinja2, cffi, cryptography, ansible-core
+Successfully installed MarkupSafe-3.0.4 PyYAML-6.0.4 ansible-core-2.21.6 cffi-2.1.1 cryptography-50.0.2 jinja2-3.1.6 packaging-26.4 pip-26.3 pycparser-3.12 resolvelib-1.2.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
++ ansible-galaxy collection install -r collections/requirements.yml
+Starting galaxy collection install process
+Process install dependency map
+Starting collection install process
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/ansible-posix-2.2.2.tar.gz to /root/.ansible/tmp/ansible-local-133n_dokph3/tmpkqq5dmcw/ansible-posix-2.2.2-agvu7p8k
+Installing 'ansible.posix:2.2.2' to '/root/.ansible/collections/ansible_collections/ansible/posix'
+ansible.posix:2.2.2 was installed successfully
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-general-14.0.1.tar.gz to /root/.ansible/tmp/ansible-local-133n_dokph3/tmpkqq5dmcw/community-general-14.0.1-7wnnmg8g
+Installing 'community.general:14.0.1' to '/root/.ansible/collections/ansible_collections/community/general'
+community.general:14.0.1 was installed successfully
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/ansible-mysql-5.2.1.tar.gz to /root/.ansible/tmp/ansible-local-133n_dokph3/tmpkqq5dmcw/ansible-mysql-5.2.1-j3yh76dt
+Installing 'ansible.mysql:5.2.1' to '/root/.ansible/collections/ansible_collections/ansible/mysql'
+ansible.mysql:5.2.1 was installed successfully
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-crypto-3.6.0.tar.gz to /root/.ansible/tmp/ansible-local-133n_dokph3/tmpkqq5dmcw/community-crypto-3.6.0-8d8ztu2j
+Installing 'community.crypto:3.6.0' to '/root/.ansible/collections/ansible_collections/community/crypto'
+community.crypto:3.6.0 was installed successfully
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-dns-4.3.1.tar.gz to /root/.ansible/tmp/ansible-local-133n_dokph3/tmpkqq5dmcw/community-dns-4.3.1-4t8r9m3o
+Installing 'community.dns:4.3.1' to '/root/.ansible/collections/ansible_collections/community/dns'
+community.dns:4.3.1 was installed successfully
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-library_inventory_filtering_v1-1.1.5.tar.gz to /root/.ansible/tmp/ansible-local-133n_dokph3/tmpkqq5dmcw/community-library_inventory_filtering_v1-1.1.5-72c6q4sk
+Installing 'community.library_inventory_filtering_v1:1.1.5' to '/root/.ansible/collections/ansible_collections/community/library_inventory_filtering_v1'
+community.library_inventory_filtering_v1:1.1.5 was installed successfully
++ export ANSIBLE_ROLES_PATH=/roles
++ ANSIBLE_ROLES_PATH=/roles
++ ansible-playbook --syntax-check -i localhost, tests/role_syntax.yml
+[WARNING]: Found variable using reserved name 'port'.
+Origin: /roles/ansible_mailserver/tasks/dns/main.yml:5:5
+
+3   ansible.builtin.import_tasks: security/firewall.yml
+4   vars:
+5     port: dns # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
+      ^ column 5
+
+[WARNING]: Found variable using reserved name 'port'.
+Origin: /roles/ansible_mailserver/tasks/misc/ftp.yml:5:5
+
+3   ansible.builtin.include_tasks: security/firewall.yml
+4   vars:
+5     port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
+      ^ column 5
+
+[WARNING]: Found variable using reserved name 'port'.
+Origin: /roles/ansible_mailserver/tasks/httpd/main.yml:11:5
+
+ 9   ansible.builtin.include_tasks: security/firewall.yml
+10   vars:
+11     port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
+       ^ column 5
+
+[WARNING]: Found variable using reserved name 'port'.
+Origin: /roles/ansible_mailserver/tasks/mail/postfix.yml:17:5
+
+15   ansible.builtin.include_tasks: security/firewall.yml
+16   vars:
+17     port: "{{ item }}" # noqa var-naming[no-reserved] we refer to a port here, so I call it a port
+       ^ column 5
+
+[WARNING]: Found variable using reserved name 'port'.
+Origin: /roles/ansible_mailserver/tasks/wireguard/main.yml:25:5
+
+23   ansible.builtin.import_tasks: security/firewall.yml
+24   vars:
+25     port: "{{ wireguard.listen_port }}/udp" # noqa var-naming[no-reserved] we refer to a port here, so I call it a...
+       ^ column 5
+
+
+playbook: tests/role_syntax.yml

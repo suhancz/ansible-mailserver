@@ -1,0 +1,186 @@
+result of all tests: success
+tested commit: 0dc45764ce98ab8c421f97fa82ebeb9d0a3a3e2b
+branch: feature/kolab
+event: pull_request
+run: https://github.com/suhancz/ansible-mailserver/actions/runs/46039966338
+
+=== Excerpt: failures and recap ===
+173:PLAY RECAP *********************************************************************
+174:case_backups               : ok=16   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+=== Full log (masked) ===
+Unable to find image 'almalinux:8-minimal' locally
+8-minimal: Pulling from library/almalinux
+360c60938947: Pulling fs layer
+3bbe8ed04247: Download complete
+e111c916f40e: Download complete
+360c60938947: Download complete
+360c60938947: Pull complete
+Digest: sha256:771e3223b49005328247f22e21f41164dab2f5c3f80ba06f6f970cfd0fb3691a
+Status: Downloaded newer image for almalinux:8-minimal
++ microdnf -y install python3.12 python3.12-pip
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Package                                        Repository     Size
+Installing:                                                       
+ expat-2.5.0-10.el8_10.x86_64                  baseos     138.9 kB
+ gdbm-libs-1:1.18-2.el8.x86_64                 baseos      60.7 kB
+ libnsl2-1.2.0-2.20180605git4a062cf.el8.x86_64 baseos      58.9 kB
+ libtirpc-1.1.4-12.el8_10.x86_64               baseos     115.7 kB
+ mpdecimal-2.5.1-3.el8.x86_64                  appstream   94.1 kB
+ python3.12-3.12.16-2.el8_10.x86_64            appstream   32.8 kB
+ python3.12-libs-3.12.16-2.el8_10.x86_64       appstream   10.5 MB
+ python3.12-pip-23.2.1-4.el8.noarch            appstream    3.4 MB
+ python3.12-pip-wheel-23.2.1-4.el8.noarch      appstream    1.5 MB
+ python3.12-setuptools-68.2.2-5.el8_10.noarch  appstream    1.8 MB
+Transaction Summary:
+ Installing:       10 packages
+ Reinstalling:      0 packages
+ Upgrading:         0 packages
+ Obsoleting:        0 packages
+ Removing:          0 packages
+ Downgrading:       0 packages
+Downloading packages...
+Running transaction test...
+Installing: libtirpc;1.1.4-12.el8_10;x86_64;baseos
+Installing: libnsl2;1.2.0-2.20180605git4a062cf.el8;x86_64;baseos
+Installing: python3.12-pip-wheel;23.2.1-4.el8;noarch;appstream
+Installing: mpdecimal;2.5.1-3.el8;x86_64;appstream
+Installing: gdbm-libs;1:1.18-2.el8;x86_64;baseos
+Installing: expat;2.5.0-10.el8_10;x86_64;baseos
+Installing: python3.12;3.12.16-2.el8_10;x86_64;appstream
+Installing: python3.12-libs;3.12.16-2.el8_10;x86_64;appstream
+Installing: python3.12-setuptools;68.2.2-5.el8_10;noarch;appstream
+Installing: python3.12-pip;23.2.1-4.el8;noarch;appstream
+Complete.
++ python3.12 -m pip install --upgrade pip ansible-core
+Requirement already satisfied: pip in /usr/lib/python3.12/site-packages (23.2.1)
+Collecting pip
+  Obtaining dependency information for pip from https://files.pythonhosted.org/packages/07/25/ee8c38ae72d66b844ce8eb9711ba905dba21ca1a8a0c960057c41cd23337/pip-26.3-py3-none-any.whl.metadata
+  Downloading pip-26.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting ansible-core
+  Obtaining dependency information for ansible-core from https://files.pythonhosted.org/packages/20/5a/9e6cc7686b40bec066211200b6c393a7a333dfcfa91aa67a07c031df87c8/ansible_core-2.21.6-py3-none-any.whl.metadata
+  Downloading ansible_core-2.21.6-py3-none-any.whl.metadata (7.8 kB)
+Collecting jinja2>=3.1.0 (from ansible-core)
+  Obtaining dependency information for jinja2>=3.1.0 from https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl.metadata
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting PyYAML>=5.1 (from ansible-core)
+  Obtaining dependency information for PyYAML>=5.1 from https://files.pythonhosted.org/packages/94/80/1d27f7084b983b7cfd1fb35e65a38276d9eddfdcdabc0922bb26cf9521bc/pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.3 kB)
+Collecting cryptography (from ansible-core)
+  Obtaining dependency information for cryptography from https://files.pythonhosted.org/packages/1a/f1/b474e930c4d910328780e3940da76f5aa5cbc48ce1fc14e44d239d9ea9db/cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl.metadata
+  Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl.metadata (4.4 kB)
+Collecting packaging (from ansible-core)
+  Obtaining dependency information for packaging from https://files.pythonhosted.org/packages/ba/7b/5504f91c9c2733f693d7759e50ede5d27119d4da7e5836c46d3b5ff81d56/packaging-26.4-py3-none-any.whl.metadata
+  Downloading packaging-26.4-py3-none-any.whl.metadata (3.5 kB)
+Collecting resolvelib<2.0.0,>=0.8.0 (from ansible-core)
+  Obtaining dependency information for resolvelib<2.0.0,>=0.8.0 from https://files.pythonhosted.org/packages/e2/23/c941a0d0353681ca138489983c4309e0f5095dfd902e1357004f2357ddf2/resolvelib-1.2.1-py3-none-any.whl.metadata
+  Downloading resolvelib-1.2.1-py3-none-any.whl.metadata (3.7 kB)
+Collecting MarkupSafe>=2.0 (from jinja2>=3.1.0->ansible-core)
+  Obtaining dependency information for MarkupSafe>=2.0 from https://files.pythonhosted.org/packages/4f/a7/aeedb5140afa41fc74c225e9184ab96723a6e873b6ee1c9fede7283456d8/markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting cffi>=2.0.0 (from cryptography->ansible-core)
+  Obtaining dependency information for cffi>=2.0.0 from https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata
+  Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+Collecting pycparser (from cffi>=2.0.0->cryptography->ansible-core)
+  Obtaining dependency information for pycparser from https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl.metadata
+  Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+Downloading pip-26.3-py3-none-any.whl (2.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 30.9 MB/s eta 0:00:00
+Downloading ansible_core-2.21.6-py3-none-any.whl (2.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.5/2.5 MB 133.7 MB/s eta 0:00:00
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 85.9 MB/s eta 0:00:00
+Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (849 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 849.2/849.2 kB 201.1 MB/s eta 0:00:00
+Downloading resolvelib-1.2.1-py3-none-any.whl (18 kB)
+Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl (4.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 141.0 MB/s eta 0:00:00
+Downloading packaging-26.4-py3-none-any.whl (140 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 140.0/140.0 kB 32.5 MB/s eta 0:00:00
+Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.8/221.8 kB 106.4 MB/s eta 0:00:00
+Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 kB 24.9 MB/s eta 0:00:00
+Installing collected packages: resolvelib, PyYAML, pycparser, pip, packaging, MarkupSafe, jinja2, cffi, cryptography, ansible-core
+Successfully installed MarkupSafe-3.0.4 PyYAML-6.0.4 ansible-core-2.21.6 cffi-2.1.1 cryptography-50.0.2 jinja2-3.1.6 packaging-26.4 pip-26.3 pycparser-3.12 resolvelib-1.2.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
++ ansible-playbook -v -i case_backups, -c local -e ansible_python_interpreter=/usr/bin/python3.12 tests/backup_templates.yml
+No config file found; using defaults
+
+PLAY [Render and check the systemd templates of the backups] *******************
+
+TASK [Create a random test password] *******************************************
+ok: [case_backups] => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+
+TASK [Create the directory for the rendered files] *****************************
+changed: [case_backups] => {"changed": true, "gid": 0, "group": "root", "mode": "0755", "owner": "root", "path": "/tmp/backup-templates", "size": 4096, "state": "directory", "uid": 0}
+
+TASK [Render the tarball service of the Cyrus configuration] *******************
+changed: [case_backups] => {"changed": true, "checksum": "a5c702134214630b136be279152927ea9dda6c2e", "dest": "/tmp/backup-templates/tarball.service", "gid": 0, "group": "root", "md5sum": "b10ad343af0c3c0e4149f33953e6cc3e", "mode": "0644", "owner": "root", "size": 498, "src": "/root/.ansible/tmp/ansible-tmp-1795799580.4372282-110-66634575771128/.source.service", "state": "file", "uid": 0}
+
+TASK [Render the tarball service of the Cyrus mailbox data] ********************
+changed: [case_backups] => {"changed": true, "checksum": "0b0468ade94cd735826f29caa67bb09b01926720", "dest": "/tmp/backup-templates/tarball-data.service", "gid": 0, "group": "root", "md5sum": "aa851e1146cce13eb5f7815120f2f9e4", "mode": "0644", "owner": "root", "size": 657, "src": "/root/.ansible/tmp/ansible-tmp-1795799580.9242265-127-240510494518027/.source.service", "state": "file", "uid": 0}
+
+TASK [Render the tarball service of a configuration without a service] *********
+changed: [case_backups] => {"changed": true, "checksum": "58433236fda7e0f724b40f3d51ea36bcaab29cd2", "dest": "/tmp/backup-templates/tarball-kolab.service", "gid": 0, "group": "root", "md5sum": "ffde3f170bf6ca8e10e6806ed5b237a9", "mode": "0644", "owner": "root", "size": 403, "src": "/root/.ansible/tmp/ansible-tmp-1795799581.297973-144-97976358563712/.source.service", "state": "file", "uid": 0}
+
+TASK [Render the MariaDB service] **********************************************
+changed: [case_backups] => {"changed": true, "checksum": "6d76fa642b0ccf47251c2cc74cb3fea67031e17f", "dest": "/tmp/backup-templates/mariadb.service", "gid": 0, "group": "root", "md5sum": "917cb4d4f1d8558cf3b5b3823d4785be", "mode": "0644", "owner": "root", "size": 561, "src": "/root/.ansible/tmp/ansible-tmp-1795799581.6871629-161-141996226991643/.source.service", "state": "file", "uid": 0}
+
+TASK [Render the LDAP service] *************************************************
+changed: [case_backups] => {"changed": true, "checksum": "532b81c6acf5c9461a82c958a0781a220364653f", "dest": "/tmp/backup-templates/ldap.service", "gid": 0, "group": "root", "md5sum": "252d942bc1d6bd215971babe6f901cff", "mode": "0644", "owner": "root", "size": 620, "src": "/root/.ansible/tmp/ansible-tmp-1795799582.0588112-177-36145826689896/.source.service", "state": "file", "uid": 0}
+
+TASK [Render the FTP service] **************************************************
+changed: [case_backups] => {"changed": true, "checksum": "1862eeda114b15de8a285767a30340a20cdfc6d6", "dest": "/tmp/backup-templates/vsftpd.service", "gid": 0, "group": "root", "md5sum": "2f660514a3c73db63054f7b55c25bbd0", "mode": "0644", "owner": "root", "size": 464, "src": "/root/.ansible/tmp/ansible-tmp-1795799582.4231153-193-173615005181952/.source.service", "state": "file", "uid": 0}
+
+TASK [Render the timer] ********************************************************
+changed: [case_backups] => {"changed": true, "checksum": "5359bfeff7ee3b3311ad2671cef84c265b9d8061", "dest": "/tmp/backup-templates/backup.timer", "gid": 0, "group": "root", "md5sum": "4dec8d842348299a3e230326b92aac13", "mode": "0644", "owner": "root", "size": 138, "src": "/root/.ansible/tmp/ansible-tmp-1795799582.7952967-210-174699406217528/.source.timer", "state": "file", "uid": 0}
+
+TASK [Check the tarball service of the Cyrus configuration] ********************
+ok: [case_backups] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the tarball service of the Cyrus mailbox data] *********************
+ok: [case_backups] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the tarball service of a configuration without a service] **********
+ok: [case_backups] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the MariaDB service] ***********************************************
+ok: [case_backups] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the LDAP service] **************************************************
+ok: [case_backups] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the FTP service] ***************************************************
+ok: [case_backups] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the timer] *********************************************************
+ok: [case_backups] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY RECAP *********************************************************************
+case_backups               : ok=16   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

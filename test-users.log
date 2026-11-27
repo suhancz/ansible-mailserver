@@ -1,0 +1,824 @@
+result of all tests: success
+tested commit: 0dc45764ce98ab8c421f97fa82ebeb9d0a3a3e2b
+branch: feature/kolab
+event: pull_request
+run: https://github.com/suhancz/ansible-mailserver/actions/runs/46039966338
+
+=== Excerpt: failures and recap ===
+517:[ERROR]: Task failed: Action failed: Cannot derive a username: set `name`, or give `firstname` (and `surname` when family_mode is off).
+802:PLAY RECAP *********************************************************************
+803:case_addresses             : ok=20   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+804:case_family                : ok=11   changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+805:case_legacy                : ok=15   changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+806:case_missing               : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=1    ignored=0   
+807:case_plain                 : ok=10   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+=== Full log (masked) ===
+Unable to find image 'almalinux:8-minimal' locally
+8-minimal: Pulling from library/almalinux
+360c60938947: Pulling fs layer
+3bbe8ed04247: Download complete
+e111c916f40e: Download complete
+360c60938947: Download complete
+360c60938947: Pull complete
+Digest: sha256:771e3223b49005328247f22e21f41164dab2f5c3f80ba06f6f970cfd0fb3691a
+Status: Downloaded newer image for almalinux:8-minimal
++ microdnf -y install python3.12 python3.12-pip dnf
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Package                                                Repository     Size
+Installing:                                                               
+ acl-2.4.0-1.el8_10.x86_64                             baseos      87.3 kB
+ cracklib-2.9.6-15.el8.x86_64                          baseos      95.3 kB
+ cracklib-dicts-2.9.6-15.el8.x86_64                    baseos       4.1 MB
+ cryptsetup-libs-2.3.7-7.el8.x86_64                    baseos     499.7 kB
+ dbus-1:1.12.8-28.el8_10.x86_64                        baseos      42.4 kB
+ dbus-common-1:1.12.8-28.el8_10.noarch                 baseos      47.2 kB
+ dbus-daemon-1:1.12.8-28.el8_10.x86_64                 baseos     246.3 kB
+ dbus-libs-1:1.12.8-28.el8_10.x86_64                   baseos     188.6 kB
+ dbus-tools-1:1.12.8-28.el8_10.x86_64                  baseos      87.7 kB
+ device-mapper-8:1.02.181-15.el8_10.3.x86_64           baseos     387.4 kB
+ device-mapper-libs-8:1.02.181-15.el8_10.3.x86_64      baseos     420.4 kB
+ diffutils-3.6-6.el8.x86_64                            baseos     369.7 kB
+ dnf-4.7.0-21.el8_10.alma.1.noarch                     baseos     555.2 kB
+ dnf-data-4.7.0-21.el8_10.alma.1.noarch                baseos     160.2 kB
+ elfutils-debuginfod-client-0.190-2.el8.alma.1.x86_64  baseos      77.4 kB
+ elfutils-default-yama-scope-0.190-2.el8.alma.1.noarch baseos      52.9 kB
+ elfutils-libs-0.190-2.el8.alma.1.x86_64               baseos     311.3 kB
+ expat-2.5.0-10.el8_10.x86_64                          baseos     138.9 kB
+ gdbm-1:1.18-2.el8.x86_64                              baseos     131.7 kB
+ gdbm-libs-1:1.18-2.el8.x86_64                         baseos      60.7 kB
+ gzip-1.9-15.el8_10.x86_64                             baseos     170.3 kB
+ ima-evm-utils-1.3.2-12.el8.x86_64                     baseos      64.3 kB
+ kmod-libs-25-20.el8.x86_64                            baseos      69.1 kB
+ libcomps-0.1.18-1.el8.x86_64                          baseos      82.9 kB
+ libevent-2.1.8-11.el8_10.x86_64                       baseos     259.9 kB
+ libfdisk-2.32.1-50.el8_10.x86_64                      baseos     260.2 kB
+ libnsl2-1.2.0-2.20180605git4a062cf.el8.x86_64         baseos      58.9 kB
+ libpwquality-1.4.4-6.el8.x86_64                       baseos     108.6 kB
+ libreport-filesystem-2.9.5-15.el8.alma.1.x86_64       baseos      20.7 kB
+ libseccomp-2.5.2-1.el8.x86_64                         baseos      71.8 kB
+ libsemanage-2.9-12.el8_10.x86_64                      baseos     171.9 kB
+ libtirpc-1.1.4-12.el8_10.x86_64                       baseos     115.7 kB
+ libutempter-1.1.6-14.el8.x86_64                       baseos      32.3 kB
+ libxkbcommon-0.9.1-1.el8.x86_64                       appstream  118.9 kB
+ mpdecimal-2.5.1-3.el8.x86_64                          appstream   94.1 kB
+ pam-1.3.1-40.el8_10.x86_64                            baseos     767.1 kB
+ platform-python-3.6.8-80.el8_10.alma.1.x86_64         baseos      90.9 kB
+ platform-python-pip-9.0.3-24.el8.noarch               baseos       1.6 MB
+ platform-python-setuptools-39.2.0-9.el8_10.noarch     baseos     645.3 kB
+ python3-dnf-4.7.0-21.el8_10.alma.1.noarch             baseos     562.7 kB
+ python3-gpg-1.13.1-12.el8.x86_64                      baseos     248.6 kB
+ python3-hawkey-0.63.0-21.el8_10.alma.1.x86_64         baseos     120.4 kB
+ python3-libcomps-0.1.18-1.el8.x86_64                  baseos      52.1 kB
+ python3-libdnf-0.63.0-21.el8_10.alma.1.x86_64         baseos     798.1 kB
+ python3-libs-3.6.8-80.el8_10.alma.1.x86_64            baseos       8.2 MB
+ python3-pip-wheel-9.0.3-24.el8.noarch                 baseos     884.4 kB
+ python3-rpm-4.14.3-32.el8_10.x86_64                   baseos     158.2 kB
+ python3-setuptools-wheel-39.2.0-9.el8_10.noarch       baseos     292.8 kB
+ python3-unbound-1.16.2-5.14.el8_10.5.x86_64           appstream  133.6 kB
+ python3.12-3.12.16-2.el8_10.x86_64                    appstream   32.8 kB
+ python3.12-libs-3.12.16-2.el8_10.x86_64               appstream   10.5 MB
+ python3.12-pip-23.2.1-4.el8.noarch                    appstream    3.4 MB
+ python3.12-pip-wheel-23.2.1-4.el8.noarch              appstream    1.5 MB
+ python3.12-setuptools-68.2.2-5.el8_10.noarch          appstream    1.8 MB
+ rpm-build-libs-4.14.3-32.el8_10.x86_64                baseos     160.4 kB
+ rpm-plugin-systemd-inhibit-4.14.3-32.el8_10.x86_64    baseos      80.4 kB
+ shadow-utils-2:4.6-23.el8_10.x86_64                   baseos       1.3 MB
+ systemd-239-82.el8_10.19.x86_64                       baseos       3.8 MB
+ systemd-pam-239-82.el8_10.19.x86_64                   baseos     531.0 kB
+ tpm2-tss-2.3.2-6.el8.x86_64                           baseos     280.9 kB
+ unbound-libs-1.16.2-5.14.el8_10.5.x86_64              appstream  594.4 kB
+ util-linux-2.32.1-50.el8_10.x86_64                    baseos       2.6 MB
+ xkeyboard-config-2.28-1.el8.noarch                    appstream  800.8 kB
+Transaction Summary:
+ Installing:       63 packages
+ Reinstalling:      0 packages
+ Upgrading:         0 packages
+ Obsoleting:        0 packages
+ Removing:          0 packages
+ Downgrading:       0 packages
+Downloading packages...
+Running transaction test...
+Installing: expat;2.5.0-10.el8_10;x86_64;baseos
+Installing: libtirpc;1.1.4-12.el8_10;x86_64;baseos
+Installing: libnsl2;1.2.0-2.20180605git4a062cf.el8;x86_64;baseos
+Installing: gdbm-libs;1:1.18-2.el8;x86_64;baseos
+Installing: dbus-libs;1:1.12.8-28.el8_10;x86_64;baseos
+Installing: python3-setuptools-wheel;39.2.0-9.el8_10;noarch;baseos
+Installing: python3-pip-wheel;9.0.3-24.el8;noarch;baseos
+Installing: libevent;2.1.8-11.el8_10;x86_64;baseos
+Installing: dbus-tools;1:1.12.8-28.el8_10;x86_64;baseos
+Installing: rpm-plugin-systemd-inhibit;4.14.3-32.el8_10;x86_64;baseos
+Installing: gdbm;1:1.18-2.el8;x86_64;baseos
+Installing: platform-python-pip;9.0.3-24.el8;noarch;baseos
+Installing: platform-python-setuptools;39.2.0-9.el8_10;noarch;baseos
+Installing: platform-python;3.6.8-80.el8_10.alma.1;x86_64;baseos
+Installing: python3-libs;3.6.8-80.el8_10.alma.1;x86_64;baseos
+Installing: python3-libdnf;0.63.0-21.el8_10.alma.1;x86_64;baseos
+Installing: python3-hawkey;0.63.0-21.el8_10.alma.1;x86_64;baseos
+Installing: python3-gpg;1.13.1-12.el8;x86_64;baseos
+Installing: libcomps;0.1.18-1.el8;x86_64;baseos
+Installing: python3-libcomps;0.1.18-1.el8;x86_64;baseos
+Installing: xkeyboard-config;2.28-1.el8;noarch;appstream
+Installing: libxkbcommon;0.9.1-1.el8;x86_64;appstream
+Installing: python3.12-pip-wheel;23.2.1-4.el8;noarch;appstream
+Installing: mpdecimal;2.5.1-3.el8;x86_64;appstream
+Installing: python3.12;3.12.16-2.el8_10;x86_64;appstream
+Installing: python3.12-libs;3.12.16-2.el8_10;x86_64;appstream
+Installing: python3.12-setuptools;68.2.2-5.el8_10;noarch;appstream
+Installing: libsemanage;2.9-12.el8_10;x86_64;baseos
+Installing: shadow-utils;2:4.6-23.el8_10;x86_64;baseos
+Installing: libutempter;1.1.6-14.el8;x86_64;baseos
+Installing: tpm2-tss;2.3.2-6.el8;x86_64;baseos
+Installing: ima-evm-utils;1.3.2-12.el8;x86_64;baseos
+Installing: libseccomp;2.5.2-1.el8;x86_64;baseos
+Installing: libreport-filesystem;2.9.5-15.el8.alma.1;x86_64;baseos
+Installing: dnf-data;4.7.0-21.el8_10.alma.1;noarch;baseos
+Installing: libfdisk;2.32.1-50.el8_10;x86_64;baseos
+Installing: kmod-libs;25-20.el8;x86_64;baseos
+Installing: gzip;1.9-15.el8_10;x86_64;baseos
+Installing: cracklib;2.9.6-15.el8;x86_64;baseos
+Installing: cracklib-dicts;2.9.6-15.el8;x86_64;baseos
+Installing: libpwquality;1.4.4-6.el8;x86_64;baseos
+Installing: pam;1.3.1-40.el8_10;x86_64;baseos
+Installing: util-linux;2.32.1-50.el8_10;x86_64;baseos
+Installing: diffutils;3.6-6.el8;x86_64;baseos
+Installing: acl;2.4.0-1.el8_10;x86_64;baseos
+Installing: device-mapper;8:1.02.181-15.el8_10.3;x86_64;baseos
+Installing: device-mapper-libs;8:1.02.181-15.el8_10.3;x86_64;baseos
+Installing: cryptsetup-libs;2.3.7-7.el8;x86_64;baseos
+Installing: elfutils-debuginfod-client;0.190-2.el8.alma.1;x86_64;baseos
+Installing: elfutils-default-yama-scope;0.190-2.el8.alma.1;noarch;baseos
+Installing: elfutils-libs;0.190-2.el8.alma.1;x86_64;baseos
+Installing: dbus-common;1:1.12.8-28.el8_10;noarch;baseos
+Installing: dbus-daemon;1:1.12.8-28.el8_10;x86_64;baseos
+Installing: systemd-pam;239-82.el8_10.19;x86_64;baseos
+Installing: systemd;239-82.el8_10.19;x86_64;baseos
+Installing: dbus;1:1.12.8-28.el8_10;x86_64;baseos
+Installing: unbound-libs;1.16.2-5.14.el8_10.5;x86_64;appstream
+Installing: python3-unbound;1.16.2-5.14.el8_10.5;x86_64;appstream
+Installing: rpm-build-libs;4.14.3-32.el8_10;x86_64;baseos
+Installing: python3-rpm;4.14.3-32.el8_10;x86_64;baseos
+Installing: python3-dnf;4.7.0-21.el8_10.alma.1;noarch;baseos
+Installing: dnf;4.7.0-21.el8_10.alma.1;noarch;baseos
+Installing: python3.12-pip;23.2.1-4.el8;noarch;appstream
+Complete.
++ python3.12 -m pip install --upgrade pip ansible-core Unidecode
+Requirement already satisfied: pip in /usr/lib/python3.12/site-packages (23.2.1)
+Collecting pip
+  Obtaining dependency information for pip from https://files.pythonhosted.org/packages/07/25/ee8c38ae72d66b844ce8eb9711ba905dba21ca1a8a0c960057c41cd23337/pip-26.3-py3-none-any.whl.metadata
+  Downloading pip-26.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting ansible-core
+  Obtaining dependency information for ansible-core from https://files.pythonhosted.org/packages/20/5a/9e6cc7686b40bec066211200b6c393a7a333dfcfa91aa67a07c031df87c8/ansible_core-2.21.6-py3-none-any.whl.metadata
+  Downloading ansible_core-2.21.6-py3-none-any.whl.metadata (7.8 kB)
+Collecting Unidecode
+  Obtaining dependency information for Unidecode from https://files.pythonhosted.org/packages/8f/b7/559f59d57d18b44c6d1250d2eeaa676e028b9c527431f5d0736478a73ba1/Unidecode-1.4.0-py3-none-any.whl.metadata
+  Downloading Unidecode-1.4.0-py3-none-any.whl.metadata (13 kB)
+Collecting jinja2>=3.1.0 (from ansible-core)
+  Obtaining dependency information for jinja2>=3.1.0 from https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl.metadata
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting PyYAML>=5.1 (from ansible-core)
+  Obtaining dependency information for PyYAML>=5.1 from https://files.pythonhosted.org/packages/94/80/1d27f7084b983b7cfd1fb35e65a38276d9eddfdcdabc0922bb26cf9521bc/pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.3 kB)
+Collecting cryptography (from ansible-core)
+  Obtaining dependency information for cryptography from https://files.pythonhosted.org/packages/1a/f1/b474e930c4d910328780e3940da76f5aa5cbc48ce1fc14e44d239d9ea9db/cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl.metadata
+  Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl.metadata (4.4 kB)
+Collecting packaging (from ansible-core)
+  Obtaining dependency information for packaging from https://files.pythonhosted.org/packages/ba/7b/5504f91c9c2733f693d7759e50ede5d27119d4da7e5836c46d3b5ff81d56/packaging-26.4-py3-none-any.whl.metadata
+  Downloading packaging-26.4-py3-none-any.whl.metadata (3.5 kB)
+Collecting resolvelib<2.0.0,>=0.8.0 (from ansible-core)
+  Obtaining dependency information for resolvelib<2.0.0,>=0.8.0 from https://files.pythonhosted.org/packages/e2/23/c941a0d0353681ca138489983c4309e0f5095dfd902e1357004f2357ddf2/resolvelib-1.2.1-py3-none-any.whl.metadata
+  Downloading resolvelib-1.2.1-py3-none-any.whl.metadata (3.7 kB)
+Collecting MarkupSafe>=2.0 (from jinja2>=3.1.0->ansible-core)
+  Obtaining dependency information for MarkupSafe>=2.0 from https://files.pythonhosted.org/packages/4f/a7/aeedb5140afa41fc74c225e9184ab96723a6e873b6ee1c9fede7283456d8/markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting cffi>=2.0.0 (from cryptography->ansible-core)
+  Obtaining dependency information for cffi>=2.0.0 from https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata
+  Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+Collecting pycparser (from cffi>=2.0.0->cryptography->ansible-core)
+  Obtaining dependency information for pycparser from https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl.metadata
+  Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+Downloading pip-26.3-py3-none-any.whl (2.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 23.7 MB/s eta 0:00:00
+Downloading ansible_core-2.21.6-py3-none-any.whl (2.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.5/2.5 MB 90.0 MB/s eta 0:00:00
+Downloading Unidecode-1.4.0-py3-none-any.whl (235 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 235.8/235.8 kB 86.5 MB/s eta 0:00:00
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 52.5 MB/s eta 0:00:00
+Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (849 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 849.2/849.2 kB 75.9 MB/s eta 0:00:00
+Downloading resolvelib-1.2.1-py3-none-any.whl (18 kB)
+Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl (4.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 112.0 MB/s eta 0:00:00
+Downloading packaging-26.4-py3-none-any.whl (140 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 140.0/140.0 kB 75.4 MB/s eta 0:00:00
+Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.8/221.8 kB 46.7 MB/s eta 0:00:00
+Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 kB 32.3 MB/s eta 0:00:00
+Installing collected packages: Unidecode, resolvelib, PyYAML, pycparser, pip, packaging, MarkupSafe, jinja2, cffi, cryptography, ansible-core
+Successfully installed MarkupSafe-3.0.4 PyYAML-6.0.4 Unidecode-1.4.0 ansible-core-2.21.6 cffi-2.1.1 cryptography-50.0.2 jinja2-3.1.6 packaging-26.4 pip-26.3 pycparser-3.12 resolvelib-1.2.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
++ export ANSIBLE_ROLES_PATH=/roles
++ ANSIBLE_ROLES_PATH=/roles
++ ansible-playbook -v -i case_family,case_plain,case_missing,case_addresses,case_legacy, -c local -e ansible_python_interpreter=/usr/bin/python3.12 -e mailserver_no_log=false tests/normalize_users.yml
+No config file found; using defaults
+
+PLAY [Usernames in family mode] ************************************************
+
+TASK [Derive the usernames] ****************************************************
+included: ansible_mailserver for case_family
+
+TASK [ansible_mailserver : Check that every user has enough data to derive a username] ***
+ok: [case_family] => (item=Ákos) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Ákos",
+        "password": "***",
+        "surname": "Kovács"
+    }
+}
+ok: [case_family] => (item=Αλέξανδρος) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Αλέξανδρος",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=北京) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "北京",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=Mary Ann) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Mary Ann",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=O'Neil) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "O'Neil",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=Тигрис) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Hobbes",
+        "name": "Тигрис",
+        "password": "***"
+    }
+}
+
+TASK [ansible_mailserver : Install the EPEL repository] ************************
+changed: [case_family] => {"changed": true, "msg": "", "rc": 0, "results": ["Installed: python3-dateutil-1:2.6.1-6.el8.noarch", "Installed: python3-dbus-1.2.4-15.el8.x86_64", "Installed: python3-six-1.11.0-8.el8.noarch", "Installed: python3-dnf-plugins-core-4.0.21-25.el8.noarch", "Installed: python3-systemd-234-8.el8.x86_64", "Installed: dbus-glib-0.110-2.el8.x86_64", "Installed: epel-release-8-21.el8.noarch", "Installed: dnf-plugins-core-4.0.21-25.el8.noarch"]}
+
+TASK [ansible_mailserver : Install the Unidecode package] **********************
+changed: [case_family] => {"changed": true, "msg": "", "rc": 0, "results": ["Installed: python3-pip-9.0.3-24.el8.noarch", "Installed: python3-setuptools-39.2.0-9.el8_10.noarch", "Installed: python36-3.6.8-39.module_el8.10.0+3769+3838165b.x86_64", "Installed: python3-unidecode-1.3.4-8.el8.noarch"]}
+
+TASK [ansible_mailserver : Convert the usernames to plain Latin ASCII] *********
+ok: [case_family] => (item=Ákos) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Akos", "stdout_lines": ["Akos"], "user_item": {"firstname": "Ákos", "password": "***", "surname": "Kovács"}}
+ok: [case_family] => (item=Αλέξανδρος) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Alexandros", "stdout_lines": ["Alexandros"], "user_item": {"firstname": "Αλέξανδρος", "password": "***"}}
+ok: [case_family] => (item=北京) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Bei Jing ", "stdout_lines": ["Bei Jing "], "user_item": {"firstname": "北京", "password": "***"}}
+ok: [case_family] => (item=Mary Ann) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Mary Ann", "stdout_lines": ["Mary Ann"], "user_item": {"firstname": "Mary Ann", "password": "***"}}
+ok: [case_family] => (item=O'Neil) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "O'Neil", "stdout_lines": ["O'Neil"], "user_item": {"firstname": "O'Neil", "password": "***"}}
+ok: [case_family] => (item=Тигрис) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Tigris", "stdout_lines": ["Tigris"], "user_item": {"firstname": "Hobbes", "name": "Тигрис", "password": "***"}}
+
+TASK [ansible_mailserver : Start with an empty list of users with effective names] ***
+ok: [case_family] => {"ansible_facts": {"normalized_users": []}, "changed": false}
+
+TASK [ansible_mailserver : Derive effective usernames] *************************
+ok: [case_family] => (item=Ákos) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akos", "name_input": "", "password": "***", "surname": "Kovács"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Akos", "stdout_lines": ["Akos"], "user_item": {"firstname": "Ákos", "password": "***", "surname": "Kovács"}}}
+ok: [case_family] => (item=Αλέξανδρος) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akos", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Αλέξανδρος", "name": "alexandros", "name_input": "", "password": "***"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Alexandros", "stdout_lines": ["Alexandros"], "user_item": {"firstname": "Αλέξανδρος", "password": "***"}}}
+ok: [case_family] => (item=北京) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akos", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Αλέξανδρος", "name": "alexandros", "name_input": "", "password": "***"}, {"firstname": "北京", "name": "beijing", "name_input": "", "password": "***"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Bei Jing ", "stdout_lines": ["Bei Jing "], "user_item": {"firstname": "北京", "password": "***"}}}
+ok: [case_family] => (item=Mary Ann) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akos", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Αλέξανδρος", "name": "alexandros", "name_input": "", "password": "***"}, {"firstname": "北京", "name": "beijing", "name_input": "", "password": "***"}, {"firstname": "Mary Ann", "name": "maryann", "name_input": "", "password": "***"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Mary Ann", "stdout_lines": ["Mary Ann"], "user_item": {"firstname": "Mary Ann", "password": "***"}}}
+ok: [case_family] => (item=O'Neil) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akos", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Αλέξανδρος", "name": "alexandros", "name_input": "", "password": "***"}, {"firstname": "北京", "name": "beijing", "name_input": "", "password": "***"}, {"firstname": "Mary Ann", "name": "maryann", "name_input": "", "password": "***"}, {"firstname": "O'Neil", "name": "oneil", "name_input": "", "password": "***"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "O'Neil", "stdout_lines": ["O'Neil"], "user_item": {"firstname": "O'Neil", "password": "***"}}}
+ok: [case_family] => (item=Тигрис) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akos", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Αλέξανδρος", "name": "alexandros", "name_input": "", "password": "***"}, {"firstname": "北京", "name": "beijing", "name_input": "", "password": "***"}, {"firstname": "Mary Ann", "name": "maryann", "name_input": "", "password": "***"}, {"firstname": "O'Neil", "name": "oneil", "name_input": "", "password": "***"}, {"firstname": "Hobbes", "name": "tigris", "name_input": "Тигрис", "password": "***"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Tigris", "stdout_lines": ["Tigris"], "user_item": {"firstname": "Hobbes", "name": "Тигрис", "password": "***"}}}
+
+TASK [ansible_mailserver : Check that the usernames are valid POSIX names] *****
+ok: [case_family] => (item=akos) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Ákos",
+        "name": "akos",
+        "name_input": "",
+        "password": "***",
+        "surname": "Kovács"
+    }
+}
+ok: [case_family] => (item=alexandros) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Αλέξανδρος",
+        "name": "alexandros",
+        "name_input": "",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=beijing) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "北京",
+        "name": "beijing",
+        "name_input": "",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=maryann) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Mary Ann",
+        "name": "maryann",
+        "name_input": "",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=oneil) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "O'Neil",
+        "name": "oneil",
+        "name_input": "",
+        "password": "***"
+    }
+}
+ok: [case_family] => (item=tigris) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Hobbes",
+        "name": "tigris",
+        "name_input": "Тигрис",
+        "password": "***"
+    }
+}
+
+TASK [ansible_mailserver : Use the users with effective names from now on] *****
+ok: [case_family] => {"ansible_facts": {"users": [{"firstname": "Ákos", "name": "akos", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Αλέξανδρος", "name": "alexandros", "name_input": "", "password": "***"}, {"firstname": "北京", "name": "beijing", "name_input": "", "password": "***"}, {"firstname": "Mary Ann", "name": "maryann", "name_input": "", "password": "***"}, {"firstname": "O'Neil", "name": "oneil", "name_input": "", "password": "***"}, {"firstname": "Hobbes", "name": "tigris", "name_input": "Тигрис", "password": "***"}]}, "changed": false}
+
+TASK [Check the derived usernames] *********************************************
+ok: [case_family] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check that an explicit name is kept as typed] ****************************
+ok: [case_family] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Usernames without family mode] *******************************************
+
+TASK [Derive the usernames] ****************************************************
+included: ansible_mailserver for case_plain
+
+TASK [ansible_mailserver : Check that every user has enough data to derive a username] ***
+ok: [case_plain] => (item=Ákos) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Ákos",
+        "password": "***",
+        "surname": "Kovács"
+    }
+}
+ok: [case_plain] => (item=Юрий) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Юрий",
+        "password": "***",
+        "surname": "Щербаков"
+    }
+}
+ok: [case_plain] => (item=Zoë) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Zoë",
+        "password": "***",
+        "surname": "O'Brien"
+    }
+}
+ok: [case_plain] => (item=Árvíztűrő) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "name": "Árvíztűrő",
+        "password": "***"
+    }
+}
+
+TASK [ansible_mailserver : Install the EPEL repository] ************************
+ok: [case_plain] => {"changed": false, "msg": "Nothing to do", "rc": 0, "results": []}
+
+TASK [ansible_mailserver : Install the Unidecode package] **********************
+ok: [case_plain] => {"changed": false, "msg": "Nothing to do", "rc": 0, "results": []}
+
+TASK [ansible_mailserver : Convert the usernames to plain Latin ASCII] *********
+ok: [case_plain] => (item=Ákos) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "AKovacs", "stdout_lines": ["AKovacs"], "user_item": {"firstname": "Ákos", "password": "***", "surname": "Kovács"}}
+ok: [case_plain] => (item=Юрий) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "YuShcherbakov", "stdout_lines": ["YuShcherbakov"], "user_item": {"firstname": "Юрий", "password": "***", "surname": "Щербаков"}}
+ok: [case_plain] => (item=Zoë) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "ZO'Brien", "stdout_lines": ["ZO'Brien"], "user_item": {"firstname": "Zoë", "password": "***", "surname": "O'Brien"}}
+ok: [case_plain] => (item=Árvíztűrő) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Arvizturo", "stdout_lines": ["Arvizturo"], "user_item": {"name": "Árvíztűrő", "password": "***"}}
+
+TASK [ansible_mailserver : Start with an empty list of users with effective names] ***
+ok: [case_plain] => {"ansible_facts": {"normalized_users": []}, "changed": false}
+
+TASK [ansible_mailserver : Derive effective usernames] *************************
+ok: [case_plain] => (item=Ákos) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akovacs", "name_input": "", "password": "***", "surname": "Kovács"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "AKovacs", "stdout_lines": ["AKovacs"], "user_item": {"firstname": "Ákos", "password": "***", "surname": "Kovács"}}}
+ok: [case_plain] => (item=Юрий) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akovacs", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Юрий", "name": "yushcherbakov", "name_input": "", "password": "***", "surname": "Щербаков"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "YuShcherbakov", "stdout_lines": ["YuShcherbakov"], "user_item": {"firstname": "Юрий", "password": "***", "surname": "Щербаков"}}}
+ok: [case_plain] => (item=Zoë) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akovacs", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Юрий", "name": "yushcherbakov", "name_input": "", "password": "***", "surname": "Щербаков"}, {"firstname": "Zoë", "name": "zobrien", "name_input": "", "password": "***", "surname": "O'Brien"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "ZO'Brien", "stdout_lines": ["ZO'Brien"], "user_item": {"firstname": "Zoë", "password": "***", "surname": "O'Brien"}}}
+ok: [case_plain] => (item=Árvíztűrő) => {"ansible_facts": {"normalized_users": [{"firstname": "Ákos", "name": "akovacs", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Юрий", "name": "yushcherbakov", "name_input": "", "password": "***", "surname": "Щербаков"}, {"firstname": "Zoë", "name": "zobrien", "name_input": "", "password": "***", "surname": "O'Brien"}, {"name": "arvizturo", "name_input": "Árvíztűrő", "password": "***"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Arvizturo", "stdout_lines": ["Arvizturo"], "user_item": {"name": "Árvíztűrő", "password": "***"}}}
+
+TASK [ansible_mailserver : Check that the usernames are valid POSIX names] *****
+ok: [case_plain] => (item=akovacs) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Ákos",
+        "name": "akovacs",
+        "name_input": "",
+        "password": "***",
+        "surname": "Kovács"
+    }
+}
+ok: [case_plain] => (item=yushcherbakov) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Юрий",
+        "name": "yushcherbakov",
+        "name_input": "",
+        "password": "***",
+        "surname": "Щербаков"
+    }
+}
+ok: [case_plain] => (item=zobrien) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Zoë",
+        "name": "zobrien",
+        "name_input": "",
+        "password": "***",
+        "surname": "O'Brien"
+    }
+}
+ok: [case_plain] => (item=arvizturo) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "name": "arvizturo",
+        "name_input": "Árvíztűrő",
+        "password": "***"
+    }
+}
+
+TASK [ansible_mailserver : Use the users with effective names from now on] *****
+ok: [case_plain] => {"ansible_facts": {"users": [{"firstname": "Ákos", "name": "akovacs", "name_input": "", "password": "***", "surname": "Kovács"}, {"firstname": "Юрий", "name": "yushcherbakov", "name_input": "", "password": "***", "surname": "Щербаков"}, {"firstname": "Zoë", "name": "zobrien", "name_input": "", "password": "***", "surname": "O'Brien"}, {"name": "arvizturo", "name_input": "Árvíztűrő", "password": "***"}]}, "changed": false}
+
+TASK [Check the derived usernames] *********************************************
+ok: [case_plain] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [A missing surname must be rejected without family mode] ******************
+
+TASK [Derive the usernames] ****************************************************
+included: ansible_mailserver for case_missing
+
+TASK [ansible_mailserver : Check that every user has enough data to derive a username] ***
+[ERROR]: Task failed: Action failed: Cannot derive a username: set `name`, or give `firstname` (and `surname` when family_mode is off).
+Origin: /roles/ansible_mailserver/tasks/misc/normalize_users.yml:14:3
+
+12 # The tasks that carry user data hide their output (`no_log`). Set
+13 # `mailserver_no_log: false` (only with test data!) to see why they fail.
+14 - name: Check that every user has enough data to derive a username
+     ^ column 3
+
+failed: [case_missing] (item=Akos) => {
+    "ansible_loop_var": "user_item",
+    "assertion": "user_item.name is defined or (family_mode | bool) or (user_item.surname | default('', true) | length > 0)",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "Cannot derive a username: set `name`, or give `firstname` (and `surname` when family_mode is off).",
+    "user_item": {
+        "firstname": "Akos",
+        "password": "***"
+    }
+}
+
+TASK [Check that the right check failed] ***************************************
+ok: [case_missing] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Email addresses and display names] ***************************************
+
+TASK [Derive the usernames and addresses] **************************************
+included: ansible_mailserver for case_addresses => (item=misc/normalize_users.yml)
+included: ansible_mailserver for case_addresses => (item=misc/generate_addresses.yml)
+
+TASK [ansible_mailserver : Check that every user has enough data to derive a username] ***
+ok: [case_addresses] => (item=sha) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "aliases": [
+            "***@***"
+        ],
+        "display_name": "suhanc",
+        "firstname": "Akos",
+        "name": "sha",
+        "password": "***",
+        "surname": "Balla"
+    }
+}
+ok: [case_addresses] => (item=Éva) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Éva",
+        "password": "***",
+        "surname": "Nagy"
+    }
+}
+ok: [case_addresses] => (item=Zoe Kiss) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Zoë",
+        "name": "Zoe Kiss",
+        "password": "***",
+        "surname": "Kiss"
+    }
+}
+ok: [case_addresses] => (item=Cica) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Péter",
+        "name": "Cica",
+        "password": "***",
+        "surname": "Kiss"
+    }
+}
+
+TASK [ansible_mailserver : Install the EPEL repository] ************************
+ok: [case_addresses] => {"changed": false, "msg": "Nothing to do", "rc": 0, "results": []}
+
+TASK [ansible_mailserver : Install the Unidecode package] **********************
+ok: [case_addresses] => {"changed": false, "msg": "Nothing to do", "rc": 0, "results": []}
+
+TASK [ansible_mailserver : Convert the usernames to plain Latin ASCII] *********
+ok: [case_addresses] => (item=sha) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "sha", "stdout_lines": ["sha"], "user_item": {"aliases": ["***@***"], "display_name": "suhanc", "firstname": "Akos", "name": "sha", "password": "***", "surname": "Balla"}}
+ok: [case_addresses] => (item=Éva) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "ENagy", "stdout_lines": ["ENagy"], "user_item": {"firstname": "Éva", "password": "***", "surname": "Nagy"}}
+ok: [case_addresses] => (item=Zoe Kiss) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Zoe Kiss", "stdout_lines": ["Zoe Kiss"], "user_item": {"firstname": "Zoë", "name": "Zoe Kiss", "password": "***", "surname": "Kiss"}}
+ok: [case_addresses] => (item=Cica) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Cica", "stdout_lines": ["Cica"], "user_item": {"firstname": "Péter", "name": "Cica", "password": "***", "surname": "Kiss"}}
+
+TASK [ansible_mailserver : Start with an empty list of users with effective names] ***
+ok: [case_addresses] => {"ansible_facts": {"normalized_users": []}, "changed": false}
+
+TASK [ansible_mailserver : Derive effective usernames] *************************
+ok: [case_addresses] => (item=sha) => {"ansible_facts": {"normalized_users": [{"aliases": ["***@***"], "display_name": "suhanc", "firstname": "Akos", "name": "sha", "name_input": "sha", "password": "***", "surname": "Balla"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "sha", "stdout_lines": ["sha"], "user_item": {"aliases": ["***@***"], "display_name": "suhanc", "firstname": "Akos", "name": "sha", "password": "***", "surname": "Balla"}}}
+ok: [case_addresses] => (item=Éva) => {"ansible_facts": {"normalized_users": [{"aliases": ["***@***"], "display_name": "suhanc", "firstname": "Akos", "name": "sha", "name_input": "sha", "password": "***", "surname": "Balla"}, {"firstname": "Éva", "name": "enagy", "name_input": "", "password": "***", "surname": "Nagy"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "ENagy", "stdout_lines": ["ENagy"], "user_item": {"firstname": "Éva", "password": "***", "surname": "Nagy"}}}
+ok: [case_addresses] => (item=Zoe Kiss) => {"ansible_facts": {"normalized_users": [{"aliases": ["***@***"], "display_name": "suhanc", "firstname": "Akos", "name": "sha", "name_input": "sha", "password": "***", "surname": "Balla"}, {"firstname": "Éva", "name": "enagy", "name_input": "", "password": "***", "surname": "Nagy"}, {"firstname": "Zoë", "name": "zoekiss", "name_input": "Zoe Kiss", "password": "***", "surname": "Kiss"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Zoe Kiss", "stdout_lines": ["Zoe Kiss"], "user_item": {"firstname": "Zoë", "name": "Zoe Kiss", "password": "***", "surname": "Kiss"}}}
+ok: [case_addresses] => (item=Cica) => {"ansible_facts": {"normalized_users": [{"aliases": ["***@***"], "display_name": "suhanc", "firstname": "Akos", "name": "sha", "name_input": "sha", "password": "***", "surname": "Balla"}, {"firstname": "Éva", "name": "enagy", "name_input": "", "password": "***", "surname": "Nagy"}, {"firstname": "Zoë", "name": "zoekiss", "name_input": "Zoe Kiss", "password": "***", "surname": "Kiss"}, {"firstname": "Péter", "name": "cica", "name_input": "Cica", "password": "***", "surname": "Kiss"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Cica", "stdout_lines": ["Cica"], "user_item": {"firstname": "Péter", "name": "Cica", "password": "***", "surname": "Kiss"}}}
+
+TASK [ansible_mailserver : Check that the usernames are valid POSIX names] *****
+ok: [case_addresses] => (item=sha) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "aliases": [
+            "***@***"
+        ],
+        "display_name": "suhanc",
+        "firstname": "Akos",
+        "name": "sha",
+        "name_input": "sha",
+        "password": "***",
+        "surname": "Balla"
+    }
+}
+ok: [case_addresses] => (item=enagy) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Éva",
+        "name": "enagy",
+        "name_input": "",
+        "password": "***",
+        "surname": "Nagy"
+    }
+}
+ok: [case_addresses] => (item=zoekiss) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Zoë",
+        "name": "zoekiss",
+        "name_input": "Zoe Kiss",
+        "password": "***",
+        "surname": "Kiss"
+    }
+}
+ok: [case_addresses] => (item=cica) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "firstname": "Péter",
+        "name": "cica",
+        "name_input": "Cica",
+        "password": "***",
+        "surname": "Kiss"
+    }
+}
+
+TASK [ansible_mailserver : Use the users with effective names from now on] *****
+ok: [case_addresses] => {"ansible_facts": {"users": [{"aliases": ["***@***"], "display_name": "suhanc", "firstname": "Akos", "name": "sha", "name_input": "sha", "password": "***", "surname": "Balla"}, {"firstname": "Éva", "name": "enagy", "name_input": "", "password": "***", "surname": "Nagy"}, {"firstname": "Zoë", "name": "zoekiss", "name_input": "Zoe Kiss", "password": "***", "surname": "Kiss"}, {"firstname": "Péter", "name": "cica", "name_input": "Cica", "password": "***", "surname": "Kiss"}]}, "changed": false}
+
+TASK [ansible_mailserver : Collect the names the addresses and display names are built from] ***
+ok: [case_addresses] => {"ansible_facts": {"address_inputs": ["Akos", "Balla", "Éva", "Nagy", "Zoë", "Kiss", "Péter", "Doe"]}, "changed": false}
+
+TASK [ansible_mailserver : Convert the names to plain Latin ASCII] *************
+ok: [case_addresses] => (item=Akos) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Akos", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Akos", "stdout_lines": ["Akos"]}
+ok: [case_addresses] => (item=Balla) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Balla", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Balla", "stdout_lines": ["Balla"]}
+ok: [case_addresses] => (item=Éva) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Éva", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Eva", "stdout_lines": ["Eva"]}
+ok: [case_addresses] => (item=Nagy) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Nagy", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Nagy", "stdout_lines": ["Nagy"]}
+ok: [case_addresses] => (item=Zoë) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Zoë", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Zoe", "stdout_lines": ["Zoe"]}
+ok: [case_addresses] => (item=Kiss) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Kiss", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Kiss", "stdout_lines": ["Kiss"]}
+ok: [case_addresses] => (item=Péter) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Péter", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Peter", "stdout_lines": ["Peter"]}
+ok: [case_addresses] => (item=Doe) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Doe", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Doe", "stdout_lines": ["Doe"]}
+
+TASK [ansible_mailserver : Remember the converted names] ***********************
+ok: [case_addresses] => {"ansible_facts": {"address_ascii_names": {"Akos": "akos", "Balla": "balla", "Doe": "doe", "Kiss": "kiss", "Nagy": "nagy", "Péter": "peter", "Zoë": "zoe", "Éva": "eva"}}, "changed": false}
+
+TASK [ansible_mailserver : Work out the addresses and display names of every user] ***
+ok: [case_addresses] => {"ansible_facts": {"users": [{"address_display_names": {"***@***": "Akos Balla", "***@***": "Akos Balla", "***@***": "Akos Balla", "***@***": "suhanc", "***@***": "suhanc", "***@***": "suhanc"}, "aliases": ["***@***"], "all_addresses": ["***@***", "***@***", "***@***", "***@***", "***@***", "***@***"], "display_name": "suhanc", "firstname": "Akos", "generated_aliases": ["***@***", "***@***", "***@***", "***@***", "***@***"], "name": "sha", "name_input": "sha", "password": "***", "primary_address": "***@***", "surname": "Balla"}, {"address_display_names": {"***@***": "Éva Nagy", "***@***": "Éva Nagy", "***@***": "Éva Nagy"}, "all_addresses": ["***@***", "***@***", "***@***"], "display_name": "Éva Nagy", "firstname": "Éva", "generated_aliases": ["***@***", "***@***", "***@***"], "name": "enagy", "name_input": "", "password": "***", "primary_address": "***@***", "surname": "Nagy"}, {"address_display_names": {"***@***": "Zoë Kiss", "***@***": "Zoë Kiss", "***@***": "Zoë Kiss"}, "all_addresses": ["***@***", "***@***", "***@***"], "display_name": "Zoë Kiss", "firstname": "Zoë", "generated_aliases": ["***@***", "***@***", "***@***"], "name": "zoekiss", "name_input": "Zoe Kiss", "password": "***", "primary_address": "***@***", "surname": "Kiss"}, {"address_display_names": {"***@***": "Cica", "***@***": "Cica", "***@***": "Péter Kiss"}, "all_addresses": ["***@***", "***@***", "***@***"], "display_name": "Cica", "firstname": "Péter", "generated_aliases": ["***@***", "***@***", "***@***"], "name": "cica", "name_input": "Cica", "password": "***", "primary_address": "***@***", "surname": "Kiss"}]}, "changed": false}
+
+TASK [ansible_mailserver : Use the domains of mail_domains as custom domains] ***
+ok: [case_addresses] => {"ansible_facts": {"custom_domains": ["fsck.it.com", "balla.global", "balla.cloud", "example.org"]}, "changed": false}
+
+TASK [Check the addresses of the owner] ****************************************
+ok: [case_addresses] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the display names of the owner per address] ************************
+ok: [case_addresses] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the addresses of a user of another family] *************************
+ok: [case_addresses] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the display names of an official-looking and a nickname-looking name] ***
+ok: [case_addresses] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Check the custom domains] ************************************************
+ok: [case_addresses] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY [Without mail_domains only the primary address and the aliases are used] ***
+
+TASK [Derive the usernames and addresses] **************************************
+included: ansible_mailserver for case_legacy => (item=misc/normalize_users.yml)
+included: ansible_mailserver for case_legacy => (item=misc/generate_addresses.yml)
+
+TASK [ansible_mailserver : Check that every user has enough data to derive a username] ***
+ok: [case_legacy] => (item=bob) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "aliases": [
+            "***@***"
+        ],
+        "name": "bob",
+        "password": "***"
+    }
+}
+
+TASK [ansible_mailserver : Install the EPEL repository] ************************
+ok: [case_legacy] => {"changed": false, "msg": "Nothing to do", "rc": 0, "results": []}
+
+TASK [ansible_mailserver : Install the Unidecode package] **********************
+ok: [case_legacy] => {"changed": false, "msg": "Nothing to do", "rc": 0, "results": []}
+
+TASK [ansible_mailserver : Convert the usernames to plain Latin ASCII] *********
+ok: [case_legacy] => (item=bob) => {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "bob", "stdout_lines": ["bob"], "user_item": {"aliases": ["***@***"], "name": "bob", "password": "***"}}
+
+TASK [ansible_mailserver : Start with an empty list of users with effective names] ***
+ok: [case_legacy] => {"ansible_facts": {"normalized_users": []}, "changed": false}
+
+TASK [ansible_mailserver : Derive effective usernames] *************************
+ok: [case_legacy] => (item=bob) => {"ansible_facts": {"normalized_users": [{"aliases": ["***@***"], "name": "bob", "name_input": "bob", "password": "***"}]}, "ansible_loop_var": "result_item", "changed": false, "result_item": {"ansible_loop_var": "user_item", "changed": false, "changed_when_result": false, "failed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "bob", "stdout_lines": ["bob"], "user_item": {"aliases": ["***@***"], "name": "bob", "password": "***"}}}
+
+TASK [ansible_mailserver : Check that the usernames are valid POSIX names] *****
+ok: [case_legacy] => (item=bob) => {
+    "ansible_loop_var": "user_item",
+    "changed": false,
+    "msg": "All assertions passed",
+    "user_item": {
+        "aliases": [
+            "***@***"
+        ],
+        "name": "bob",
+        "name_input": "bob",
+        "password": "***"
+    }
+}
+
+TASK [ansible_mailserver : Use the users with effective names from now on] *****
+ok: [case_legacy] => {"ansible_facts": {"users": [{"aliases": ["***@***"], "name": "bob", "name_input": "bob", "password": "***"}]}, "changed": false}
+
+TASK [ansible_mailserver : Collect the names the addresses and display names are built from] ***
+ok: [case_legacy] => {"ansible_facts": {"address_inputs": ["Doe"]}, "changed": false}
+
+TASK [ansible_mailserver : Convert the names to plain Latin ASCII] *************
+ok: [case_legacy] => (item=Doe) => {"ansible_loop_var": "input_item", "changed": false, "changed_when_result": false, "input_item": "Doe", "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Doe", "stdout_lines": ["Doe"]}
+
+TASK [ansible_mailserver : Remember the converted names] ***********************
+ok: [case_legacy] => {"ansible_facts": {"address_ascii_names": {"Doe": "doe"}}, "changed": false}
+
+TASK [ansible_mailserver : Work out the addresses and display names of every user] ***
+ok: [case_legacy] => {"ansible_facts": {"users": [{"address_display_names": {"***@***": "bob", "***@***": "bob"}, "aliases": ["***@***"], "all_addresses": ["***@***", "***@***"], "display_name": "bob", "generated_aliases": [], "name": "bob", "name_input": "bob", "password": "***", "primary_address": "***@***"}]}, "changed": false}
+
+TASK [ansible_mailserver : Use the domains of mail_domains as custom domains] ***
+skipping: [case_legacy] => {"changed": false, "false_condition": "mail_domains is defined", "skip_reason": "Conditional result was False"}
+
+TASK [Check the addresses] *****************************************************
+ok: [case_legacy] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+PLAY RECAP *********************************************************************
+case_addresses             : ok=20   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+case_family                : ok=11   changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+case_legacy                : ok=15   changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+case_missing               : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=1    ignored=0   
+case_plain                 : ok=10   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
