@@ -8,24 +8,50 @@ Make the Kolab version of the role complete and releasable as 3.0.0: working and
 
 ## Current state
 
-Revision at the last update: eacf254 on `feature/kolab` (draft pull request #65, work stays on this branch).
+Revision at the last update: 4a64f43 on `feature/kolab` (draft pull request #65, work stays on this branch).
 
-- CI: the three tests (username and address derivation, whole-role syntax check, unit tests), DevSkim and the executable check pass. Super-Linter fails in Pylint, shfmt, codespell and Trivy (3 findings); the lines that name the files were cut off when the log was read
+- CI: the three tests (username and address derivation, whole-role syntax check, unit tests), DevSkim and the executable check passed on eacf254. Super-Linter failed there in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings). The Pylint, shfmt and `aci` fixes are pushed in 4a64f43; their CI run is not read yet. The `varable` typo in `tasks/os/packages.yml`, Prettier and Trivy are still open
+- tests: only the username and address derivation, the syntax check and the script unit tests exist; nothing tests what the role does on a server (see the high-priority section)
 - backups: read, not fixed and not verified; they count as not working until a backup and a restore ran in a test
-- instructions: `AGENTS.md` no longer copies the shared rules (2cc2922)
+- instructions: `AGENTS.md` no longer copies the shared rules (2cc2922) and has the CI test rule
 
 ## Remaining steps
 
+### High priority: a CI test for every changed functionality
+
+Rule of the owner (2026-11-27): every change of what the server does gets a CI test in the same commit, and this is checked every time before a commit is prepared (the rule is in `AGENTS.md`). A gap is never hidden: it is named in the commit message and listed here.
+
+- [ ] before every commit: name the functionality the commit changes and the test that covers it; add the test or the gap to this list
+- [ ] build the converge workflow (a new file `.github/workflows/converge.yml`, or new entries in `tests.yml`): a systemd-enabled AlmaLinux 8 container (the `Dockerfile` already uses the `8-init` image) that runs the role in stages and publishes the masked logs like the existing tests do (`ci-results` branch); stages: OS and packages, LDAP, MariaDB, Postfix, Kolab, then the rest
+- [ ] run the converge twice and fail on any change in the second run (idempotence)
+- [ ] one test per functional area; each box closes when the test runs green in CI:
+- [ ] test: users, LDAP entries and mail addresses of the role (the derivation of names and addresses is tested already; the LDAP write is not)
+- [ ] test: MariaDB setup and schema (`tasks/mariadb`)
+- [ ] test: Postfix, aliases and sender rules (`tasks/mail`)
+- [ ] test: Kolab installation and a login through the Kolab API (`tasks/kolab`)
+- [ ] test: Apache virtual hosts and TLS (`tasks/httpd`, `tasks/security/ssl.yml`)
+- [ ] test: DKIM and DMARC (`tasks/mail/dkim.yml`, `dmarc.yml`)
+- [ ] test: DNS and DynDNS (`tasks/dns`)
+- [ ] test: WireGuard (`tasks/wireguard`)
+- [ ] test: FTP, fail2ban, firewall, AIDE and antivirus (`tasks/misc`, `tasks/security`)
+- [ ] test: backups and restore (see the Kolab backup section; this one comes first because the backups do not work)
+- [ ] test: the Horde to Kolab migration on a prepared Horde sample
+- [x] existing: username and address derivation, whole-role syntax check, unit tests of `files/misc/ascii_name.py` (`tests.yml`)
+
 ### CI first
 
-- [ ] fix the red Super-Linter findings at their cause: Pylint, shfmt, codespell (more than the one typo) and Trivy (1 low, 1 medium, 1 high); read the files and lines in the full `lint.log` on `ci-lint-results`; an automatic summary named YAML formatting findings in `defaults/main.yml` and `tasks/dns/delete_dns_record.yml` and a shell script that the log does not confirm, so do not follow it blindly
+- [ ] fix the red Super-Linter findings at their cause, from the full `lint.log` on `ci-lint-results` (an automatic summary named files the log does not confirm, so do not follow it blindly):
+- [ ] Pylint `C0415` in `files/misc/ascii_name.py`, shfmt in `files/ldap/extract_user_data_to_migrate.sh` and `tests/mask_log.sh`, codespell `aci`: pushed in 4a64f43, waiting for the CI result
+- [ ] codespell: `varable` in `tasks/os/packages.yml:208` (a comment; the file is long, so check that the diff is exactly one line)
+- [ ] Prettier: 26 YAML files differ from the Prettier style (`defaults/main.yml`, `tasks/dns/delete_dns_record.yml`, `dns_records.yml`, `dyndns.yml`, `poweradmin.yml`, `propagate_dkim_txt_records.yml`, `tasks/backups/main.yml`, `tasks/ldap/main.yml`, `tasks/mail/dkim.yml`, `dmarc.yml`, `imapsync.yml`, `postfixadmin.yml`, `spamassassin.yml`, `user_mail_alias.yml`, `tasks/mariadb/main.yml`, `tasks/httpd/main.yml`, `webdav.yml`, `tasks/misc/ftp.yml`, `mongodb.yml`, `tasks/kolab/main.yml`, `tasks/security/fail2ban.yml`, `ssl.yml`, `tasks/os/main.yml`, `packages.yml`, `tasks/wireguard/main.yml`, `gather_wireguard_config_sections.yml`); needs Prettier itself, not hand edits; decision of the owner how it runs (open decision)
+- [ ] Trivy: `Dockerfile` has DS-0001 (`FROM ...:latest`, medium), DS-0002 (no `USER`, high) and DS-0026 (no `HEALTHCHECK`, low); Checkov already skips the same three with the owner's reasons; decision of the owner whether Trivy gets the same ignores (open decision)
 - [x] codespell typo in `tasks/mariadb/create_mariadb_schema.yml` fixed (5cac1f6)
-- [x] the three tests pass (15c78c6, eacf254)
+- [x] the three tests passed (15c78c6, eacf254)
 - [ ] read the logs after every push and keep the tests green
 
 ### Kolab backup and restore
 
-The backups did not work on the old Horde setup (`main`) and have to work on Kolab. A read of `tasks/backups/main.yml` and `templates/systemd/` found the points below; none is fixed or verified yet.
+The backups did not work on the old Horde setup (`main`) and have to work on Kolab. A read of `tasks/backups/main.yml` and `templates/systemd/` found the points below; none is fixed or verified yet. The test for them is the first item of the high-priority section.
 
 - [ ] the timer services use `Type=forking` with `RemainAfterExit=yes`: a finished service stays active, and starting an active service does nothing, so the daily timer probably never runs it a second time; use `Type=oneshot` without `RemainAfterExit` and test that two runs in a row both write a backup
 - [ ] retention: `find /backup/<name>/ -maxdepth 1 -mtime +7 -exec rm -rf {} \;` also matches the backup directory itself when nothing new was written for seven days; add `-mindepth 1` and never remove the newest backup
@@ -42,6 +68,7 @@ The backups did not work on the old Horde setup (`main`) and have to work on Kol
 
 - [x] copies of the shared rules removed from `AGENTS.md` (2cc2922)
 - [x] decided: this file is deleted before pull request #65 is merged
+- [x] `AGENTS.md` rule for a CI test with every change of functionality added
 - [ ] update the `TODO.md` rule in `AGENTS.md` to match: keep this file in the work-status format while the work is open, update it in every commit, delete it in the last commit before the merge
 - [ ] read the workflows and the comments in the tasks and templates for more copies of the shared rules (the first read of `linter.yml` and `tests.yml` failed)
 - [ ] remove the copies in the working rules below once the open decisions are settled
@@ -67,7 +94,7 @@ The backups did not work on the old Horde setup (`main`) and have to work on Kol
 
 ### All tests in CI containers
 
-The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch.
+The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch. The converge test is the first item of the high-priority section.
 
 - [x] all three entries and the log publishing pass (15c78c6, eacf254)
 - [ ] add a converge test: a systemd-enabled AlmaLinux 8 container that runs the OS and LDAP parts of the role (`tasks/os`, `tasks/ldap`), then Postfix and finally the Kolab installation
@@ -79,10 +106,10 @@ The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in 
 - [x] the Ansible linter could not find the role `ansible_mailserver` for `tests/role_syntax.yml`; ignored as `syntax-check[specific]` in `.ansible-lint-ignore`, and it only shows as an ignored warning
 - [x] the natural language linter rejected an all-capitals Ansible, `file name` and `file names` in running text of this file; they are `Ansible`, `filename` and `filenames`
 - [x] line endings: the check passed and the repair job was skipped on e730605 (the files were LF already)
-- [ ] Trivy reports 3 findings; read them in `lint.log` and fix them at their cause
-- [ ] check that editorconfig-checker accepts the files (final newline); it is part of the same Super-Linter run
+- [x] editorconfig-checker accepts the files (EDITORCONFIG passed in the log of eacf254)
 - [ ] add indentation and trailing whitespace rules to `.editorconfig` once the existing files are checked
 - [ ] check after the next run: `AIX` in the platforms of `meta/main.yml` (an old warning, ignored as `schema[meta]`), `min_ansible_version` 2.9 is far too old, other aliases in other tasks (`user:`, `db:`, `daemon-reload`)
+- [ ] yamllint only warns (line length over 80, spaces inside braces); decide later if the `.yamllint` rules should follow Prettier
 
 ### Never pin tool versions
 
@@ -157,17 +184,20 @@ Goal: normal users get `givenname.surname@domain`, family domains give `givennam
 
 ## Order of the owner
 
-Tests in containers, then LDAP and Postfix aliases (address scheme above), then the Roundcube identities, the decision about PostfixAdmin, the Cyrus items and the Horde to Kolab migration. Lowest hanging fruits first, and keep this file up to date.
+CI tests for every functionality first (high priority above), then LDAP and Postfix aliases (address scheme above), then the Roundcube identities, the decision about PostfixAdmin, the Cyrus items and the Horde to Kolab migration. Lowest hanging fruits first, and keep this file up to date.
 
 ## Open decisions
 
 - how the Kolab mail data (Cyrus mailboxes and mailbox database) is backed up consistently
+- how Prettier is run over the 26 YAML files (a temporary workflow that runs `prettier --write` and commits, or locally by the owner)
+- whether Trivy gets the same ignores as Checkov for the three Dockerfile findings
 - the shared rule to lint with a pinned Super-Linter image against the rule here to never pin anything
 - where the long-term items go when this file is deleted (for example the Horde to Kolab migration plan and the address scheme work, if they are not finished before the merge): `README.md`, issues, or finish them first
 
 ## Working rules of the owner
 
 - agents read the shared instructions of the `ai-agent-config` repository first; `AGENTS.md` points to them
+- every change of server functionality gets a CI test in the same commit; check it before every commit
 - all tests run in CI containers (AlmaLinux 8), not on the machine of the assistant; read the logs on the `ci-results` branch (tests) and the `ci-lint-results` branch (Super-Linter)
 - check the CI results at the start of every task and fix what is red; ask only when something is really unclear
 - explain changes in plain language, work independently, and keep the changes of `main` that are not Horde related
@@ -176,4 +206,4 @@ Tests in containers, then LDAP and Postfix aliases (address scheme above), then 
 
 ## Resume prompt
 
-In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. Read the CI logs for the head commit (`ci-results` and `ci-lint-results`), fix the red Super-Linter findings, then work through the open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
+In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. Read the CI logs for the head commit (`ci-results` and `ci-lint-results`), then work through the high-priority section first: build the converge workflow and one CI test per functional area, and before every commit name the functionality it changes and the test that covers it. Then fix the open Super-Linter findings, work through the other open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
