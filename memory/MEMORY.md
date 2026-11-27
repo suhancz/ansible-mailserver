@@ -23,8 +23,10 @@ Durable, non-sensitive lessons and decisions for every agent that works on this 
 
 ## Decisions of the owner
 
-- never pin the version of a tool, an action, a collection or a package in this repository; the shared rules of `ai-agent-config` pin a `Super-Linter` image tag, which is an open decision in the index of the status files
+- never pin the version of a tool, an action, a collection or a package in this repository; the same holds in `ai-agent-config`, where `Super-Linter` runs with `latest` too (2026-11-27, PR #19); adjust the linters when a new version needs it
 - all AI instructions of this repository, including this memory file, stay in the branch and go to `main` with the release of Kolab; only `TODO.md` and `todo/` are deleted before the merge
-- every commit carries the update of the status files and a CI test for every change of what the server does
+- no merge into `main` and no release until every item of the status files is solved; the exception is a release candidate, set explicitly as `-rc.N` in `VERSION`, with a new number whenever a long-term or grouped item is done; fixes are allowed on the branch they fix (2026-11-27)
+- back up the Cyrus mail data from a snapshot, without downtime (2026-11-27)
+- every commit carries the update of the status files and a CI test for every change of what the server does; the marks and this rule stay in the status index and are not copied into `AGENTS.md`
 - write as few words as possible while keeping the meaning, and always work around the truncation risk; keep all AI-generated content small and split by topic (2026-11-27; the shared rules are merged in `ai-agent-config`, PR #15 and PR #16)
 - status files: index `TODO.md` with counts of items and categories, one file per task category in `todo/`; counts are recounted in every commit

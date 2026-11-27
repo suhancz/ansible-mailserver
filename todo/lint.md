@@ -23,7 +23,10 @@ Owner rule (2026-11-27): when the linter fails, read [lint.log](https://github.c
 
 ## Never pin tool versions
 
+Owner decision (2026-11-27): keep `latest` and adjust the linters when a new version needs it; this holds for `ai-agent-config` too (it overrides its older pinned-image policy).
+
 - [x] workflows (actions at `@main`, Super-Linter `@latest`, `ansible-core` and `Unidecode` unpinned, zizmor `unpinned-uses` off in `.github/linters/zizmor.yml`) and collections in `collections/requirements.yml`; latest `ansible-core` needs Python 3.12, so the test containers install `python3.12` as interpreter (ran with `ansible-core` 2.21.6): the role is not tested with the EL8 platform Python 3.6; the systemd container uses `quay.io/almalinuxorg/8-init:latest`
+- [ ] in progress: `ai-agent-config` on `latest`: PR #19 changes its workflow (`super-linter/super-linter@latest`), the linting-before-push rule and its memory; its 12 checks are green (Super-Linter, regression tests, CodeQL); not merged
 - [ ] look for other pins in tasks (Git checkout `version:`, package versions); newest collections may break old tasks, read the first full run
 - [ ] keep the rule for new workflows, image tags, `pip`, `npm`, collections
 - [ ] `main` has `microsoft/DevSkim-Action@v1` (only runner, checkout, upload fixed in #66); this branch uses `@main`; goes away with the merge

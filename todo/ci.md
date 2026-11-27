@@ -4,13 +4,14 @@
 
 ## CI results
 
+- 55b9ac6 (2026-11-27): all 16 checks done and green, 2 repair jobs skipped (two workflow runs). Lint 2m33s (push) and 2m23s (PR), limit 20 min. Users and addresses 1m20s, unit 38s, syntax check 1m15s, systemd test 1m22s, backup templates 35s. Log-publishing jobs green. Logs not read.
 - 7daafac (2026-11-27): all 16 checks done and green, 2 repair jobs skipped (two workflow runs). Lint 2m40s and 2m56s, limit 20 min. Users and addresses 1m21s, unit 36s, syntax check 1m15s, systemd test 2m00s, backup templates 38s. Log-publishing jobs green. Logs not read. Sizes after the push of 7daafac: `TODO.md` 6.2 KB, `todo/ci.md` 4.3 KB, `todo/instructions.md` 2.2 KB.
 - 8b6a5af (2026-11-27): all 16 checks done and green, 2 repair jobs skipped. Lint 2m31s (push) and 2m29s (PR), limit 20 min. Users and addresses 1m47s, unit 36s, syntax check 1m38s, systemd test 1m34s, backup templates 3m54s (slow against 41s earlier; inside the 10 min limit). `lint.log` names 8b6a5af (log not read). Log-publishing jobs green.
 - b7e2b79: all 16 checks done, none failed, 2 repair jobs skipped. Lint 3m54s (push) and 4m07s (PR). Syntax check 2m46s, systemd test 2m09s. `lint.log` names b7e2b79 (log not read).
 - 5c491b8: 14 green, 2 skipped. `lint.log` and `test-unit.log` read: success; 9 unit tests; Checkov 0 failed (60, 164, 11 passed); only the two known ignored Ansible findings; Python 3.14. The excerpt is cut off in yamllint warnings. Other four test logs not read.
 - 024dc51: logs read. Systemd test `ok=80 failed=0 skipped=10` with all ten services of the shared list; syntax check passes with `include_vars`.
 - Older: green since 1a3f230; earlier failures were only NATURAL_LANGUAGE wording. 507056c: one `microdnf` hang over 13 min, not seen again.
-- Tests (green on 024dc51 by logs, on 5c491b8, b7e2b79, 8b6a5af and 7daafac by status): users and addresses, whole-role syntax, unit, backup templates, systemd backup test with dummy services. Nothing tests the whole role on a server.
+- Tests (green on 024dc51 by logs, on 5c491b8, b7e2b79, 8b6a5af, 7daafac and 55b9ac6 by status): users and addresses, whole-role syntax, unit, backup templates, systemd backup test with dummy services. Nothing tests the whole role on a server.
 
 ## CI first
 
