@@ -8,9 +8,9 @@ Make the Kolab version of the role complete and releasable as 3.0.0: working and
 
 ## Current state
 
-Revision at the last update: 4a64f43 on `feature/kolab` (draft pull request #65, work stays on this branch).
+Revision at the last update: e2471bf on `feature/kolab` (draft pull request #65, work stays on this branch).
 
-- CI: the three tests (username and address derivation, whole-role syntax check, unit tests), DevSkim and the executable check passed on eacf254. Super-Linter failed there in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings). The Pylint, shfmt and `aci` fixes are pushed in 4a64f43; their CI run is not read yet. The `varable` typo in `tasks/os/packages.yml`, Prettier and Trivy are still open
+- CI: the three tests (username and address derivation, whole-role syntax check, unit tests), DevSkim and the executable check passed on eacf254. Super-Linter failed there in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings). Since then: the Pylint, shfmt and `aci` fixes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a) and `.trivyignore` (7d4c2d4) are pushed. No CI result for these commits was read yet (the published `lint.log` is still the one of eacf254). The `varable` typo in `tasks/os/packages.yml` is still open
 - tests: only the username and address derivation, the syntax check and the script unit tests exist; nothing tests what the role does on a server (see the high-priority section)
 - backups: read, not fixed and not verified; they count as not working until a backup and a restore ran in a test
 - instructions: `AGENTS.md` no longer copies the shared rules (2cc2922) and has the CI test rule
@@ -43,8 +43,8 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 - [ ] fix the red Super-Linter findings at their cause, from the full `lint.log` on `ci-lint-results` (an automatic summary named files the log does not confirm, so do not follow it blindly):
 - [ ] Pylint `C0415` in `files/misc/ascii_name.py`, shfmt in `files/ldap/extract_user_data_to_migrate.sh` and `tests/mask_log.sh`, codespell `aci`: pushed in 4a64f43, waiting for the CI result
 - [ ] codespell: `varable` in `tasks/os/packages.yml:208` (a comment; the file is long, so check that the diff is exactly one line)
-- [ ] Prettier: 26 YAML files differ from the Prettier style (`defaults/main.yml`, `tasks/dns/delete_dns_record.yml`, `dns_records.yml`, `dyndns.yml`, `poweradmin.yml`, `propagate_dkim_txt_records.yml`, `tasks/backups/main.yml`, `tasks/ldap/main.yml`, `tasks/mail/dkim.yml`, `dmarc.yml`, `imapsync.yml`, `postfixadmin.yml`, `spamassassin.yml`, `user_mail_alias.yml`, `tasks/mariadb/main.yml`, `tasks/httpd/main.yml`, `webdav.yml`, `tasks/misc/ftp.yml`, `mongodb.yml`, `tasks/kolab/main.yml`, `tasks/security/fail2ban.yml`, `ssl.yml`, `tasks/os/main.yml`, `packages.yml`, `tasks/wireguard/main.yml`, `gather_wireguard_config_sections.yml`); needs Prettier itself, not hand edits; decision of the owner how it runs (open decision)
-- [ ] Trivy: `Dockerfile` has DS-0001 (`FROM ...:latest`, medium), DS-0002 (no `USER`, high) and DS-0026 (no `HEALTHCHECK`, low); Checkov already skips the same three with the owner's reasons; decision of the owner whether Trivy gets the same ignores (open decision)
+- [ ] Prettier: the temporary workflow ran the Prettier fixer of Super-Linter once, and the bot commit 652bb7a formatted exactly the 26 files of the lint log (424 additions, 165 deletions; the biggest change is `defaults/main.yml` with 178 additions); waiting for a lint log that shows `YAML_PRETTIER` green; also read the syntax-check test result of that commit, because the change is large
+- [ ] Trivy: `.trivyignore` at the repository root lists DS-0001, DS-0002 and DS-0026 (7d4c2d4, the same three decisions as the Checkov skips); waiting for a lint log that shows `TRIVY` green; it is not known yet that Super-Linter reads the file from the root, and if the three findings are still there, set `ignorefile` in `.github/linters/trivy.yaml`
 - [x] codespell typo in `tasks/mariadb/create_mariadb_schema.yml` fixed (5cac1f6)
 - [x] the three tests passed (15c78c6, eacf254)
 - [ ] read the logs after every push and keep the tests green
@@ -107,9 +107,11 @@ The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in 
 - [x] the natural language linter rejected an all-capitals Ansible, `file name` and `file names` in running text of this file; they are `Ansible`, `filename` and `filenames`
 - [x] line endings: the check passed and the repair job was skipped on e730605 (the files were LF already)
 - [x] editorconfig-checker accepts the files (EDITORCONFIG passed in the log of eacf254)
+- [x] decided by the owner: Prettier is run once by a temporary workflow that uses the Super-Linter fixer, so the Prettier configuration is the same as in the lint job; the workflow `prettier-fix-yaml.yml` was added in 7d4c2d4, ran once (bot commit 652bb7a) and was deleted in e2471bf
+- [x] decided by the owner: Trivy gets the same ignores as Checkov for the three Dockerfile findings (`.trivyignore`, 7d4c2d4)
 - [ ] add indentation and trailing whitespace rules to `.editorconfig` once the existing files are checked
 - [ ] check after the next run: `AIX` in the platforms of `meta/main.yml` (an old warning, ignored as `schema[meta]`), `min_ansible_version` 2.9 is far too old, other aliases in other tasks (`user:`, `db:`, `daemon-reload`)
-- [ ] yamllint only warns (line length over 80, spaces inside braces); decide later if the `.yamllint` rules should follow Prettier
+- [ ] yamllint only warns (line length over 80, spaces inside braces); Prettier now decides the style, so check in the next lint log which of these warnings are left and decide if the `.yamllint` rules should follow Prettier
 
 ### Never pin tool versions
 
@@ -189,8 +191,6 @@ CI tests for every functionality first (high priority above), then LDAP and Post
 ## Open decisions
 
 - how the Kolab mail data (Cyrus mailboxes and mailbox database) is backed up consistently
-- how Prettier is run over the 26 YAML files (a temporary workflow that runs `prettier --write` and commits, or locally by the owner)
-- whether Trivy gets the same ignores as Checkov for the three Dockerfile findings
 - the shared rule to lint with a pinned Super-Linter image against the rule here to never pin anything
 - where the long-term items go when this file is deleted (for example the Horde to Kolab migration plan and the address scheme work, if they are not finished before the merge): `README.md`, issues, or finish them first
 
@@ -206,4 +206,4 @@ CI tests for every functionality first (high priority above), then LDAP and Post
 
 ## Resume prompt
 
-In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. Read the CI logs for the head commit (`ci-results` and `ci-lint-results`), then work through the high-priority section first: build the converge workflow and one CI test per functional area, and before every commit name the functionality it changes and the test that covers it. Then fix the open Super-Linter findings, work through the other open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
+In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. Read the CI logs for the head commit (`ci-results` and `ci-lint-results`) and check that `YAML_PRETTIER` and `TRIVY` are green now, then work through the high-priority section first: build the converge workflow and one CI test per functional area, and before every commit name the functionality it changes and the test that covers it. Then fix the open Super-Linter findings, work through the other open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
