@@ -25,7 +25,7 @@ jobs:
   tests:
     name: ${{ matrix.title }} on AlmaLinux 8
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -109,7 +109,7 @@ jobs:
   systemd:
     name: Backups and restores in a systemd container on AlmaLinux 8
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - name: Check out the repository
         uses: actions/checkout@main
