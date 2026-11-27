@@ -51,6 +51,9 @@ Mailserver suite on RPM-based distros
     opendmarc_backup_path # path to the tarball containing OpenDMARC backups
     vsftpd_backup_path # path to the tarball containing backups of user home FTP directory contents
     ssl_backup_path # path to the tarball containing SSL-related backups
+    kolab_backup_path # path to the tarball containing Kolab configuration backups
+    cyrus_imap_backup_path # path to the tarball containing Cyrus IMAP configuration backups
+    cyrus_imap_data_backup_path # path to the tarball containing Cyrus IMAP data backups (mailbox list database, sieve scripts, quotas and messages)
     postfix_backup_path # path to the tarball containing Postfix backups
     pdns_backup_path # path to the tarball containing PowerDNS backups
     wg_vpn_backup_path # path to the tarball containing WireGuard backups
@@ -66,6 +69,8 @@ Mailserver suite on RPM-based distros
     family_mode: yes # boolean if users would be identified only by given name (assuming the surname is identical)
     default_surname: Doe # used in family mode so adding users via the role don't need surname to be added
     mailserver_no_log: true # set to false only with test data: shows the output of the tasks that derive the usernames
+
+The variables that select a backup to restore are named after the backup: `<name>_backup_path`, with the hyphens of the backup name replaced by underscores. For example, the backup `cyrus-imap-data` is restored from `cyrus_imap_data_backup_path`.
 
 ## Usernames
 

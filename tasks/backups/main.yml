@@ -124,7 +124,7 @@
     - wg_vpn
 - name: Restore backups
   tags: restore
-  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or imap_backup_path is defined or imap_data_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
+  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or cyrus_imap_backup_path is defined or cyrus_imap_data_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
   block:
     - name: Prepare MariaDB backup
       when: mariadb_backup_path is defined
@@ -191,17 +191,17 @@
       register: start_ldap_server
       changed_when: start_ldap_server.rc == 0
     - name: Restore the Cyrus configuration backup
-      when: imap_backup_path is defined
+      when: cyrus_imap_backup_path is defined
       ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
         service: cyrus-imapd
-        service_backup_path: "{{ imap_backup_path }}"
+        service_backup_path: "{{ cyrus_imap_backup_path }}"
     - name: Restore the Cyrus mailbox data backup
-      when: imap_data_backup_path is defined
+      when: cyrus_imap_data_backup_path is defined
       ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
         service: cyrus-imapd
-        service_backup_path: "{{ imap_data_backup_path }}"
+        service_backup_path: "{{ cyrus_imap_data_backup_path }}"
     - name: Restore service tarball backups
       ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
