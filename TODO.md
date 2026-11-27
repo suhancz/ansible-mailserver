@@ -8,7 +8,7 @@ Format (owner, 2026-11-27; shared rule of `ai-agent-config`, PR #16): as few wor
 
 ## Summary
 
-- Items: done 45, in progress 13, to do 78 (136 in total)
+- Items: done 46, in progress 12, to do 79 (137 in total)
 - Categories: done 0, in progress 7, not started 2
 
 ## Goal
@@ -17,8 +17,8 @@ Kolab role complete and releasable as 3.0.0: tested backups and restore, no copi
 
 ## Current state
 
-- Head before this commit: 00b2209 (owner decisions and PR #18 recorded). Earlier: 55b9ac6 (CI of 7daafac and sizes recorded), 7daafac (split item recorded), 8b6a5af (split into index and `todo/`), b7e2b79, 5c491b8, 024dc51, 9a92cab, 95c24ca, 43e8b42, c973397, 507056c, bd51374, c8187f5, a1aedd8 (Kolab versions restored after merge 7effafb of `main` 2.6.3), c57b4b9. Branch not behind `main`.
-- CI of 00b2209 (2026-11-27): all 16 checks done and green, 2 repair jobs skipped (logs not read). Details in the CI file.
+- Head before this commit: 257a908 (PR #19 and CI of 00b2209 recorded). Earlier: 00b2209 (owner decisions and PR #18 recorded), 55b9ac6 (CI of 7daafac and sizes recorded), 7daafac (split item recorded), 8b6a5af (split into index and `todo/`), b7e2b79, 5c491b8, 024dc51, 9a92cab, 95c24ca, 43e8b42, c973397, 507056c, bd51374, c8187f5, a1aedd8 (Kolab versions restored after merge 7effafb of `main` 2.6.3), c57b4b9. Branch not behind `main`.
+- CI of 257a908 (2026-11-27): all 16 checks done and green, 2 repair jobs skipped; the four test logs are read (success). Details in the CI file.
 - Backups pass only with dummy services; the ten services that failed on the server built from `main` are not yet shown fixed on a server. In progress, not working.
 - `main`: Dovecot and Horde backup fixes merged as #66 (2.6.3, 2f56b83). `ai-agent-config`: terse rule (PR #15), the small-files and category-split rule (PR #16, 75a8b76), the split of `all-agents.instructions.md` (PR #17, d2147a0), the Super-Linter lessons in the shared memory (PR #18, b84aaa9) and Super-Linter `latest` (PR #19, 29bd253) are merged; the runs on its `main` are not read.
 - Owner rules: every commit carries its update of these files; marks as above; tests by the order below.
@@ -28,10 +28,10 @@ Kolab role complete and releasable as 3.0.0: tested backups and restore, no copi
 State in progress, done 4, in progress 0, to do 17:
 [tests: a CI test per change, area tests](todo/tests.md)
 
-State in progress, done 6, in progress 2, to do 4:
+State in progress, done 7, in progress 1, to do 4:
 [ci: CI first, test containers, timeouts](todo/ci.md)
 
-State in progress, done 13, in progress 1, to do 12:
+State in progress, done 13, in progress 1, to do 13:
 [lint: Super-Linter, wording, pins, Trivy, modules, executables](todo/lint.md)
 
 State in progress, done 6, in progress 9, to do 6:

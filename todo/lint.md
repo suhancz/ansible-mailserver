@@ -20,6 +20,7 @@ Owner rule (2026-11-27): when the linter fails, read [lint.log](https://github.c
 - [ ] add indentation and trailing whitespace rules to `.editorconfig` after checking existing files
 - [ ] check after the next run: `AIX` in `meta/main.yml` platforms (ignored as `schema[meta]`), `min_ansible_version` 2.9 far too old, other aliases (`user:`, `db:`, `daemon-reload`)
 - [ ] yamllint only warns (line length over 80, braces spacing, indentation of `defaults/main.yml` and flow-style items in `tasks/backups/main.yml`); Prettier decides style; decide whether `.yamllint` should follow Prettier
+- [ ] `ansible-core` warns `Found variable using reserved name 'port'` for five tasks (`tasks/dns/main.yml:5`, `tasks/misc/ftp.yml:5`, `tasks/httpd/main.yml:11`, `tasks/mail/postfix.yml:17`, `tasks/wireguard/main.yml:25`), seen in `test-role.log` of 257a908; the `# noqa var-naming[no-reserved]` comments only silence `ansible-lint`; rename the variable that `tasks/security/firewall.yml` reads (and its five callers), add a CI check that the syntax check prints no warning
 
 ## Never pin tool versions
 
@@ -44,5 +45,5 @@ Owner decision (2026-11-27): keep `latest` and adjust the linters when a new ver
 ## Canonical module names
 
 - [x] `mysql_db`, `mysql_user`, `mysql_query`, `collections/requirements.yml`, `meta/main.yml` use `ansible.mysql` (`fqcn[canonical]` was real, 20 tasks)
-- [ ] `ansible.mysql` 6.0.0 drops MariaDB support for `ansible.mariadb` (`mariadb_db`, `mariadb_user`, `mariadb_query`); plan the move before it arrives
-- [ ] check `ansible.posix`, `community.general`, `community.crypto`, `community.dns` for renames or deprecated redirects in the next lint log
+- [ ] `ansible.mysql` 6.0.0 drops MariaDB support for `ansible.mariadb` (`mariadb_db`, `mariadb_user`, `mariadb_query`); plan the move before it arrives (CI of 257a908 installed 5.2.1, the newest it found)
+- [ ] check `ansible.posix`, `community.general`, `community.crypto`, `community.dns` for renames or deprecated redirects in the next lint log (CI of 257a908 installed 2.2.2, 14.0.1, 3.6.0 and 4.3.1; the syntax check printed no deprecation warning)
