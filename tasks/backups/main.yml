@@ -25,6 +25,17 @@
     opts: map=root/apache:@root/@apache,perms=u=rwX:g=rwX,
     state: mounted
     fstype: fuse.bindfs
+- name: Create the MariaDB backup option file
+  ansible.builtin.copy:
+    dest: /etc/mariabackup.cnf
+    content: |
+      [mariabackup]
+      user=mariabackup
+      password="{{ mariabackup_password }}"
+    owner: root
+    group: root
+    mode: u=rw,go=
+  no_log: "{{ mailserver_no_log | default(true) }}"
 - name: Create systemd tarball backup services
   ansible.builtin.template:
     src: "systemd/tarball-backup.service.j2"
@@ -199,6 +210,7 @@
       register: start_ldap_server
       changed_when: start_ldap_server.rc == 0
     - name: Restore service tarball backups
+      when: imap_backup_path is defined
       ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
         service: cyrus-imap

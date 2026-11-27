@@ -1,0 +1,110 @@
+---
+# Tests for the systemd templates of the backups (templates/systemd). The
+# templates are rendered with test data and the result is checked: the services
+# must be oneshot services without RemainAfterExit, the retention must run after
+# the new backup is written and must never match the backup directory itself,
+# the MariaDB password must not be in the unit file, and the timers belong to
+# timers.target. Run it from the root of the repository:
+#   ansible-playbook -i case_backups, -c local tests/backup_templates.yml
+- name: Render and check the systemd templates of the backups
+  hosts: case_backups
+  connection: local
+  gather_facts: false
+  vars:
+    mariabackup_password: not-a-real-password
+    mailserver_domain: example.com
+    users:
+      - name: bob
+    template_dir: "{{ playbook_dir }}/../templates/systemd"
+    render_dir: /tmp/backup-templates
+  tasks:
+    - name: Create the directory for the rendered files
+      ansible.builtin.file:
+        path: "{{ render_dir }}"
+        state: directory
+        mode: u=rwx
+    - name: Render the tarball service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/tarball-backup.service.j2"
+        dest: "{{ render_dir }}/tarball.service"
+        mode: u=rw,og=r
+      vars:
+        item:
+          name: cyrus-imap
+          paths:
+            - /etc/imap
+            - /etc/cyrus-imap
+          service: true
+    - name: Render the MariaDB service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/mariadb-backup.service.j2"
+        dest: "{{ render_dir }}/mariadb.service"
+        mode: u=rw,og=r
+    - name: Render the LDAP service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/ldap-backup.service.j2"
+        dest: "{{ render_dir }}/ldap.service"
+        mode: u=rw,og=r
+    - name: Render the FTP service
+      ansible.builtin.template:
+        src: "{{ template_dir }}/vsftpd-backup.service.j2"
+        dest: "{{ render_dir }}/vsftpd.service"
+        mode: u=rw,og=r
+    - name: Render the timer
+      ansible.builtin.template:
+        src: "{{ template_dir }}/backup.timer.j2"
+        dest: "{{ render_dir }}/backup.timer"
+        mode: u=rw,og=r
+      vars:
+        item: mariadb
+    - name: Check the tarball service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/tarball.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'--ignore-failed-read' in unit"
+          - "'-mindepth 1' in unit"
+          - "'/etc/imap* /etc/cyrus-imap*' in unit"
+          - "'Requires=cyrus-imap.service' in unit"
+          - "unit.index('tar cjvf') < unit.index('/usr/bin/find')"
+    - name: Check the MariaDB service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/mariadb.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'-mindepth 1' in unit"
+          - "'--defaults-extra-file=/etc/mariabackup.cnf' in unit"
+          - "'not-a-real-password' not in unit"
+          - "'--password' not in unit"
+          - "unit.index('mariabackup --defaults') < unit.index('/usr/bin/find')"
+    - name: Check the LDAP service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/ldap.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'-mindepth 1' in unit"
+          - "unit.index('backup create') < unit.index('/usr/bin/find')"
+    - name: Check the FTP service
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/vsftpd.service') }}"
+      ansible.builtin.assert:
+        that:
+          - "'Type=oneshot' in unit"
+          - "'RemainAfterExit' not in unit"
+          - "'-mindepth 1' in unit"
+          - "'/home/bob/ftp' in unit"
+          - "unit.index('tar cjvf') < unit.index('/usr/bin/find')"
+    - name: Check the timer
+      vars:
+        unit: "{{ lookup('ansible.builtin.file', render_dir ~ '/backup.timer') }}"
+      ansible.builtin.assert:
+        that:
+          - "'WantedBy=timers.target' in unit"
+          - "'basic.target' not in unit"
+          - "'Unit=mariadb-backup.service' in unit"

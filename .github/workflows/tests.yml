@@ -54,6 +54,14 @@ jobs:
               microdnf -y install python3.12 python3.12-pip
               python3.12 -m pip install --upgrade pip Unidecode
               python3.12 -m unittest discover -s tests -v
+          - name: backups
+            title: Backup service templates
+            script: |
+              microdnf -y install python3.12 python3.12-pip
+              python3.12 -m pip install --upgrade pip ansible-core
+              ansible-playbook -v -i case_backups, -c local \
+                -e ansible_python_interpreter=/usr/bin/python3.12 \
+                tests/backup_templates.yml
     steps:
       - name: Check out the repository
         uses: actions/checkout@main

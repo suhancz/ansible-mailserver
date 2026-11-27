@@ -8,12 +8,12 @@ Make the Kolab version of the role complete and releasable as 3.0.0: working and
 
 ## Current state
 
-Revision at the last update: 3dbf835 on `feature/kolab` (draft pull request #65, work stays on this branch).
+Revision at the last update: f92d77d plus the commit that fixes the backup services (on `feature/kolab`, draft pull request #65, work stays on this branch). The CI of both commits has not been read yet.
 
-- CI: the pull request run of 3dbf835 is green. The lint job reports success (a full run that includes the YAML files; only yamllint warnings remain) and all tests pass (username and address derivation, whole-role syntax check, unit tests). Earlier, Super-Linter had failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings); the fixes are the Pylint, shfmt and `aci` changes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4), the typo fix in `tasks/os/packages.yml` (c44c463) and the code spans for linter names in this file (3dbf835). The success is the overall result of the job; the per-linter result table was cut off in the fetched log, so no single linter line was read
-- tests: only the username and address derivation, the syntax check and the script unit tests exist; nothing tests what the role does on a server (see the high-priority section)
-- backups: read, not fixed and not verified; they count as not working until a backup and a restore ran in a test
-- instructions: `AGENTS.md` no longer copies the shared rules (2cc2922) and has the CI test rule
+- CI: the pull request run of 3dbf835 is green. The lint job reports success (a full run that includes the YAML files; only yamllint warnings remain) and all tests pass (username and address derivation, whole-role syntax check, unit tests). Earlier, Super-Linter had failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings); the fixes are the Pylint, shfmt and `aci` changes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4), the typo fix in `tasks/os/packages.yml` (c44c463) and the code spans for linter names in this file (3dbf835). The success is the overall result of the job; the per-linter result table was cut off in the fetched log, so no single linter line was read. The new fourth test (backup service templates) has not run yet
+- tests: the username and address derivation, the syntax check, the script unit tests and the new check of the backup templates exist; nothing tests what the role does on a server (see the high-priority section)
+- backups: the systemd templates are fixed (oneshot services, retention after the new backup, `timers.target`, option file for the MariaDB password, tolerant `tar`) and tested by rendering them in CI; nothing has run on a server, so the backups count as not working until a backup and a restore ran in a test
+- instructions: `AGENTS.md` no longer copies the shared rules (2cc2922), has the CI test rule and the work-status rule for this file
 
 ## Remaining steps
 
@@ -22,6 +22,7 @@ Revision at the last update: 3dbf835 on `feature/kolab` (draft pull request #65,
 Rule of the owner (2026-11-27): every change of what the server does gets a CI test in the same commit, and this is checked every time before a commit is prepared (the rule is in `AGENTS.md`). A gap is never hidden: it is named in the commit message and listed here.
 
 - [ ] before every commit: name the functionality the commit changes and the test that covers it; add the test or the gap to this list
+- [ ] gap of the backup commit: the task that writes `/etc/mariabackup.cnf`, the `when` guard of the Cyrus restore and the real behaviour of the services (two runs in a row, restore) are not tested until the converge test exists
 - [ ] build the converge workflow (a new file `.github/workflows/converge.yml`, or new entries in `tests.yml`): a systemd-enabled AlmaLinux 8 container (the `Dockerfile` already uses the `8-init` image) that runs the role in stages and publishes the masked logs like the existing tests do (`ci-results` branch); stages: OS and packages, LDAP, MariaDB, Postfix, Kolab, then the rest
 - [ ] run the converge twice and fail on any change in the second run (idempotence)
 - [ ] one test per functional area; each box closes when the test runs green in CI:
@@ -34,10 +35,11 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 - [ ] test: DNS and DynDNS (`tasks/dns`)
 - [ ] test: WireGuard (`tasks/wireguard`)
 - [ ] test: FTP, fail2ban, firewall, AIDE and antivirus (`tasks/misc`, `tasks/security`)
-- [ ] test: backups and restore (see the Kolab backup section; this one comes first because the backups do not work)
+- [ ] test: backups and restore on a running systemd (see the Kolab backup section; this one comes first because the backups never ran on a server)
 - [ ] test: the Horde to Kolab migration on a prepared Horde sample
 - [ ] test: the redirects of the old Horde URLs (web, CalDAV, CardDAV, push and the other client URLs) to Kolab (see the section about the switch from Horde to Kolab)
 - [x] existing: username and address derivation, whole-role syntax check, unit tests of `files/misc/ascii_name.py` (`tests.yml`)
+- [x] new: render and check the systemd templates of the backups (`tests/backup_templates.yml`, entry _Backup service templates_ in `tests.yml`); it must be read green in CI once
 
 ### CI first
 
@@ -46,6 +48,7 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 - [x] codespell: the typo in the comment at `tasks/os/packages.yml:208` is fixed in c44c463 (one word changed); this file describes it without the misspelled word; green in the pull request run of 3dbf835
 - [x] Prettier: the temporary workflow ran the Prettier fixer of Super-Linter once, and the bot commit 652bb7a formatted exactly the 26 files of the lint log (424 additions, 165 deletions); the lint job of the pull request run of 3dbf835 succeeded with the YAML files included, and the syntax-check test passed after the reformat
 - [x] Trivy: `.trivyignore` at the repository root lists DS-0001, DS-0002 and DS-0026 (7d4c2d4, the same three decisions as the Checkov skips); the lint job of 3dbf835 succeeded, so the three findings do not come back
+- [ ] read the CI of f92d77d and of the backup commit (the new test file `tests/backup_templates.yml` is linted by the Ansible linter for the first time, and the new templates and `tasks/backups/main.yml` are linted again)
 - [ ] optional check: read the Super-Linter result table of the next full lint log once, to see each linter line (the fetched log was cut off before it)
 - [x] codespell typo in `tasks/mariadb/create_mariadb_schema.yml` fixed (5cac1f6)
 - [x] the three tests passed (15c78c6, eacf254, c44c463, 813194b, 11115ea, 3dbf835)
@@ -53,16 +56,18 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 
 ### Kolab backup and restore
 
-The backups did not work on the old Horde setup (`main`) and have to work on Kolab. A read of `tasks/backups/main.yml` and `templates/systemd/` found the points below; none is fixed or verified yet. The test for them is the first item of the high-priority section.
+The backups did not work on the old Horde setup (`main`) and have to work on Kolab. A read of `tasks/backups/main.yml` and `templates/systemd/` found the points below. The points marked done are fixed in the templates and checked by rendering them in CI; none is verified on a running server. The test for that is the converge test of the high-priority section.
 
-- [ ] the timer services use `Type=forking` with `RemainAfterExit=yes`: a finished service stays active, and starting an active service does nothing, so the daily timer probably never runs it a second time; use `Type=oneshot` without `RemainAfterExit` and test that two runs in a row both write a backup
-- [ ] retention: `find /backup/<name>/ -maxdepth 1 -mtime +7 -exec rm -rf {} \;` also matches the backup directory itself when nothing new was written for seven days; add `-mindepth 1` and never remove the newest backup
-- [ ] the backup timers are wanted by `basic.target`; use `timers.target`
-- [ ] the MariaDB backup service has the password on the command line of a unit file that every user can read (`mode: u=rw,og=r`); move it to an option file that only root can read
-- [ ] the tarball command appends `*` to every path, and a pattern that matches nothing makes `tar` fail (for example when only one of the two Cyrus configuration directories exists); check the paths on a real Kolab installation
+- [x] the timer services used `Type=forking` with `RemainAfterExit=yes`; they are `Type=oneshot` without `RemainAfterExit` now, so the daily timer can start them again every day (run twice in a row on a server: still to test)
+- [x] retention: the old backups are removed after the new backup is written, with `-mindepth 1`, so the backup directory itself is never matched and the newest backup survives a pause
+- [x] the backup timers are wanted by `timers.target`
+- [x] the MariaDB backup password moved from the readable unit file to `/etc/mariabackup.cnf` (mode `u=rw,go=`, written by a task with `no_log`); still to check: the restore commands (`mariabackup --prepare` and `--copy-back`) need no password
+- [x] the tarball command uses `--ignore-failed-read`, so a path pattern that matches nothing (for example one of the two Cyrus configuration directories) no longer fails the backup; check the real paths on a Kolab installation
 - [ ] the Cyrus archive holds the configuration only (`/etc/imap`, `/etc/cyrus-imap`), not the mailboxes and not the mailbox database; the Dovecot maildir archive of Postfix (`/var/vmail`) does not apply to Kolab; decide how to back up the mail data consistently (open decision)
-- [ ] the tarball services require `<name>.service`, so `cyrus-imap.service` has to exist; check the real unit name of the Cyrus server on Kolab (probably `cyrus-imapd`) and the names of the other units
-- [ ] restore: the task for `cyrus-imap` has no `when` and reads `imap_backup_path`, while the other tarballs use `<name>_backup_path`; guard it, use one naming scheme and document it in `README.md`
+- [ ] the tarball service of Cyrus requires `cyrus-imap.service`, and the restore stops and starts `cyrus-imap`; check the real unit name of the Cyrus server on Kolab (probably `cyrus-imapd`) and the names of the other units, then change both places
+- [x] restore: the task for `cyrus-imap` only runs when `imap_backup_path` is defined
+- [ ] restore: use one naming scheme for the backup path variables (the Cyrus one is `imap_backup_path`, the others are `<name>_backup_path`) and document it in `README.md`
+- [ ] the `kolab` tarball has no service unit, but the restore stops and starts a unit named `kolab`; check that this unit exists
 - [ ] add a CI test in a systemd-enabled AlmaLinux 8 container: run every backup service twice, restore into a fresh container, and compare a test mailbox, the MariaDB data and the LDAP data; the backups stay marked as not verified until that test passed
 - [ ] confirm that the Kolab- and Cyrus-related backups work (this item was in the original list)
 
@@ -71,8 +76,8 @@ The backups did not work on the old Horde setup (`main`) and have to work on Kol
 - [x] copies of the shared rules removed from `AGENTS.md` (2cc2922)
 - [x] decided: this file is deleted before pull request #65 is merged
 - [x] `AGENTS.md` rule for a CI test with every change of functionality added
-- [ ] update the `TODO.md` rule in `AGENTS.md` to match: keep this file in the work-status format while the work is open, update it in every commit, delete it in the last commit before the merge
-- [ ] read the workflows and the comments in the tasks and templates for more copies of the shared rules (the first read of `linter.yml` and `tests.yml` failed)
+- [x] the `TODO.md` rule in `AGENTS.md` matches this file now (work-status format, update in every commit, delete before the merge)
+- [ ] read the workflows and the comments in the tasks and templates for more copies of the shared rules (the first read of `linter.yml` and `tests.yml` failed; `tests.yml` was read since and has none)
 - [ ] remove the copies in the working rules below once the open decisions are settled
 - [ ] the shared rules ask for timestamps in every message and for a completion report by email; neither is done in this work so far
 
@@ -96,9 +101,10 @@ The backups did not work on the old Horde setup (`main`) and have to work on Kol
 
 ### All tests in CI containers
 
-The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, and the unit tests of `files/misc/ascii_name.py`. The logs are `test-users.log`, `test-role.log` and `test-unit.log` on the `ci-results` branch. The converge test is the first item of the high-priority section.
+The workflow `.github/workflows/tests.yml` (name _Tests_) runs four entries in an AlmaLinux 8 container: the username and address derivation, `ansible-playbook --syntax-check` of the whole role with the latest collections, the unit tests of `files/misc/ascii_name.py`, and the rendering check of the backup service templates. The logs are `test-users.log`, `test-role.log`, `test-unit.log` and `test-backups.log` on the `ci-results` branch. The converge test is the first item of the high-priority section.
 
-- [x] all three entries and the log publishing pass (15c78c6, eacf254, c44c463, 813194b, 11115ea, 3dbf835)
+- [x] the first three entries and the log publishing pass (15c78c6, eacf254, c44c463, 813194b, 11115ea, 3dbf835)
+- [ ] the fourth entry (backup service templates) has to be read green once
 - [ ] add a converge test: a systemd-enabled AlmaLinux 8 container that runs the OS and LDAP parts of the role (`tasks/os`, `tasks/ldap`), then Postfix and finally the Kolab installation
 - [ ] check idempotence by running the converge twice
 
@@ -113,7 +119,7 @@ The workflow `.github/workflows/tests.yml` (name _Tests_) runs three entries in 
 - [x] editorconfig-checker accepts the files (EditorConfig passed in the logs of eacf254 and cb9e339)
 - [x] decided by the owner: Prettier is run once by a temporary workflow that uses the Super-Linter fixer, so the Prettier configuration is the same as in the lint job; the workflow `prettier-fix-yaml.yml` was added in 7d4c2d4, ran once (bot commit 652bb7a) and was deleted in e2471bf
 - [x] decided by the owner: Trivy gets the same ignores as Checkov for the three Dockerfile findings (`.trivyignore`, 7d4c2d4)
-- [ ] the excerpt at the top of `lint.log` stops after 300 lines and the yamllint warnings fill it, so errors of later linters are cut off; match only errors and failures there, or put the Super-Linter result table first
+- [ ] the excerpt at the top of `lint.log` stops after 300 lines and the yamllint warnings fill it, so errors of later linters are cut off; match only errors and failures there, or put the Super-Linter result table first (the lint workflow `linter.yml` has to be read first)
 - [ ] add indentation and trailing whitespace rules to `.editorconfig` once the existing files are checked
 - [ ] check after the next run: `AIX` in the platforms of `meta/main.yml` (an old warning, ignored as `schema[meta]`), `min_ansible_version` 2.9 is far too old, other aliases in other tasks (`user:`, `db:`, `daemon-reload`)
 - [ ] yamllint only warns (line length over 80, spaces inside braces, and the indentation rule on `defaults/main.yml`, still listed in the run of 3dbf835); Prettier now decides the style, so decide if the `.yamllint` rules should follow Prettier
@@ -190,7 +196,7 @@ Goal: normal users get `givenname.surname@domain`, family domains give `givennam
 
 - [x] `AGENTS.md` sends every agent to the `ai-agent-config` repository and lists the rules of this repository
 - [x] decided: squash the commits of a branch into one commit before the pull request is merged
-- [x] decided: this file is removed before the pull request is merged (see Instruction cleanup for the remaining edit)
+- [x] decided: this file is removed before the pull request is merged
 
 ## Order of the owner
 
@@ -214,4 +220,4 @@ CI tests for every functionality first (high priority above), then LDAP and Post
 
 ## Resume prompt
 
-In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. The CI of 3dbf835 is green; read the CI logs for the head commit (`ci-results` and `ci-lint-results`) and keep them green. Then work through the high-priority section first: build the converge workflow and one CI test per functional area, and before every commit name the functionality it changes and the test that covers it. Then work through the other open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
+In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. Read the CI logs for the head commit (`ci-results` and `ci-lint-results`), including the new test _Backup service templates_ (`test-backups.log`), and keep them green. Then work through the high-priority section first: build the converge workflow and one CI test per functional area, and before every commit name the functionality it changes and the test that covers it. Then work through the other open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
