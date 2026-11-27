@@ -1,3 +1,4 @@
+---
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
@@ -5,13 +6,15 @@
 
 name: DevSkim
 
-on:
+permissions: {}
+
+on: # yamllint disable-line rule:truthy
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   schedule:
-    - cron: '43 15 * * 2'
+    - cron: "43 15 * * 2"
 
 jobs:
   lint:
@@ -24,9 +27,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@main
+        with:
+          persist-credentials: false
 
       - name: Run DevSkim scanner
-        uses: microsoft/DevSkim-Action@v1
+        uses: microsoft/DevSkim-Action@main
         with:
           exclude-rules: DS126858,DS137138,DS162092,DS169125,DS169126
 
