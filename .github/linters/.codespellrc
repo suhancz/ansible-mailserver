@@ -1,3 +1,4 @@
 [codespell]
 # te: SELinux type enforcement file (httpd.te in a comment of tasks/httpd/main.yml)
-ignore-words-list = te
+# aci: LDAP access control instruction attribute (templates/ldap/fix_domain_aci.ldif.j2)
+ignore-words-list = te,aci

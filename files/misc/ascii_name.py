@@ -152,6 +152,8 @@ def ascii_name(value, unidecode):
 def main():
     """Read the JSON string argument and print its ASCII version."""
     try:
+        # Optional dependency: a missing package gets a clear message below.
+        # pylint: disable-next=import-outside-toplevel
         from unidecode import unidecode
     except ImportError:
         sys.stderr.write(

@@ -5,7 +5,7 @@
 set -euo pipefail
 
 sed -E -f <(
-  cat <<'EOF'
+	cat <<'EOF'
 s#(Bearer|Basic)[[:space:]]+[A-Za-z0-9._~+/=-]+#\1 ***#Ig
 s#("?([A-Za-z_]*(pass(word|wd|phrase)?|secret|token|api[_-]?key|private[_-]?key|privatekey|psk|authorization|credentials?|bind_pw))"?[[:space:]]*[:=][[:space:]]*)("[^"]*"|'[^']*'|[^[:space:],}]+)#\1"***"#Ig
 s#(://)[^/@[:space:]]+@#\1***@#g
