@@ -10,7 +10,6 @@ List of things not implemented yet, but planned
 - set up SSL for Cyrus
 - set up DKIM for Cyrus
 - set up DMARC for Cyrus
-- confirm Kolab- and Cyrus-related backups working
 - clean up code (and enable VALIDATE_JSCPD in <.github/workflows/linter.yml>)
 
 ## Working rules of the owner
@@ -28,6 +27,22 @@ List of things not implemented yet, but planned
 
 ## In progress
 
+- **Kolab backup and restore** (started in the commit that adds this entry): the backups did not work on the old Horde setup (`main`) and have to work on Kolab. A read of `tasks/backups/main.yml` and `templates/systemd/` found the points below. None of them is fixed or verified yet, and the backups count as not working until a backup and a restore ran in a test. Work on this stays on `feature/kolab`. Next steps:
+  - read the lint log first (the rule is to fix what is red before new work): the Super-Linter run on 5cac1f6 failed in Trivy only (3 findings, 1 low, 1 medium, 1 high; the lines of `lint.log` that name them were cut off when it was read, so read them in the full file); the earlier pull request run on 2cc2922 also listed the Python linter, the shell formatter and the spell checker (the typo is fixed in 5cac1f6); an automatic summary named YAML formatting findings and a shell script that the log does not confirm, so find the real files and lines in the next pull request lint run
+  - the services of the timers use `Type=forking` with `RemainAfterExit=yes`: a finished service stays active, and starting an active service does nothing, so the daily timer probably never runs it a second time; use `Type=oneshot` without `RemainAfterExit` and test that two runs in a row both write a backup
+  - retention: `find /backup/<name>/ -maxdepth 1 -mtime +7 -exec rm -rf {} \;` also matches the backup directory itself when nothing new was written for seven days; add `-mindepth 1` and never remove the newest backup
+  - the backup timers are wanted by `basic.target`; use `timers.target`
+  - the MariaDB backup service has the password on the command line of a unit file that every user can read (`mode: u=rw,og=r`); move it to an option file that only root can read
+  - the tarball command appends `*` to every path, and a pattern that matches nothing makes `tar` fail (for example when only one of the two Cyrus configuration directories exists); check the paths on a real Kolab installation
+  - the Cyrus archive holds the configuration only (`/etc/imap`, `/etc/cyrus-imap`), not the mailboxes and not the mailbox database; the Dovecot maildir archive of Postfix (`/var/vmail`) does not apply to Kolab; the owner decides how to back up the mail data consistently (open question)
+  - the tarball services require `<name>.service`, so `cyrus-imap.service` has to exist; check the real unit name of the Cyrus server on Kolab (it is probably `cyrus-imapd`) and the names of the other units
+  - restore: the task for `cyrus-imap` has no `when` and reads `imap_backup_path`, while the other tarballs use `<name>_backup_path`; guard it and use one naming scheme (document it in `README.md`)
+  - add a CI test in a systemd-enabled AlmaLinux 8 container: run every backup service twice, restore into a fresh container, and compare a test mailbox, the MariaDB data and the LDAP data; mark the result as not verified until that test passed
+- **Instruction cleanup** (started in 2cc2922): the rules that `AGENTS.md` copied from the shared instructions were removed there (loading, privacy, CI summaries, squash). Next steps:
+  - read the workflows and the comments in the tasks and templates for more copies of the shared rules (the first read of `linter.yml` and `tests.yml` failed)
+  - remove the copies in the working rules of this file once the owner decided the questions below
+  - open questions for the owner: the shared rule to lint with a pinned Super-Linter image against the rule here to never pin anything; keep this file in every commit against removing the status file before the pull request (see the entry _Agent instructions_); how the Kolab mail data is backed up
+  - keep working on `feature/kolab` and keep this file current until everything here is done
 - **Canonical module names** (started in the commit that renames `community.mysql` to `ansible.mysql`): the documentation says that `community.mysql` was renamed to `ansible.mysql` and that the old names are deprecated redirects, so `fqcn[canonical]` was a real finding (20 tasks). All `mysql_db`, `mysql_user` and `mysql_query` tasks, `collections/requirements.yml` and `meta/main.yml` use `ansible.mysql` now. An earlier statement of the assistant that this collection does not exist was wrong. Next steps:
   - `ansible.mysql` 6.0.0 will drop MariaDB support and move it to the `ansible.mariadb` collection (`mariadb_db`, `mariadb_user`, `mariadb_query`); this role runs MariaDB, so plan the move before 6.0.0 arrives
   - check the other collections (`ansible.posix`, `community.general`, `community.crypto`, `community.dns`) for renames or deprecated redirects in the next lint log
