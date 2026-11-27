@@ -15,6 +15,7 @@
     - /backup/ssl
     - /backup/kolab
     - /backup/cyrus-imap
+    - /backup/cyrus-imap-data
     - /backup/postfix
     - /backup/pdns
     - /var/www/webdav/.backup
@@ -55,12 +56,27 @@
         paths: ["/etc/opendmarc", "/etc/opendmarc.conf"],
         service: True,
       }
-    - { name: "kolab", paths: ["/etc/kolab"] }
-    - {
-        name: "cyrus-imap",
-        paths: ["/etc/imap", "/etc/cyrus-imap"],
-        service: True,
-      }
+    - name: kolab
+      paths:
+        - /etc/kolab
+        - /etc/roundcubemail
+        - /etc/iRony
+        - /etc/kolab-freebusy
+    - name: cyrus-imap
+      paths:
+        - /etc/imapd.conf
+        - /etc/cyrus.conf
+        - /etc/imap
+        - /etc/cyrus-imap
+      unit: cyrus-imapd
+      service: true
+    - name: cyrus-imap-data
+      paths:
+        - /var/lib/imap
+        - /var/spool/imap
+      unit: cyrus-imapd
+      service: true
+      mboxlist_dump: true
     # - { name: "postfix", paths: ["/etc/postfix", "/etc/mail/postfixadmin", "/var/vmail"], service: True }
     - { name: "postfix", paths: ["/etc/postfix", "/var/vmail"], service: True }
     - { name: "ssl", paths: ["/etc/letsencrypt"] }
@@ -99,6 +115,7 @@
     - ssl
     - kolab
     - cyrus-imap
+    - cyrus-imap-data
     - postfix
     - pdns
     - wg_vpn
@@ -117,6 +134,7 @@
     - ssl
     - kolab
     - cyrus-imap
+    - cyrus-imap-data
     - postfix
     - pdns
     - wg_vpn
@@ -135,12 +153,13 @@
     - ssl
     - kolab
     - cyrus-imap
+    - cyrus-imap-data
     - postfix
     - pdns
     - wg_vpn
 - name: Restore backups
   tags: restore
-  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or imap_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
+  when: mariadb_backup_path is defined or ldap_backup_path is defined or opendkim_backup_path is defined or opendmarc_backup_path is defined or vsftpd_backup_path is defined or ssl_backup_path is defined or kolab_backup_path is defined or imap_backup_path is defined or imap_data_backup_path is defined or postfix_backup_path is defined or pdns_backup_path is defined or wg_vpn_backup_path is defined
   block:
     - name: Prepare MariaDB backup
       when: mariadb_backup_path is defined
@@ -185,8 +204,7 @@
         state: started
     - name: Stop LDAP server
       when: ldap_backup_path is defined
-      ansible.builtin.command: "dsctl {{ mailserver_domain.split('.')[0] }} stop"
-      # ansible.builtin.command: "dsctl {{ mailserver_hostname }} stop"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} stop"
       register: stop_ldap_server
       changed_when: stop_ldap_server.rc == 0
     - name: Prepare LDAP backup
@@ -199,22 +217,26 @@
       register: ldap_backup_files
     - name: Restore LDAP backup
       when: ldap_backup_path is defined
-      ansible.builtin.command: "dsctl {{ mailserver_domain.split('.')[0] }} bak2db /{{ ldap_backup_files.files[0] }}"
-      # ansible.builtin.command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} bak2db /{{ ldap_backup_files.files[0] }}"
       register: restore_ldap_server
       changed_when: restore_ldap_server.rc == 0
     - name: Start LDAP server
       when: ldap_backup_path is defined
-      ansible.builtin.command: "dsctl {{ mailserver_domain.split('.')[0] }} start"
-      # ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
+      ansible.builtin.command: "dsctl {{ mailserver_hostname }} start"
       register: start_ldap_server
       changed_when: start_ldap_server.rc == 0
-    - name: Restore service tarball backups
+    - name: Restore the Cyrus configuration backup
       when: imap_backup_path is defined
       ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
-        service: cyrus-imap
+        service: cyrus-imapd
         service_backup_path: "{{ imap_backup_path }}"
+    - name: Restore the Cyrus mailbox data backup
+      when: imap_data_backup_path is defined
+      ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
+      vars:
+        service: cyrus-imapd
+        service_backup_path: "{{ imap_data_backup_path }}"
     - name: Restore service tarball backups
       ansible.builtin.include_tasks: backups/restore_service_tarball_backup.yml
       vars:
@@ -225,7 +247,6 @@
         - opendkim
         - opendmarc
         - vsftpd
-        - kolab
         - postfix
         - pdns
         - wg_vpn
@@ -236,4 +257,5 @@
         dest: /
         remote_src: yes
       loop:
+        - kolab
         - ssl

@@ -8,11 +8,11 @@ Make the Kolab version of the role complete and releasable as 3.0.0: working and
 
 ## Current state
 
-Revision at the last update: f92d77d plus the commit that fixes the backup services (on `feature/kolab`, draft pull request #65, work stays on this branch). The CI of both commits has not been read yet.
+Revision at the last update: e057aad plus the commit that fixes the failed backups and adds the Kolab backup coverage (on `feature/kolab`, draft pull request #65, work stays on this branch). The CI of f92d77d, e057aad and this commit has not been read yet.
 
-- CI: the pull request run of 3dbf835 is green. The lint job reports success (a full run that includes the YAML files; only yamllint warnings remain) and all tests pass (username and address derivation, whole-role syntax check, unit tests). Earlier, Super-Linter had failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings); the fixes are the Pylint, shfmt and `aci` changes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4), the typo fix in `tasks/os/packages.yml` (c44c463) and the code spans for linter names in this file (3dbf835). The success is the overall result of the job; the per-linter result table was cut off in the fetched log, so no single linter line was read. The new fourth test (backup service templates) has not run yet
-- tests: the username and address derivation, the syntax check, the script unit tests and the new check of the backup templates exist; nothing tests what the role does on a server (see the high-priority section)
-- backups: the systemd templates are fixed (oneshot services, retention after the new backup, `timers.target`, option file for the MariaDB password, tolerant `tar`) and tested by rendering them in CI; nothing has run on a server, so the backups count as not working until a backup and a restore ran in a test
+- CI: the pull request run of 3dbf835 is green. The lint job reports success (a full run that includes the YAML files; only yamllint warnings remain) and all tests pass (username and address derivation, whole-role syntax check, unit tests). Earlier, Super-Linter had failed on eacf254 in Pylint, shfmt, codespell, Prettier (26 YAML files) and Trivy (3 Dockerfile findings); the fixes are the Pylint, shfmt and `aci` changes (4a64f43), the bot commit that formatted the 26 YAML files (652bb7a), `.trivyignore` (7d4c2d4), the typo fix in `tasks/os/packages.yml` (c44c463) and the code spans for linter names in this file (3dbf835). The success is the overall result of the job; the per-linter result table was cut off in the fetched log, so no single linter line was read. The fourth test (backup service templates) has not run yet
+- tests: the username and address derivation, the syntax check, the script unit tests and the check of the backup templates exist; nothing tests what the role does on a server (see the high-priority section)
+- backups: on the server built on `main` ten backup services were failed on 2026-11-27 (see the evidence below); the templates of this branch fix the causes found in the journal and cover the Kolab equivalents of what `main` backed up for Horde and Dovecot, but nothing has run on a server with them, so the backups count as not working until a backup and a restore ran in a test
 - instructions: `AGENTS.md` no longer copies the shared rules (2cc2922), has the CI test rule and the work-status rule for this file
 
 ## Remaining steps
@@ -22,7 +22,7 @@ Revision at the last update: f92d77d plus the commit that fixes the backup servi
 Rule of the owner (2026-11-27): every change of what the server does gets a CI test in the same commit, and this is checked every time before a commit is prepared (the rule is in `AGENTS.md`). A gap is never hidden: it is named in the commit message and listed here.
 
 - [ ] before every commit: name the functionality the commit changes and the test that covers it; add the test or the gap to this list
-- [ ] gap of the backup commit: the task that writes `/etc/mariabackup.cnf`, the `when` guard of the Cyrus restore and the real behaviour of the services (two runs in a row, restore) are not tested until the converge test exists
+- [ ] gap of the backup commits: the task that writes `/etc/mariabackup.cnf`, the `when` guards and the restore tasks (LDAP, Cyrus configuration and mailbox data, Kolab configuration) and the real behaviour of the services (two runs in a row, restore) are not tested until the converge test exists
 - [ ] build the converge workflow (a new file `.github/workflows/converge.yml`, or new entries in `tests.yml`): a systemd-enabled AlmaLinux 8 container (the `Dockerfile` already uses the `8-init` image) that runs the role in stages and publishes the masked logs like the existing tests do (`ci-results` branch); stages: OS and packages, LDAP, MariaDB, Postfix, Kolab, then the rest
 - [ ] run the converge twice and fail on any change in the second run (idempotence)
 - [ ] one test per functional area; each box closes when the test runs green in CI:
@@ -48,7 +48,7 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 - [x] codespell: the typo in the comment at `tasks/os/packages.yml:208` is fixed in c44c463 (one word changed); this file describes it without the misspelled word; green in the pull request run of 3dbf835
 - [x] Prettier: the temporary workflow ran the Prettier fixer of Super-Linter once, and the bot commit 652bb7a formatted exactly the 26 files of the lint log (424 additions, 165 deletions); the lint job of the pull request run of 3dbf835 succeeded with the YAML files included, and the syntax-check test passed after the reformat
 - [x] Trivy: `.trivyignore` at the repository root lists DS-0001, DS-0002 and DS-0026 (7d4c2d4, the same three decisions as the Checkov skips); the lint job of 3dbf835 succeeded, so the three findings do not come back
-- [ ] read the CI of f92d77d and of the backup commit (the new test file `tests/backup_templates.yml` is linted by the Ansible linter for the first time, and the new templates and `tasks/backups/main.yml` are linted again)
+- [ ] read the CI of f92d77d, e057aad and the commit after it (the new test file `tests/backup_templates.yml` is linted by the Ansible linter for the first time; the changed `tasks/backups/main.yml` and the new flow-free list items must pass Prettier)
 - [ ] optional check: read the Super-Linter result table of the next full lint log once, to see each linter line (the fetched log was cut off before it)
 - [x] codespell typo in `tasks/mariadb/create_mariadb_schema.yml` fixed (5cac1f6)
 - [x] the three tests passed (15c78c6, eacf254, c44c463, 813194b, 11115ea, 3dbf835)
@@ -56,20 +56,28 @@ Rule of the owner (2026-11-27): every change of what the server does gets a CI t
 
 ### Kolab backup and restore
 
-The backups did not work on the old Horde setup (`main`) and have to work on Kolab. A read of `tasks/backups/main.yml` and `templates/systemd/` found the points below. The points marked done are fixed in the templates and checked by rendering them in CI; none is verified on a running server. The test for that is the converge test of the high-priority section.
+The backups did not work on the old Horde setup (`main`) and have to work on Kolab. Evidence from the server built on `main` (2026-11-27, `systemctl --failed` and the journal): ten backup services were failed (dovecot, horde, ldap, opendkim, opendmarc, pdns, postfix, ssl, vsftpd, wg_vpn), `mariadb` was not. The causes found: the directories `/backup/ssl`, `/backup/ldap`, `/backup/vsftpd` (and probably the others) did not exist, so `tar` could not open its archive (`bzip2` is installed, GNU tar is 1.30); the LDAP service used the instance name `mrak.suhan`, but the instance is `slapd-mrak` (`dirsrv@mrak`); the postfix service was killed by the 90 second start timeout of its forking service while archiving `/var/vmail`. The points marked done are fixed in the templates and checked by rendering them in CI; none is verified on a running server. The test for that is the converge test of the high-priority section. The fixes for what only `main` has (the Dovecot and Horde services, `tasks/backups.yml`, its LDAP template with the wrong instance name) are not part of this branch: they go to a separate branch and pull request against `main`, and the one-liners for the running server are in the pull request description and in the chat.
 
-- [x] the timer services used `Type=forking` with `RemainAfterExit=yes`; they are `Type=oneshot` without `RemainAfterExit` now, so the daily timer can start them again every day (run twice in a row on a server: still to test)
-- [x] retention: the old backups are removed after the new backup is written, with `-mindepth 1`, so the backup directory itself is never matched and the newest backup survives a pause
+- [x] every backup service creates its own directory (`ExecStartPre=/usr/bin/mkdir -p /backup/<name>`), so a missing directory cannot fail a backup
+- [x] the LDAP backup service and the LDAP restore use the instance name `mailserver_hostname` (the role uses it for `slapd-` and `dirsrv@` everywhere else); the dependency names are no longer quoted. Still to check on a Kolab server: that the instance is named after the short hostname there too
+- [x] the services are `Type=oneshot` without `RemainAfterExit`: no start timeout (the postfix archive of `/var/vmail` ran into the 90 second limit), and the daily timer can start them again every day (run twice in a row on a server: still to test)
+- [x] retention: the old backups are removed after the new backup is written, with `-mindepth 1` and `-exec ... +` (the escaped semicolon made systemd warn about unknown escape sequences)
 - [x] the backup timers are wanted by `timers.target`
 - [x] the MariaDB backup password moved from the readable unit file to `/etc/mariabackup.cnf` (mode `u=rw,go=`, written by a task with `no_log`); still to check: the restore commands (`mariabackup --prepare` and `--copy-back`) need no password
-- [x] the tarball command uses `--ignore-failed-read`, so a path pattern that matches nothing (for example one of the two Cyrus configuration directories) no longer fails the backup; check the real paths on a Kolab installation
-- [ ] the Cyrus archive holds the configuration only (`/etc/imap`, `/etc/cyrus-imap`), not the mailboxes and not the mailbox database; the Dovecot maildir archive of Postfix (`/var/vmail`) does not apply to Kolab; decide how to back up the mail data consistently (open decision)
-- [ ] the tarball service of Cyrus requires `cyrus-imap.service`, and the restore stops and starts `cyrus-imap`; check the real unit name of the Cyrus server on Kolab (probably `cyrus-imapd`) and the names of the other units, then change both places
-- [x] restore: the task for `cyrus-imap` only runs when `imap_backup_path` is defined
-- [ ] restore: use one naming scheme for the backup path variables (the Cyrus one is `imap_backup_path`, the others are `<name>_backup_path`) and document it in `README.md`
-- [ ] the `kolab` tarball has no service unit, but the restore stops and starts a unit named `kolab`; check that this unit exists
+- [x] the tarball command uses `--ignore-failed-read`, so a path pattern that matches nothing no longer fails the backup
+- [x] Kolab equivalent of the Horde backup (`/etc/horde` on `main`): the `kolab` backup now holds `/etc/kolab`, `/etc/roundcubemail`, `/etc/iRony` and `/etc/kolab-freebusy`, and it is restored like the Horde one, without stopping a service (it used to stop and start a unit named `kolab` that does not exist); check on a Kolab server that these four directories are the right ones and add what is missing (for example the Kolab web admin and Syncroton configuration)
+- [x] Kolab equivalent of the Dovecot configuration backup (`/etc/dovecot` on `main`): the `cyrus-imap` backup now holds `/etc/imapd.conf` and `/etc/cyrus.conf` besides `/etc/imap` and `/etc/cyrus-imap`; the Cyrus service is `cyrus-imapd.service` (the Kolab 16 install log shows that name), set by the new `unit` field of the backup definition, also for the restore
+- [x] Kolab equivalent of the Dovecot mail data backup (`/var/vmail` in the postfix backup on `main`): the new `cyrus-imap-data` backup holds `/var/lib/imap` (mailbox list database, sieve scripts, quotas) and `/var/spool/imap` (the messages), after a best-effort dump of the mailbox list (`ctl_mboxlist -d`, a JSON file written to `/var/lib/imap/mailboxes.dump.json` as the `cyrus` user; a failure of the dump does not fail the backup); restore variable `imap_data_backup_path`, the restore stops and starts `cyrus-imapd`
+- [x] the data of Kolab in MariaDB (Roundcube, Kolab, Syncroton) is covered by the MariaDB backup, the directory data by the LDAP backup
+- [ ] the Cyrus data archive is taken from a running server and is therefore only crash-consistent; the best practice from the Cyrus mailing list is to stop Cyrus, take a snapshot of the volume, start it again and archive the snapshot, or to replicate the mailboxes to a Cyrus backup server (`sync_client`, `backupd`); decide which one (open decision), and test a restore of a mailbox before trusting it
+- [ ] check the paths on a Kolab server: `/usr/lib/cyrus-imapd/ctl_mboxlist` (the dump is silently skipped when the path is wrong), `/etc/iRony`, `/etc/kolab-freebusy`, and the `cyrus` user
+- [ ] the `postfix` backup still archives `/var/vmail` (Dovecot Maildirs); keep it while the Horde to Kolab migration reads them in place, and remove it afterwards
+- [x] restore: the task for the Cyrus configuration only runs when `imap_backup_path` is defined, and the one for the mailbox data when `imap_data_backup_path` is defined
+- [ ] restore: use one naming scheme for the backup path variables (the Cyrus ones are `imap_backup_path` and `imap_data_backup_path`, the others are `<name>_backup_path`) and document them in `README.md`
+- [ ] after the next deploy on a server: run `systemctl --failed | grep backup`, start every backup service by hand and read `journalctl -u <name>-backup.service`; the units installed from `main` still have the old content until the role runs again
 - [ ] add a CI test in a systemd-enabled AlmaLinux 8 container: run every backup service twice, restore into a fresh container, and compare a test mailbox, the MariaDB data and the LDAP data; the backups stay marked as not verified until that test passed
 - [ ] confirm that the Kolab- and Cyrus-related backups work (this item was in the original list)
+- [ ] separate branch and pull request against `main` for the Dovecot and Horde backups and the LDAP template there (to be proposed after reading the files; the one-liners for the server belong into its description)
 
 ### Instruction cleanup
 
@@ -204,7 +212,7 @@ CI tests for every functionality first (high priority above), then LDAP and Post
 
 ## Open decisions
 
-- how the Kolab mail data (Cyrus mailboxes and mailbox database) is backed up consistently
+- how the Kolab mail data (Cyrus mailboxes and mailbox database) is backed up consistently: stop and snapshot, or replicate to a Cyrus backup server (the data archive of a running server is crash-consistent only)
 - the shared rule to lint with a pinned Super-Linter image against the rule here to never pin anything
 - where the long-term items go when this file is deleted (for example the Horde to Kolab migration plan and the address scheme work, if they are not finished before the merge): `README.md`, issues, or finish them first
 
@@ -215,9 +223,10 @@ CI tests for every functionality first (high priority above), then LDAP and Post
 - all tests run in CI containers (AlmaLinux 8), not on the machine of the assistant; read the logs on the `ci-results` branch (tests) and the `ci-lint-results` branch (Super-Linter)
 - check the CI results at the start of every task and fix what is red; ask only when something is really unclear
 - explain changes in plain language, work independently, and keep the changes of `main` that are not Horde related
+- fixes that only matter for what `main` has (not used on this branch) go to a separate branch and pull request against `main`; what is in neither branch is given to the owner as instructions (a bash one-liner for the server, also as part of the `main` fix when useful)
 - name files after what they do
 - check the claims of automatic CI summaries against the real log and the documentation before following or rejecting them (a summary was wrong that `fetch-depth: 0` was missing and that `actions/checkout@v4` should be pinned, and right that `community.mysql` was renamed to `ansible.mysql`)
 
 ## Resume prompt
 
-In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. Read the CI logs for the head commit (`ci-results` and `ci-lint-results`), including the new test _Backup service templates_ (`test-backups.log`), and keep them green. Then work through the high-priority section first: build the converge workflow and one CI test per functional area, and before every commit name the functionality it changes and the test that covers it. Then work through the other open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
+In `suhancz/ansible-mailserver`, work on `feature/kolab` (draft pull request #65). Read the shared instructions of `suhancz/ai-agent-config` first, then this file. Read the CI logs for the head commit (`ci-results` and `ci-lint-results`), including the test _Backup service templates_ (`test-backups.log`), and keep them green. Then work through the high-priority section first: build the converge workflow and one CI test per functional area, and before every commit name the functionality it changes and the test that covers it. Then work through the other open boxes in the order above, update this file in every commit, and wait for the CI runs after every push. Fixes that only concern `main` go to a separate branch and pull request against `main`. Do not mark the backups as working until a backup and a restore ran in the CI test. Delete this file in the last commit before the pull request is merged.
