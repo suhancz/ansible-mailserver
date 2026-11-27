@@ -19,5 +19,5 @@
 - [x] `memory/MEMORY.md` holds lessons, tool notes, owner decisions; `AGENTS.md` points to it (9a92cab); owner (2026-11-27): all AI instructions including the memory file stay and go to `main` with the Kolab release; only the status files are deleted
 - [x] terse and truncation rule recorded here (`AGENTS.md`, memory) and merged in `ai-agent-config` (PR #15)
 - [ ] generic memory lessons (terms NATURAL_LANGUAGE rejects) also belong in the shared memory of `ai-agent-config`, only for repositories running Super-Linter defaults (its workflow enables a fixed list without the natural language linter); own branch and PR there
-- [ ] in progress: status files split by category under the shared rule (PR #16, 75a8b76): index with counts plus nine files in `todo/` (this commit); sizes, counts and CI result unchecked; `AGENTS.md` and `memory/MEMORY.md` carry the corrected 30 KB limit
+- [x] status files split by category under the shared rule (PR #16, 75a8b76), 8b6a5af: index with counts plus nine files in `todo/`; read back whole (ends complete, sizes 0.3 to 6.2 KB), every mark recounted (counts matched), CI of 8b6a5af green (16 checks); `AGENTS.md` and `memory/MEMORY.md` carry the corrected 30 KB limit
 - [ ] split `instructions/all-agents.instructions.md` in `ai-agent-config` (32 KB, read back cut off) in its own PR; not in this repository

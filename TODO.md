@@ -8,7 +8,7 @@ Format (owner, 2026-11-27; shared rule of `ai-agent-config`, PR #16): as few wor
 
 ## Summary
 
-- Items: done 40, in progress 13, to do 79 (132 in total)
+- Items: done 41, in progress 12, to do 79 (132 in total)
 - Categories: done 0, in progress 7, not started 2
 
 ## Goal
@@ -17,8 +17,8 @@ Kolab role complete and releasable as 3.0.0: tested backups and restore, no copi
 
 ## Current state
 
-- Head before this commit: b7e2b79 (terse rule, shortened `TODO.md`). Earlier: 5c491b8, 024dc51, 9a92cab, 95c24ca, 43e8b42, c973397, 507056c, bd51374, c8187f5, a1aedd8 (Kolab versions restored after merge 7effafb of `main` 2.6.3), c57b4b9. Branch not behind `main`.
-- CI of b7e2b79 (2026-11-27): all 16 checks done, none failed, 2 repair jobs skipped; lint 3m54s and 4m07s; five test jobs green; `lint.log` names b7e2b79 (log not read). Details in the CI file.
+- Head before this commit: 8b6a5af (split into index and `todo/`). Earlier: b7e2b79, 5c491b8, 024dc51, 9a92cab, 95c24ca, 43e8b42, c973397, 507056c, bd51374, c8187f5, a1aedd8 (Kolab versions restored after merge 7effafb of `main` 2.6.3), c57b4b9. Branch not behind `main`.
+- CI of 8b6a5af (2026-11-27): all 16 checks done and green, 2 repair jobs skipped; `lint.log` names 8b6a5af (log not read). Details in the CI file.
 - Backups pass only with dummy services; the ten services that failed on the server built from `main` are not yet shown fixed on a server. In progress, not working.
 - `main`: Dovecot and Horde backup fixes merged as #66 (2.6.3, 2f56b83). `ai-agent-config`: terse rule (PR #15) and the small-files and category-split rule (PR #16, 75a8b76) are merged.
 - Owner rules: every commit carries its update of these files; marks as above; tests by the order below.
@@ -46,7 +46,7 @@ State not started, done 0, in progress 0, to do 9:
 State in progress, done 2, in progress 0, to do 14:
 [addresses: address scheme and username leftovers](todo/addresses.md)
 
-State in progress, done 8, in progress 1, to do 5:
+State in progress, done 9, in progress 0, to do 5:
 [instructions: instruction cleanup and agent files](todo/instructions.md)
 
 State not started, done 0, in progress 0, to do 6:
